@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A1C33">
+<title>Pronos Ping</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23FF8A24'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --hall:#0A1C33;        /* fond de la salle */
+  --table:#123C6B;       /* surface de la table */
+  --line:#E8EEF6;        /* lignes blanches */
+  --ball:#FF8A24;        /* balle : couleur d'accent */
+  --ball-ink:#2A1300;
+  --mute:#98AECB;
+  --good:#7BDDAE;
+  --bad:#FF8383;
+  --f-display:'Barlow Condensed','Arial Narrow',sans-serif;
+  --f-body:'Public Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--hall);color:var(--line);font:400 16px/1.45 var(--f-body);min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--ball);outline-offset:2px}
+.wrap{max-width:680px;margin:0 auto;padding:0 14px 110px}
+
+/* En-tête */
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px}
+.brand{font:700 32px/1 var(--f-display);display:flex;align-items:center;gap:9px}
+.ball{width:16px;height:16px;border-radius:50%;background:var(--ball);display:inline-block;flex:none}
+.me{display:flex;align-items:center;gap:8px;color:var(--mute);font-size:14px}
+.linkbtn{background:none;border:0;padding:6px 2px;color:inherit;text-decoration:underline;text-underline-offset:3px;font-size:inherit}
+.linkbtn:hover{color:var(--line)}
+
+/* Navigation du bas */
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--hall);border-top:2px solid rgba(232,238,246,.25);padding:10px 10px calc(6px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:6px;z-index:5}
+.nav button{flex:1;max-width:220px;background:none;border:0;padding:10px 6px 8px;font:600 21px/1 var(--f-display);color:var(--mute);border-radius:6px;position:relative}
+.nav button[aria-current="page"]{color:var(--line)}
+.nav button[aria-current="page"]::before{content:"";position:absolute;left:50%;top:-8px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--ball)}
+.badge{background:var(--ball);color:var(--ball-ink);border-radius:10px;padding:1px 7px;font-size:15px;margin-left:6px}
+
+/* Filtres */
+.seg{display:flex;gap:6px;margin:4px 0 12px;flex-wrap:wrap}
+.seg button{background:transparent;border:1.5px solid rgba(232,238,246,.45);border-radius:999px;padding:7px 14px;font-size:14px;font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--line);color:var(--hall);border-color:var(--line);font-weight:600}
+.day{font:600 21px/1.2 var(--f-display);margin:22px 2px 8px;color:var(--mute);text-transform:capitalize}
+
+/* Carte de match = une table vue de dessus */
+.match{background:var(--table);border-radius:8px;margin:0 0 14px;box-shadow:inset 0 0 0 2px rgba(232,238,246,.9);position:relative}
+.mhead{display:flex;justify-content:space-between;gap:10px;padding:12px 14px 2px}
+.comp{font-weight:600;font-size:14px}
+.rnd{color:var(--mute);font-size:13px}
+.when{font-size:13px;color:var(--mute);text-align:right;white-space:nowrap}
+.pill{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--line);color:var(--hall);margin-top:4px}
+.pill.live{background:var(--ball);color:var(--ball-ink)}
+.court{display:grid;grid-template-columns:1fr 1fr;position:relative;margin-top:4px}
+.court::before{content:"";position:absolute;left:50%;top:6px;bottom:6px;width:2px;margin-left:-1px;background:repeating-linear-gradient(to bottom,var(--line) 0 6px,transparent 6px 11px);opacity:.9;pointer-events:none}
+.side{padding:8px 10px 12px;text-align:center;min-width:0}
+.name{font:600 27px/1.05 var(--f-display);overflow-wrap:anywhere;min-height:2.1em;display:flex;align-items:center;justify-content:center}
+.name.lose{opacity:.55}
+.rk{font-size:12px;color:var(--mute);margin:2px 0 8px;min-height:1.2em}
+.chips{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.chip{flex:1 1 38px;min-width:38px;height:44px;background:transparent;border:1.5px solid rgba(232,238,246,.7);border-radius:6px;font:600 21px/1 var(--f-display)}
+.chip[aria-pressed="true"]{background:var(--ball);color:var(--ball-ink);border-color:var(--ball)}
+.chip:disabled{opacity:.55;cursor:not-allowed}
+.chip[aria-pressed="true"]:disabled{opacity:1}
+.court.done .side{padding-bottom:50px}
+.netscore{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:var(--hall);border:2px solid var(--line);border-radius:6px;padding:5px 12px;font:700 36px/1 var(--f-display);z-index:1;white-space:nowrap}
+.trend{padding:0 14px 6px}
+.trendrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font:600 19px/1 var(--f-display)}
+.bar{height:6px;border-radius:3px;background:rgba(232,238,246,.22);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--line)}
+.tnote{font-size:12.5px;color:var(--mute);margin:6px 0 0;text-align:center}
+.mfoot{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding:8px 14px 12px;border-top:1px solid rgba(232,238,246,.25);font-size:14px}
+.pts{font:700 21px/1 var(--f-display);padding:4px 10px;border-radius:6px}
+.pts.p3{background:var(--ball);color:var(--ball-ink)}
+.pts.p1{background:var(--good);color:#06301C}
+.pts.p0{background:rgba(232,238,246,.16);color:var(--mute)}
+.friends{list-style:none;margin:0;padding:0 14px 12px;font-size:14px}
+.friends li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid rgba(232,238,246,.15)}
+.friends li:last-child{border-bottom:0}
+
+/* Classement */
+.lb{list-style:none;margin:0;padding:0}
+.lb li{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-radius:8px;margin-bottom:8px;background:var(--table)}
+.lb li.me{box-shadow:inset 0 0 0 2px var(--ball)}
+.rank{font:700 32px/1 var(--f-display);text-align:center}
+.lbname{font:600 23px/1.1 var(--f-display);overflow-wrap:anywhere}
+.lbsub{font-size:13px;color:var(--mute)}
+.lbpts{font:700 36px/1 var(--f-display);text-align:right}
+.lbpts small{font-size:17px;font-weight:500;color:var(--mute);margin-left:3px}
+.rules{color:var(--mute);font-size:14px;margin:14px 2px}
+
+/* Formulaires et administration */
+.panel{background:var(--table);border-radius:8px;padding:16px;margin:0 0 16px;box-shadow:inset 0 0 0 2px rgba(232,238,246,.9)}
+.panel h2{font:700 26px/1.1 var(--f-display);margin:0 0 4px}
+.panel h3{font:600 21px/1.2 var(--f-display);margin:0}
+.hint{color:var(--mute);font-size:14px;margin:4px 0 0}
+label{display:block;font-size:14px;font-weight:600;margin:12px 0 4px}
+input,select{width:100%;background:var(--hall);border:1.5px solid rgba(232,238,246,.55);border-radius:6px;padding:11px 12px;font-size:16px}
+.btn{background:var(--ball);color:var(--ball-ink);border:0;border-radius:6px;padding:12px 18px;font:700 21px/1 var(--f-display);margin-top:16px;width:100%}
+.btn.sec{background:transparent;color:var(--line);border:1.5px solid rgba(232,238,246,.7)}
+.btn.small{width:auto;margin-top:0;padding:10px 14px;font-size:18px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adm-item{padding:12px 0;border-top:1px solid rgba(232,238,246,.25)}
+.adm-item:first-of-type{border-top:0}
+.adm-title{font-weight:600}
+.adm-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.scorein{width:64px;text-align:center;font:600 22px/1 var(--f-display);padding:9px 6px}
+.vs{font:600 20px/1 var(--f-display);color:var(--mute)}
+
+/* Connexion */
+.auth{max-width:420px;margin:0 auto;padding:44px 16px 60px}
+.auth h1{font:700 48px/1 var(--f-display);margin:0 0 8px;display:flex;align-items:center;gap:10px}
+.auth h1 .ball{width:22px;height:22px}
+.lead{color:var(--mute);margin:0 0 20px}
+.ferr{color:var(--bad);font-size:14px;margin-top:12px;min-height:1.2em}
+.fok{color:var(--good)}
+.switch{text-align:center;color:var(--mute);font-size:14px}
+
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--line);color:var(--hall);padding:10px 16px;border-radius:6px;font-weight:600;z-index:10;max-width:90vw;text-align:center}
+.toast.err{background:var(--bad);color:#3A0505}
+.empty{padding:30px 8px;text-align:center;color:var(--mute)}
+.loading{padding:60px 0;text-align:center;color:var(--mute)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Chargement…</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =====================================================================
+   RÉGLAGES : ces deux valeurs viennent de ton projet Supabase.
+   La clé "publishable" est faite pour être publique : aucun risque.
+   ===================================================================== */
+const SUPABASE_URL = 'https://idkssxtsmeynjsivuehp.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Qq28e3LyJwXxsxGw4ibHKg_tM8FDysY';
+const APP_NAME = 'Pronos Ping';
+
+/* ===================================================================== */
+const CIRCUITS = { WTT: 'WTT', PRO_A: 'Pro A' };
+const $app = document.getElementById('app');
+let sb = null;
+
+const S = {
+  session: null, pseudo: '', isAdmin: false,
+  tab: 'matches', circuit: 'ALL', view: 'upcoming',
+  matches: [], competitors: {}, myPreds: {},
+  board: null, boardScope: 'ALL',
+  friends: {}, openFriends: {},
+  authMode: 'login', adminCircuit: 'WTT', bootError: ''
+};
+
+/* ---------- Petits outils ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtWhen = iso => new Date(iso).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const fmtDay = iso => new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+const isLocked = m => m.status !== 'scheduled' || new Date(m.starts_at) <= new Date();
+
+function toast(msg, isErr) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (isErr ? ' err' : '');
+  el.setAttribute('role', 'status');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), isErr ? 4200 : 2200);
+}
+
+function friendlyError(e) {
+  const msg = (e && e.message) || String(e);
+  if (/Invalid login credentials/i.test(msg)) return 'Email ou mot de passe incorrect.';
+  if (/Database error saving new user|invitation/i.test(msg)) return "Inscription refusée : vérifie le code d'invitation, et choisis un pseudo de 2 à 20 caractères qui n'est pas déjà pris.";
+  if (/already (been )?registered/i.test(msg)) return 'Cet email a déjà un compte. Connecte-toi.';
+  if (/at least \d+ characters/i.test(msg)) return 'Le mot de passe doit faire au moins 6 caractères.';
+  if (/Email not confirmed/i.test(msg)) return "Ton email n'est pas encore confirmé. Vérifie ta boîte mail.";
+  if (/Score impossible/i.test(msg)) return msg;
+  if (/row-level security/i.test(msg)) return "Action refusée : le match a peut-être déjà commencé, ou tu n'as pas les droits.";
+  if (/duplicate key/i.test(msg)) return 'Cet élément existe déjà.';
+  return msg;
+}
+
+/* ---------- Prédictions statistiques ---------- */
+/* Estimation simple : classement + forme récente + face-à-face.
+   Ce n'est pas une certitude, juste une tendance. */
+function binom(n, k) { let r = 1; for (let i = 1; i <= k; i++) r = r * (n - k + i) / i; return r; }
+function winProb(q, n) { let s = 0; for (let k = 0; k < n; k++) s += binom(n - 1 + k, k) * Math.pow(q, n) * Math.pow(1 - q, k); return s; }
+function setProbFromMatchProb(p, n) {
+  let lo = 0.001, hi = 0.999;
+  for (let i = 0; i < 50; i++) { const mid = (lo + hi) / 2; if (winProb(mid, n) < p) lo = mid; else hi = mid; }
+  return (lo + hi) / 2;
+}
+function bestScore(q, n) {
+  let best = null;
+  for (let k = 0; k < n; k++) {
+    const pa = binom(n - 1 + k, k) * Math.pow(q, n) * Math.pow(1 - q, k);
+    const pb = binom(n - 1 + k, k) * Math.pow(1 - q, n) * Math.pow(q, k);
+    if (!best || pa > best.p) best = { p: pa, a: n, b: k };
+    if (pb > best.p) best = { p: pb, a: k, b: n };
+  }
+  return best;
+}
+function recentForm(id) {
+  const games = S.matches
+    .filter(m => m.status === 'finished' && (m.competitor_a_id === id || m.competitor_b_id === id))
+    .sort((x, y) => new Date(y.starts_at) - new Date(x.starts_at)).slice(0, 5);
+  if (games.length < 2) return null;
+  const wins = games.filter(m => (m.competitor_a_id === id) === (m.score_a > m.score_b)).length;
+  return wins / games.length;
+}
+function headToHead(a, b) {
+  let wa = 0, wb = 0;
+  for (const m of S.matches) {
+    if (m.status !== 'finished') continue;
+    if (m.competitor_a_id === a && m.competitor_b_id === b) { if (m.score_a > m.score_b) wa++; else wb++; }
+    else if (m.competitor_a_id === b && m.competitor_b_id === a) { if (m.score_a > m.score_b) wb++; else wa++; }
+  }
+  return { wa, wb };
+}
+function trend(m) {
+  const a = S.competitors[m.competitor_a_id], b = S.competitors[m.competitor_b_id];
+  if (!a || !b || !a.ranking || !b.ranking) return null;
+  let z = 0.45 * (Math.log(b.ranking) - Math.log(a.ranking));
+  const fa = recentForm(a.id), fb = recentForm(b.id);
+  if (fa !== null && fb !== null) z += 1.2 * (fa - fb);
+  const h = headToHead(a.id, b.id);
+  if (h.wa + h.wb > 0) z += 0.5 * (h.wa - h.wb) / (h.wa + h.wb);
+  const pA = 1 / (1 + Math.exp(-z));
+  const q = setProbFromMatchProb(pA, m.wins_needed);
+  return { pA, score: bestScore(q, m.wins_needed) };
+}
+function points(m, p) {
+  if (m.status !== 'finished' || !p) return null;
+  if (p.pred_a === m.score_a && p.pred_b === m.score_b) return 3;
+  return Math.sign(p.pred_a - p.pred_b) === Math.sign(m.score_a - m.score_b) ? 1 : 0;
+}
+
+/* ---------- Chargement des données ---------- */
+async function reloadMatches() {
+  const since = new Date(Date.now() - 90 * 864e5).toISOString();
+  const r = await sb.from('matches').select('*').gte('starts_at', since).order('starts_at', { ascending: true }).limit(500);
+  if (r.error) throw r.error;
+  S.matches = r.data || [];
+}
+async function reloadCompetitors() {
+  const r = await sb.from('competitors').select('*').limit(2000);
+  if (r.error) throw r.error;
+  S.competitors = {};
+  (r.data || []).forEach(c => { S.competitors[c.id] = c; });
+}
+async function loadAll() {
+  const uid = S.session.user.id;
+  const [p, preds, adm] = await Promise.all([
+    sb.from('profiles').select('pseudo').eq('id', uid).maybeSingle(),
+    sb.from('predictions').select('*').eq('user_id', uid).limit(3000),
+    sb.rpc('is_admin')
+  ]);
+  await Promise.all([reloadMatches(), reloadCompetitors()]);
+  S.pseudo = (p.data && p.data.pseudo) || '';
+  S.myPreds = {};
+  (preds.data || []).forEach(x => { S.myPreds[x.match_id] = x; });
+  S.isAdmin = adm.data === true;
+}
+async function loadBoard() {
+  const q = S.boardScope === 'ALL'
+    ? sb.from('leaderboard').select('*')
+    : sb.from('leaderboard_by_circuit').select('*').eq('circuit', S.boardScope);
+  const r = await q.order('total_points', { ascending: false }).order('exact_scores', { ascending: false });
+  if (r.error) { toast(friendlyError(r.error), true); S.board = []; return; }
+  S.board = r.data || [];
+}
+
+/* ---------- Session ---------- */
+async function handleSession(session) {
+  if (!session) {
+    S.session = null; S.pseudo = ''; S.isAdmin = false; S.matches = []; S.myPreds = {}; S.board = null;
+    render(); return;
+  }
+  if (S.session && S.session.user.id === session.user.id) { S.session = session; return; }
+  S.session = session;
+  $app.innerHTML = '<div class="loading">Chargement…</div>';
+  try { await loadAll(); S.bootError = ''; }
+  catch (e) { S.bootError = friendlyError(e); }
+  render();
+}
+
+/* ---------- Affichage ---------- */
+function render() {
+  if (!S.session) { $app.innerHTML = authView(); return; }
+  const todo = S.matches.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
+  const tabs = [['matches', 'Matchs'], ['board', 'Classement']];
+  if (S.isAdmin) tabs.push(['admin', 'Admin']);
+  $app.innerHTML = `
+    <div class="wrap">
+      <header class="top">
+        <div class="brand"><span class="ball"></span>${esc(APP_NAME)}</div>
+        <div class="me"><span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
+      </header>
+      <main>${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
+    </div>
+    <nav class="nav" aria-label="Navigation principale">
+      ${tabs.map(([k, label]) => `<button data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${label}${k === 'matches' && todo ? `<span class="badge" title="Matchs sans prono">${todo}</span>` : ''}</button>`).join('')}
+    </nav>`;
+}
+function keepRender() { const y = window.scrollY; render(); window.scrollTo(0, y); }
+
+function tabView() {
+  if (S.tab === 'board') return boardView();
+  if (S.tab === 'admin' && S.isAdmin) return adminView();
+  return matchesView();
+}
+
+/* --- Connexion --- */
+function authView() {
+  const su = S.authMode === 'signup';
+  return `
+  <div class="auth">
+    <h1><span class="ball"></span>${esc(APP_NAME)}</h1>
+    <p class="lead">Les pronostics de tennis de table entre amis : WTT et Pro A.</p>
+    <form id="authform" class="panel">
+      ${su ? `<label for="pseudo">Pseudo</label><input id="pseudo" required minlength="2" maxlength="20" autocomplete="nickname">` : ''}
+      <label for="email">Email</label><input id="email" type="email" required autocomplete="email">
+      <label for="pw">Mot de passe</label><input id="pw" type="password" required minlength="6" autocomplete="${su ? 'new-password' : 'current-password'}">
+      ${su ? `<label for="code">Code d'invitation</label><input id="code" required autocomplete="off" autocapitalize="characters">` : ''}
+      <button class="btn" type="submit">${su ? 'Créer mon compte' : 'Me connecter'}</button>
+      <div id="autherr" class="ferr" role="alert"></div>
+    </form>
+    <p class="switch">${su ? 'Déjà un compte ?' : 'Pas encore de compte ?'} <button class="linkbtn" data-act="authmode">${su ? 'Me connecter' : 'Créer un compte'}</button></p>
+  </div>`;
+}
+async function submitAuth(f) {
+  const err = f.querySelector('#autherr'); err.className = 'ferr'; err.textContent = '';
+  const btn = f.querySelector('button[type=submit]'); btn.disabled = true;
+  const email = f.querySelector('#email').value.trim(), password = f.querySelector('#pw').value;
+  try {
+    if (S.authMode === 'signup') {
+      const pseudo = f.querySelector('#pseudo').value.trim();
+      const code = f.querySelector('#code').value.trim().toUpperCase();
+      const { data, error } = await sb.auth.signUp({ email, password, options: { data: { pseudo, invite_code: code } } });
+      if (error) throw error;
+      if (!data.session) { err.className = 'ferr fok'; err.textContent = 'Compte créé. Confirme ton email (regarde ta boîte mail) puis connecte-toi.'; }
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    }
+  } catch (e) { err.textContent = friendlyError(e); }
+  btn.disabled = false;
+}
+
+/* --- Matchs --- */
+function matchesView() {
+  const list = S.matches.filter(m => S.circuit === 'ALL' || m.circuit === S.circuit);
+  const up = list.filter(m => m.status === 'scheduled' || m.status === 'live').sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+  const done = list.filter(m => m.status === 'finished' || m.status === 'cancelled').sort((a, b) => new Date(b.starts_at) - new Date(a.starts_at)).slice(0, 60);
+  const shown = S.view === 'upcoming' ? up : done;
+  const seg = (items, cur, act) => `<div class="seg">${items.map(([k, l]) => `<button data-act="${act}" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div>`;
+  let body = '';
+  if (!shown.length) {
+    body = `<div class="empty">${S.view === 'upcoming'
+      ? (S.isAdmin ? "Aucun match à venir. Ajoute le premier dans l'onglet Admin." : "Aucun match à venir pour le moment. Ils apparaissent ici dès qu'ils sont ajoutés.")
+      : "Aucun match terminé pour l'instant."}</div>`;
+  } else {
+    let lastDay = '';
+    for (const m of shown) {
+      const d = fmtDay(m.starts_at);
+      if (d !== lastDay) { body += `<h2 class="day">${esc(d)}</h2>`; lastDay = d; }
+      body += matchCard(m);
+    }
+  }
+  return seg([['upcoming', 'À venir'], ['done', 'Terminés']], S.view, 'view')
+    + seg([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit')
+    + body;
+}
+
+function chips(m, side, mine, disabled) {
+  const n = m.wins_needed, out = [];
+  for (let k = 0; k < n; k++) {
+    const a = side === 'A' ? n : k, b = side === 'A' ? k : n;
+    const sel = !!mine && mine.pred_a === a && mine.pred_b === b;
+    const who = side === 'A' ? m.side_a : m.side_b;
+    out.push(`<button class="chip" data-act="pick" data-id="${m.id}" data-a="${a}" data-b="${b}" aria-pressed="${sel}" aria-label="${esc(who)} gagne ${a} à ${b}" ${disabled ? 'disabled' : ''}>${a}–${b}</button>`);
+  }
+  return `<div class="chips">${out.join('')}</div>`;
+}
+
+function matchCard(m) {
+  const locked = isLocked(m), mine = S.myPreds[m.id];
+  const fin = m.status === 'finished', canc = m.status === 'cancelled';
+  const winA = fin && m.score_a > m.score_b, winB = fin && m.score_b > m.score_a;
+  const ca = S.competitors[m.competitor_a_id], cb = S.competitors[m.competitor_b_id];
+  const rk = c => (c && c.ranking ? `Classement ${c.ranking}` : '');
+  let pill = '';
+  if (fin) pill = '<span class="pill">Terminé</span>';
+  else if (canc) pill = '<span class="pill">Annulé</span>';
+  else if (m.status === 'live') pill = '<span class="pill live">En direct</span>';
+  else if (locked) pill = '<span class="pill">Commencé</span>';
+
+  const showChips = !fin && !canc;
+  const t = (!locked && !canc) ? trend(m) : null;
+  const trendHtml = t ? `
+    <div class="trend">
+      <div class="trendrow"><span>${Math.round(t.pA * 100)} %</span>
+        <div class="bar" role="img" aria-label="Chances de victoire : ${esc(m.side_a)} ${Math.round(t.pA * 100)} %, ${esc(m.side_b)} ${100 - Math.round(t.pA * 100)} %"><i style="width:${Math.round(t.pA * 100)}%"></i></div>
+        <span>${100 - Math.round(t.pA * 100)} %</span></div>
+      <p class="tnote">Tendance statistique : score le plus probable ${t.score.a}–${t.score.b}.
+        <button class="linkbtn" data-act="pick" data-id="${m.id}" data-a="${t.score.a}" data-b="${t.score.b}">Suivre la tendance</button></p>
+    </div>` : '';
+
+  let foot;
+  if (canc) foot = `<div class="mfoot"><span>Match annulé : aucun point en jeu.</span></div>`;
+  else if (!locked) foot = `<div class="mfoot"><span>${mine ? `Prono enregistré : ${mine.pred_a}–${mine.pred_b}. Modifiable jusqu'au début du match.` : 'Touche un score pour faire ton prono.'}</span></div>`;
+  else {
+    const pt = points(m, mine);
+    foot = `<div class="mfoot"><span>${mine ? `Ton prono : ${mine.pred_a}–${mine.pred_b}` : `Tu n'as pas fait de prono.`}</span>
+      ${pt !== null ? `<span class="pts p${pt}">${pt > 0 ? '+' : ''}${pt} pt${pt > 1 ? 's' : ''}</span>` : ''}
+      <button class="linkbtn" data-act="friends" data-id="${m.id}">${S.openFriends[m.id] ? 'Masquer' : 'Voir'} les pronos des amis</button></div>`;
+  }
+
+  let friends = '';
+  if (S.openFriends[m.id]) {
+    const rows = (S.friends[m.id] || []).map(r => ({ ...r, pt: points(m, r) }))
+      .sort((x, y) => (y.pt ?? -1) - (x.pt ?? -1));
+    friends = rows.length
+      ? `<ul class="friends">${rows.map(r => `<li><span>${esc(r.profiles && r.profiles.pseudo)}${r.user_id === S.session.user.id ? ' (toi)' : ''}</span><span>${r.pred_a}–${r.pred_b}${r.pt !== null ? ` : ${r.pt} pt${r.pt > 1 ? 's' : ''}` : ''}</span></li>`).join('')}</ul>`
+      : `<p class="hint" style="padding:0 14px 12px">Personne n'a fait de prono sur ce match.</p>`;
+  }
+
+  return `
+  <article class="match" data-card="${m.id}">
+    <div class="mhead">
+      <div><div class="comp">${esc(m.competition)}</div>${m.round ? `<div class="rnd">${esc(m.round)}</div>` : ''}</div>
+      <div><div class="when"><time datetime="${esc(m.starts_at)}">${esc(fmtWhen(m.starts_at))}</time></div><div class="when">${pill}</div></div>
+    </div>
+    <div class="court${fin ? ' done' : ''}">
+      <div class="side">
+        <div class="name${winB ? ' lose' : ''}">${esc(m.side_a)}</div><div class="rk">${esc(rk(ca))}</div>
+        ${showChips ? chips(m, 'A', mine, locked) : ''}
+      </div>
+      <div class="side">
+        <div class="name${winA ? ' lose' : ''}">${esc(m.side_b)}</div><div class="rk">${esc(rk(cb))}</div>
+        ${showChips ? chips(m, 'B', mine, locked) : ''}
+      </div>
+      ${fin ? `<div class="netscore" aria-label="Résultat ${m.score_a} à ${m.score_b}">${m.score_a}–${m.score_b}</div>` : ''}
+    </div>
+    ${trendHtml}${foot}${friends}
+  </article>`;
+}
+
+async function pick(id, a, b) {
+  const m = S.matches.find(x => x.id === id);
+  if (!m || isLocked(m)) { toast('Trop tard : le match a commencé.', true); keepRender(); return; }
+  const { data, error } = await sb.from('predictions')
+    .upsert({ user_id: S.session.user.id, match_id: id, pred_a: a, pred_b: b }, { onConflict: 'user_id,match_id' })
+    .select().single();
+  if (error) { toast(friendlyError(error), true); return; }
+  S.myPreds[id] = data;
+  toast(`Prono enregistré : ${a}–${b}`);
+  keepRender();
+}
+async function toggleFriends(id) {
+  if (S.openFriends[id]) { S.openFriends[id] = false; keepRender(); return; }
+  const { data, error } = await sb.from('predictions').select('user_id,pred_a,pred_b,profiles(pseudo)').eq('match_id', id);
+  if (error) { toast(friendlyError(error), true); return; }
+  S.friends[id] = data || []; S.openFriends[id] = true; keepRender();
+}
+
+/* --- Classement --- */
+function boardView() {
+  const seg = `<div class="seg">${[['ALL', 'Général'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']].map(([k, l]) => `<button data-act="boardscope" data-v="${k}" aria-pressed="${S.boardScope === k}">${l}</button>`).join('')}</div>`;
+  if (S.board === null) return seg + '<div class="loading">Chargement…</div>';
+  if (!S.board.length) return seg + `<div class="empty">Pas encore de points. Le classement se remplit dès que les premiers matchs sont terminés.</div>${rules()}`;
+  let prev = null, rank = 0;
+  const rows = S.board.map((r, i) => {
+    const key = r.total_points + '/' + r.exact_scores;
+    if (key !== prev) { rank = i + 1; prev = key; }
+    const me = r.user_id === S.session.user.id;
+    return `<li class="${me ? 'me' : ''}"><div class="rank">${rank}</div>
+      <div><div class="lbname">${esc(r.pseudo)}${me ? ' (toi)' : ''}</div>
+      <div class="lbsub">${r.exact_scores} score${r.exact_scores > 1 ? 's' : ''} exact${r.exact_scores > 1 ? 's' : ''}, ${r.good_winners} bon${r.good_winners > 1 ? 's' : ''} vainqueur${r.good_winners > 1 ? 's' : ''} sur ${r.matches_played} match${r.matches_played > 1 ? 's' : ''}</div></div>
+      <div class="lbpts">${r.total_points}<small>pts</small></div></li>`;
+  }).join('');
+  return seg + `<ol class="lb">${rows}</ol>` + rules();
+}
+const rules = () => `<p class="rules">Barème : 1 point pour le bon vainqueur, 3 points pour le score exact. En cas d'égalité, le plus de scores exacts passe devant.</p>`;
+
+/* --- Administration --- */
+function adminView() {
+  const comps = [...new Set(S.matches.map(m => m.competition))];
+  const names = Object.values(S.competitors).map(c => c.name);
+  const pending = S.matches.filter(m => m.status === 'scheduled' || m.status === 'live').sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at)).slice(0, 40);
+  const finished = S.matches.filter(m => m.status === 'finished').sort((a, b) => new Date(b.starts_at) - new Date(a.starts_at)).slice(0, 10);
+  const compList = Object.values(S.competitors).filter(c => c.circuit === S.adminCircuit)
+    .sort((a, b) => (a.ranking ?? 1e9) - (b.ranking ?? 1e9) || a.name.localeCompare(b.name)).slice(0, 300);
+
+  const resultRow = m => `
+    <div class="adm-item">
+      <div class="adm-title">${esc(m.side_a)} contre ${esc(m.side_b)}</div>
+      <div class="hint">${esc(m.competition)}, ${esc(fmtWhen(m.starts_at))}, ${m.wins_needed} victoires pour gagner</div>
+      <div class="adm-actions">
+        <input class="scorein" id="ra-${m.id}" type="number" min="0" max="5" inputmode="numeric" value="${m.score_a ?? ''}" aria-label="Score de ${esc(m.side_a)}">
+        <span class="vs">–</span>
+        <input class="scorein" id="rb-${m.id}" type="number" min="0" max="5" inputmode="numeric" value="${m.score_b ?? ''}" aria-label="Score de ${esc(m.side_b)}">
+        <button class="btn small" data-act="adm-result" data-id="${m.id}">Enregistrer le résultat</button>
+        ${m.status !== 'finished' ? `<button class="btn small sec" data-act="adm-cancel" data-id="${m.id}">Annuler le match</button>` : ''}
+        <button class="linkbtn" data-act="adm-delete" data-id="${m.id}">Supprimer</button>
+      </div>
+    </div>`;
+
+  return `
+  <section class="panel">
+    <h2>Ajouter un match</h2>
+    <form id="addmatch">
+      <label for="am-circuit">Circuit</label>
+      <select id="am-circuit"><option value="WTT">WTT</option><option value="PRO_A">Pro A</option></select>
+      <label for="am-comp">Compétition</label>
+      <input id="am-comp" required list="dl-comps" placeholder="Ex : WTT Contender Lima, ou Pro A journée 3">
+      <label for="am-round">Tour (facultatif)</label>
+      <input id="am-round" placeholder="Ex : Quart de finale">
+      <div class="row2">
+        <div><label for="am-a">Joueur ou équipe A</label><input id="am-a" required list="dl-names" autocomplete="off"></div>
+        <div><label for="am-b">Joueur ou équipe B</label><input id="am-b" required list="dl-names" autocomplete="off"></div>
+      </div>
+      <label for="am-start">Début du match</label>
+      <input id="am-start" type="datetime-local" required>
+      <label for="am-wins">Format</label>
+      <select id="am-wins">
+        <option value="3" selected>3 victoires pour gagner (au meilleur des 5)</option>
+        <option value="4">4 victoires pour gagner (au meilleur des 7)</option>
+        <option value="2">2 victoires pour gagner (au meilleur des 3)</option>
+        <option value="5">5 victoires pour gagner (au meilleur des 9)</option>
+      </select>
+      <button class="btn" type="submit">Ajouter le match</button>
+    </form>
+    <datalist id="dl-comps">${comps.map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+    <datalist id="dl-names">${names.map(n => `<option value="${esc(n)}">`).join('')}</datalist>
+  </section>
+
+  <section class="panel">
+    <h2>Résultats à saisir</h2>
+    <p class="hint">Le vainqueur a toujours le nombre de victoires du format (par exemple 3–1).</p>
+    ${pending.length ? pending.map(resultRow).join('') : '<p class="hint">Aucun match en attente de résultat.</p>'}
+  </section>
+
+  <section class="panel">
+    <h2>Corriger un résultat</h2>
+    ${finished.length ? finished.map(resultRow).join('') : '<p class="hint">Aucun résultat saisi pour l\'instant.</p>'}
+  </section>
+
+  <section class="panel">
+    <h2>Classements des joueurs et équipes</h2>
+    <p class="hint">Sert à calculer les tendances statistiques. Un petit numéro = un meilleur classement.</p>
+    <label for="adm-circuit">Circuit</label>
+    <select id="adm-circuit"><option value="WTT" ${S.adminCircuit === 'WTT' ? 'selected' : ''}>WTT</option><option value="PRO_A" ${S.adminCircuit === 'PRO_A' ? 'selected' : ''}>Pro A</option></select>
+    ${compList.length ? compList.map(c => `
+      <div class="adm-item">
+        <div class="adm-title">${esc(c.name)}</div>
+        <div class="adm-actions">
+          <input class="scorein" style="width:90px" id="rk-${c.id}" type="number" min="1" inputmode="numeric" placeholder="Rang" value="${c.ranking ?? ''}" aria-label="Classement de ${esc(c.name)}">
+          <button class="btn small sec" data-act="adm-rank" data-id="${c.id}">Enregistrer</button>
+        </div>
+      </div>`).join('') : '<p class="hint">Aucun joueur ou équipe pour ce circuit : ils sont créés automatiquement quand tu ajoutes un match.</p>'}
+  </section>`;
+}
+
+async function ensureCompetitor(name, circuit) {
+  name = name.trim();
+  const found = Object.values(S.competitors).find(c => c.circuit === circuit && c.name.toLowerCase() === name.toLowerCase());
+  if (found) return found.id;
+  const { data, error } = await sb.from('competitors')
+    .insert({ name, circuit, kind: circuit === 'PRO_A' ? 'team' : 'player', source: 'manual' }).select().single();
+  if (error) throw error;
+  S.competitors[data.id] = data;
+  return data.id;
+}
+async function addMatch(f) {
+  const v = id => f.querySelector('#' + id).value.trim();
+  const circuit = v('am-circuit'), a = v('am-a'), b = v('am-b');
+  if (a.toLowerCase() === b.toLowerCase()) { toast('Choisis deux adversaires différents.', true); return; }
+  try {
+    const [ida, idb] = [await ensureCompetitor(a, circuit), await ensureCompetitor(b, circuit)];
+    const { error } = await sb.from('matches').insert({
+      circuit, competition: v('am-comp'), round: v('am-round') || null,
+      side_a: a, side_b: b, competitor_a_id: ida, competitor_b_id: idb,
+      starts_at: new Date(f.querySelector('#am-start').value).toISOString(),
+      wins_needed: parseInt(v('am-wins'), 10), source: 'manual'
+    });
+    if (error) throw error;
+    await reloadMatches();
+    toast('Match ajouté.'); keepRender();
+  } catch (e) { toast(friendlyError(e), true); }
+}
+async function saveResult(id) {
+  const m = S.matches.find(x => x.id === id);
+  const a = parseInt(document.getElementById('ra-' + id).value, 10), b = parseInt(document.getElementById('rb-' + id).value, 10);
+  if (Number.isNaN(a) || Number.isNaN(b)) { toast('Saisis les deux scores.', true); return; }
+  if (Math.max(a, b) !== m.wins_needed || Math.min(a, b) >= m.wins_needed) { toast(`Score impossible : le vainqueur doit avoir ${m.wins_needed} victoires.`, true); return; }
+  const { error } = await sb.from('matches').update({ status: 'finished', score_a: a, score_b: b }).eq('id', id);
+  if (error) { toast(friendlyError(error), true); return; }
+  await reloadMatches(); toast('Résultat enregistré.'); keepRender();
+}
+async function cancelMatch(id) {
+  if (!confirm('Annuler ce match ? Les pronos ne rapporteront aucun point.')) return;
+  const { error } = await sb.from('matches').update({ status: 'cancelled', score_a: null, score_b: null }).eq('id', id);
+  if (error) { toast(friendlyError(error), true); return; }
+  await reloadMatches(); toast('Match annulé.'); keepRender();
+}
+async function deleteMatch(id) {
+  if (!confirm('Supprimer ce match et tous les pronos associés ? Cette action est définitive.')) return;
+  const { error } = await sb.from('matches').delete().eq('id', id);
+  if (error) { toast(friendlyError(error), true); return; }
+  await reloadMatches(); toast('Match supprimé.'); keepRender();
+}
+async function saveRank(id) {
+  const raw = document.getElementById('rk-' + id).value.trim();
+  const ranking = raw === '' ? null : parseInt(raw, 10);
+  const { error } = await sb.from('competitors').update({ ranking }).eq('id', id);
+  if (error) { toast(friendlyError(error), true); return; }
+  S.competitors[id].ranking = ranking; toast('Classement enregistré.');
+}
+
+/* ---------- Événements ---------- */
+$app.addEventListener('click', async e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (act === 'authmode') { S.authMode = S.authMode === 'login' ? 'signup' : 'login'; render(); }
+  else if (act === 'logout') { await sb.auth.signOut(); }
+  else if (act === 'tab') {
+    S.tab = el.dataset.tab;
+    if (S.tab === 'board') { S.board = null; render(); await loadBoard(); }
+    render(); window.scrollTo(0, 0);
+  }
+  else if (act === 'view') { S.view = v; render(); }
+  else if (act === 'circuit') { S.circuit = v; render(); }
+  else if (act === 'boardscope') { S.boardScope = v; S.board = null; render(); await loadBoard(); render(); }
+  else if (act === 'pick') pick(id, Number(el.dataset.a), Number(el.dataset.b));
+  else if (act === 'friends') toggleFriends(id);
+  else if (act === 'adm-result') saveResult(id);
+  else if (act === 'adm-cancel') cancelMatch(id);
+  else if (act === 'adm-delete') deleteMatch(id);
+  else if (act === 'adm-rank') saveRank(id);
+});
+$app.addEventListener('submit', e => {
+  e.preventDefault();
+  if (e.target.id === 'authform') submitAuth(e.target);
+  else if (e.target.id === 'addmatch') addMatch(e.target);
+});
+$app.addEventListener('change', e => {
+  if (e.target.id === 'adm-circuit') { S.adminCircuit = e.target.value; keepRender(); }
+});
+
+/* ---------- Démarrage ---------- */
+async function boot() {
+  if (!window.supabase) {
+    $app.innerHTML = '<div class="auth"><h1>Oups</h1><p class="lead">Impossible de charger le service de connexion. Vérifie ta connexion internet et recharge la page.</p></div>';
+    return;
+  }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  sb.auth.onAuthStateChange((event, session) => { setTimeout(() => handleSession(session), 0); });
+  const { data } = await sb.auth.getSession();
+  handleSession(data.session);
+}
+boot();
+</script>
+</body>
+</html>
