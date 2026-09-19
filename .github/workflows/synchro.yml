@@ -1,0 +1,213 @@
+name: Synchro Pro A
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: synchro
+  cancel-in-progress: false
+
+jobs:
+  synchro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Ecrire le script
+        run: |
+          mkdir robot
+          cat > robot/synchro.mjs <<'EOF'
+          // Synchronisation Pro A : lit le calendrier et les résultats publiés par la FFTT
+          // et les enregistre dans la base Supabase du jeu de pronostics.
+          // Le programme ne supprime rien : il ajoute et met à jour uniquement.
+
+          const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
+          const SUPABASE_KEY = (process.env.SUPABASE_SERVICE_KEY || '').trim();
+          if (!SUPABASE_URL || !SUPABASE_KEY) {
+            console.error("ERREUR : les secrets SUPABASE_URL et SUPABASE_SERVICE_KEY ne sont pas renseignés dans GitHub.");
+            process.exit(1);
+          }
+
+          // Divisions à suivre. Pour ajouter les dames plus tard : { code: 'proad', competition: 'Pro A Dames', ... }
+          const DIVISIONS = [
+            { code: 'proam', competition: 'Pro A Messieurs', circuit: 'PRO_A', winsNeeded: 3 },
+          ];
+          const FFTT = 'https://www.fftt.com/pro/server/getEquResult.php';
+          const UA = 'PronosPing/1.0 (jeu de pronostics prive entre amis; lecture rare et legere)';
+
+          const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+          async function getJson(url, tries = 3) {
+            let last;
+            for (let i = 1; i <= tries; i++) {
+              try {
+                const res = await fetch(url, {
+                  headers: { 'User-Agent': UA, Accept: 'application/json, text/plain, */*', Referer: 'https://www.fftt.com/pro/' },
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return JSON.parse(await res.text());
+              } catch (e) {
+                last = e;
+                if (i < tries) await sleep(1500 * i);
+              }
+            }
+            throw new Error(`Lecture impossible de ${url} : ${last.message}`);
+          }
+
+          const HEAD = { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' };
+          if (SUPABASE_KEY.startsWith('eyJ')) HEAD.Authorization = `Bearer ${SUPABASE_KEY}`;
+
+          async function db(method, path, body, prefer) {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+              method,
+              headers: { ...HEAD, ...(prefer ? { Prefer: prefer } : {}) },
+              body: body === undefined ? undefined : JSON.stringify(body),
+            });
+            const text = await res.text();
+            if (!res.ok) throw new Error(`Supabase ${method} ${path.split('?')[0]} : HTTP ${res.status} ${text.slice(0, 300)}`);
+            return text ? JSON.parse(text) : null;
+          }
+
+          // Convertit une date et une heure de Paris ("22/09/2026", "19:30") en heure universelle.
+          function parisToISO(dateStr, timeStr) {
+            const [d, m, y] = dateStr.split('/').map(Number);
+            const [hh, mm] = (timeStr || '00:00').split(':').map(Number);
+            const guess = Date.UTC(y, m - 1, d, hh, mm);
+            const fmt = new Intl.DateTimeFormat('en-GB', {
+              timeZone: 'Europe/Paris', hourCycle: 'h23',
+              year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+            });
+            const p = Object.fromEntries(fmt.formatToParts(new Date(guess)).map(x => [x.type, x.value]));
+            const asParis = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute);
+            return new Date(guess - (asParis - guess)).toISOString();
+          }
+
+          const params = s => new URLSearchParams(s || '');
+          const cleanName = s => String(s || '').replace(/\s+1$/, '').trim();
+
+          async function syncCompetitors(div, rencontres, classement) {
+            const teams = new Map();
+            for (const r of rencontres) {
+              const p = params(r.lien);
+              for (const [id, name] of [[p.get('equip_id1'), r.equa], [p.get('equip_id2'), r.equb]]) {
+                if (id) teams.set(id, cleanName(name));
+              }
+            }
+            // Le classement n'a de sens qu'une fois la saison commencée (sinon tout le monde est 1er).
+            const started = classement.some(c => parseInt(c.joue, 10) > 0);
+            const rank = new Map(classement.map(c => [String(c.idequipe), c]));
+
+            const existing = await db('GET', `competitors?circuit=eq.${div.circuit}&select=id,name,source,external_id&limit=2000`);
+            const byExt = new Map(existing.filter(c => c.source === 'fftt').map(c => [String(c.external_id), c]));
+            const byName = new Map(existing.map(c => [c.name.toLowerCase(), c]));
+
+            const idByExt = new Map();
+            for (const [ext, name] of teams) {
+              const fields = { name, kind: 'team', circuit: div.circuit, source: 'fftt', external_id: ext };
+              const r = rank.get(ext);
+              if (started && r) {
+                fields.ranking = parseInt(r.clt, 10) || null;
+                fields.ranking_points = parseInt(r.pts, 10) || 0;
+              }
+              const found = byExt.get(ext) || byName.get(name.toLowerCase());
+              if (found) {
+                await db('PATCH', `competitors?id=eq.${found.id}`, fields, 'return=minimal');
+                idByExt.set(ext, found.id);
+              } else {
+                const rows = await db('POST', 'competitors', fields, 'return=representation');
+                idByExt.set(ext, rows[0].id);
+              }
+            }
+            return idByExt;
+          }
+
+          async function syncMatches(div, rencontres, idByExt) {
+            const existing = await db('GET', `matches?source=eq.fftt&circuit=eq.${div.circuit}&select=external_id,status,score_a,score_b&limit=5000`);
+            const ex = new Map(existing.map(m => [String(m.external_id), m]));
+            const rows = [];
+            const s = { total: 0, nouveaux: 0, termines: 0, direct: 0, ignores: 0, inattendus: 0 };
+
+            for (const r of rencontres) {
+              const p = params(r.lien);
+              const ext = p.get('renc_id');
+              const date = r.datereelle || r.dateprevue;
+              if (!ext || !date) { s.ignores++; continue; }
+              const tour = /tour n°\s*(\d+)/i.exec(r.libelle || '');
+
+              let status = 'scheduled', sa = null, sb = null;
+              const a = parseInt(r.scorea, 10), b = parseInt(r.scoreb, 10);
+              if (!Number.isNaN(a) && !Number.isNaN(b)) {
+                if (Math.max(a, b) === div.winsNeeded && Math.min(a, b) < div.winsNeeded) { status = 'finished'; sa = a; sb = b; }
+                else if (Math.max(a, b) < div.winsNeeded && a + b > 0) { status = 'live'; sa = a; sb = b; }
+                else if (Math.max(a, b) > div.winsNeeded || Math.max(a, b) === div.winsNeeded) {
+                  s.inattendus++;
+                  console.warn(`ATTENTION : score inattendu ${r.scorea}-${r.scoreb} pour ${r.equa} contre ${r.equb} (rencontre ${ext}) : ignoré`);
+                }
+              }
+              // On ne fait jamais reculer un match terminé ou annulé.
+              const old = ex.get(ext);
+              if (old && (old.status === 'finished' || old.status === 'cancelled') && status !== 'finished') {
+                status = old.status; sa = old.score_a; sb = old.score_b;
+              }
+
+              rows.push({
+                circuit: div.circuit,
+                competition: div.competition,
+                round: tour ? `Journée ${tour[1]}` : null,
+                side_a: cleanName(r.equa),
+                side_b: cleanName(r.equb),
+                competitor_a_id: idByExt.get(p.get('equip_id1')) ?? null,
+                competitor_b_id: idByExt.get(p.get('equip_id2')) ?? null,
+                starts_at: parisToISO(date, r.heurereelle || '19:30'),
+                wins_needed: div.winsNeeded,
+                status, score_a: sa, score_b: sb,
+                source: 'fftt', external_id: ext,
+              });
+              s.total++;
+              if (!old) s.nouveaux++;
+              if (status === 'finished') s.termines++;
+              if (status === 'live') s.direct++;
+            }
+
+            for (let i = 0; i < rows.length; i += 100) {
+              await db('POST', 'matches?on_conflict=source,external_id', rows.slice(i, i + 100), 'resolution=merge-duplicates,return=minimal');
+            }
+            return s;
+          }
+
+          async function main() {
+            let erreurs = 0;
+            for (const div of DIVISIONS) {
+              try {
+                const rencontres = await getJson(`${FFTT}?division=${div.code}`);
+                if (!Array.isArray(rencontres) || rencontres.length === 0) throw new Error('calendrier vide ou format inattendu');
+                let classement = [];
+                try {
+                  const c = await getJson(`${FFTT}?division=${div.code}&classement=1`);
+                  if (Array.isArray(c)) classement = c;
+                } catch (e) { console.warn('Classement non lu :', e.message); }
+                const ids = await syncCompetitors(div, rencontres, classement);
+                const s = await syncMatches(div, rencontres, ids);
+                console.log(`${div.competition} : ${s.total} rencontres lues, ${s.nouveaux} nouvelles, ${s.termines} terminées, ${s.direct} en cours` +
+                  (s.ignores ? `, ${s.ignores} ignorées` : '') + (s.inattendus ? `, ${s.inattendus} scores inattendus` : ''));
+              } catch (e) {
+                erreurs++;
+                console.error(`ERREUR ${div.competition} : ${e.message}`);
+              }
+            }
+            if (erreurs) process.exit(1);
+          }
+
+          main();
+          EOF
+
+      - name: Synchroniser les matchs Pro A
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node robot/synchro.mjs
