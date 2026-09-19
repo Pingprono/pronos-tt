@@ -1,4 +1,4 @@
-name: Synchro Pro A
+name: Synchro des matchs (Pro A et WTT)
 
 on:
   schedule:
@@ -22,9 +22,9 @@ jobs:
         run: |
           mkdir robot
           cat > robot/synchro.mjs <<'EOF'
-          // Synchronisation Pro A : lit le calendrier et les résultats publiés par la FFTT
-          // et les enregistre dans la base Supabase du jeu de pronostics.
-          // Le programme ne supprime rien : il ajoute et met à jour uniquement.
+          // Synchronisation des matchs : Pro A (FFTT) et WTT.
+          // Lit les calendriers et résultats publics et les enregistre dans la base Supabase
+          // du jeu de pronostics. Le programme ne supprime rien : il ajoute et met à jour.
 
           const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
           const SUPABASE_KEY = (process.env.SUPABASE_SERVICE_KEY || '').trim();
@@ -33,30 +33,50 @@ jobs:
             process.exit(1);
           }
 
-          // Divisions à suivre. Pour ajouter les dames plus tard : { code: 'proad', competition: 'Pro A Dames', ... }
+          // ---------------------------- RÉGLAGES ----------------------------
+          // Pro A : pour ajouter les dames plus tard : { code: 'proad', competition: 'Pro A Dames', circuit: 'PRO_A', winsNeeded: 3 }
           const DIVISIONS = [
             { code: 'proam', competition: 'Pro A Messieurs', circuit: 'PRO_A', winsNeeded: 3 },
           ];
+          // WTT : quels tournois et quels matchs suivre.
+          const WTT_CONFIG = {
+            eventTypes: ['WTT Grand Smash', 'WTT Champions', 'WTT Finals', 'WTT Star Contender'], // ni Feeder, ni Youth, ni Contender
+            subEvents: ["Men's Singles", "Women's Singles"],   // simples messieurs et dames
+            rounds: ['8FNL', 'QFNL', 'SFNL', 'FNL-'],          // à partir des huitièmes de finale
+            daysAhead: 7,                                       // on regarde les tournois qui commencent dans les 7 jours
+            daysAfter: 2,                                       // et ceux terminés depuis moins de 2 jours
+            winsByType: { 'WTT Star Contender': 3 },            // victoires nécessaires (3 = au meilleur des 5), 3 par défaut
+            winsDefault: 3,
+          };
+          // ------------------------------------------------------------------
+
           const FFTT = 'https://www.fftt.com/pro/server/getEquResult.php';
+          const WTT_STATIC = 'https://wtt-web-frontdoor-cthahjeqhbh6aqe3.a01.azurefd.net/websitestaticapifiles';
+          const WTT_CACHED = 'https://wtt-web-frontdoor-withoutcache-cqakg0andqf5hchn.a01.azurefd.net';
+          const WTT_REF = 'https://www.worldtabletennis.com/';
           const UA = 'PronosPing/1.0 (jeu de pronostics prive entre amis; lecture rare et legere)';
 
           const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-          async function getJson(url, tries = 3) {
+          async function getJson(url, { tries = 3, referer = 'https://www.fftt.com/pro/' } = {}) {
             let last;
             for (let i = 1; i <= tries; i++) {
               try {
-                const res = await fetch(url, {
-                  headers: { 'User-Agent': UA, Accept: 'application/json, text/plain, */*', Referer: 'https://www.fftt.com/pro/' },
-                });
+                const headers = { 'User-Agent': UA, Accept: 'application/json, text/plain, */*', Referer: referer };
+                if (referer.includes('worldtabletennis')) headers.Origin = 'https://www.worldtabletennis.com';
+                const res = await fetch(url, { headers });
+                if (res.status === 404) { const e = new Error('HTTP 404'); e.notFound = true; throw e; }
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return JSON.parse(await res.text());
               } catch (e) {
                 last = e;
+                if (e.notFound) break;
                 if (i < tries) await sleep(1500 * i);
               }
             }
-            throw new Error(`Lecture impossible de ${url} : ${last.message}`);
+            const err = new Error(`lecture impossible de ${url.split('?')[0]} : ${last.message}`);
+            err.notFound = !!last.notFound;
+            throw err;
           }
 
           const HEAD = { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' };
@@ -73,18 +93,21 @@ jobs:
             return text ? JSON.parse(text) : null;
           }
 
-          // Convertit une date et une heure de Paris ("22/09/2026", "19:30") en heure universelle.
-          function parisToISO(dateStr, timeStr) {
-            const [d, m, y] = dateStr.split('/').map(Number);
-            const [hh, mm] = (timeStr || '00:00').split(':').map(Number);
+          // Convertit une date et une heure locales d'un fuseau (ex : Europe/Paris) en heure universelle.
+          function zonedToISO(y, m, d, hh, mm, tz) {
             const guess = Date.UTC(y, m - 1, d, hh, mm);
             const fmt = new Intl.DateTimeFormat('en-GB', {
-              timeZone: 'Europe/Paris', hourCycle: 'h23',
+              timeZone: tz, hourCycle: 'h23',
               year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
             });
             const p = Object.fromEntries(fmt.formatToParts(new Date(guess)).map(x => [x.type, x.value]));
-            const asParis = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute);
-            return new Date(guess - (asParis - guess)).toISOString();
+            const asZone = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute);
+            return new Date(guess - (asZone - guess)).toISOString();
+          }
+          function parisToISO(dateStr, timeStr) {
+            const [d, m, y] = dateStr.split('/').map(Number);
+            const [hh, mm] = (timeStr || '00:00').split(':').map(Number);
+            return zonedToISO(y, m, d, hh, mm, 'Europe/Paris');
           }
 
           const params = s => new URLSearchParams(s || '');
@@ -127,7 +150,7 @@ jobs:
           }
 
           async function syncMatches(div, rencontres, idByExt) {
-            const existing = await db('GET', `matches?source=eq.fftt&circuit=eq.${div.circuit}&select=external_id,status,score_a,score_b&limit=5000`);
+            const existing = await db('GET', `matches?source=eq.fftt&circuit=eq.${div.circuit}&select=external_id,status,score_a,score_b,wins_needed&limit=5000`);
             const ex = new Map(existing.map(m => [String(m.external_id), m]));
             const rows = [];
             const s = { total: 0, nouveaux: 0, termines: 0, direct: 0, ignores: 0, inattendus: 0 };
@@ -139,18 +162,19 @@ jobs:
               if (!ext || !date) { s.ignores++; continue; }
               const tour = /tour n°\s*(\d+)/i.exec(r.libelle || '');
 
+              const old = ex.get(ext);
+              const wn = old && old.wins_needed ? old.wins_needed : div.winsNeeded;
               let status = 'scheduled', sa = null, sb = null;
               const a = parseInt(r.scorea, 10), b = parseInt(r.scoreb, 10);
               if (!Number.isNaN(a) && !Number.isNaN(b)) {
-                if (Math.max(a, b) === div.winsNeeded && Math.min(a, b) < div.winsNeeded) { status = 'finished'; sa = a; sb = b; }
-                else if (Math.max(a, b) < div.winsNeeded && a + b > 0) { status = 'live'; sa = a; sb = b; }
-                else if (Math.max(a, b) > div.winsNeeded || Math.max(a, b) === div.winsNeeded) {
+                if (Math.max(a, b) === wn && Math.min(a, b) < wn) { status = 'finished'; sa = a; sb = b; }
+                else if (Math.max(a, b) < wn && a + b > 0) { status = 'live'; sa = a; sb = b; }
+                else if (Math.max(a, b) >= wn) {
                   s.inattendus++;
                   console.warn(`ATTENTION : score inattendu ${r.scorea}-${r.scoreb} pour ${r.equa} contre ${r.equb} (rencontre ${ext}) : ignoré`);
                 }
               }
               // On ne fait jamais reculer un match terminé ou annulé.
-              const old = ex.get(ext);
               if (old && (old.status === 'finished' || old.status === 'cancelled') && status !== 'finished') {
                 status = old.status; sa = old.score_a; sb = old.score_b;
               }
@@ -164,50 +188,11 @@ jobs:
                 competitor_a_id: idByExt.get(p.get('equip_id1')) ?? null,
                 competitor_b_id: idByExt.get(p.get('equip_id2')) ?? null,
                 starts_at: parisToISO(date, r.heurereelle || '19:30'),
-                wins_needed: div.winsNeeded,
+                wins_needed: wn,
                 status, score_a: sa, score_b: sb,
                 source: 'fftt', external_id: ext,
               });
               s.total++;
               if (!old) s.nouveaux++;
               if (status === 'finished') s.termines++;
-              if (status === 'live') s.direct++;
-            }
-
-            for (let i = 0; i < rows.length; i += 100) {
-              await db('POST', 'matches?on_conflict=source,external_id', rows.slice(i, i + 100), 'resolution=merge-duplicates,return=minimal');
-            }
-            return s;
-          }
-
-          async function main() {
-            let erreurs = 0;
-            for (const div of DIVISIONS) {
-              try {
-                const rencontres = await getJson(`${FFTT}?division=${div.code}`);
-                if (!Array.isArray(rencontres) || rencontres.length === 0) throw new Error('calendrier vide ou format inattendu');
-                let classement = [];
-                try {
-                  const c = await getJson(`${FFTT}?division=${div.code}&classement=1`);
-                  if (Array.isArray(c)) classement = c;
-                } catch (e) { console.warn('Classement non lu :', e.message); }
-                const ids = await syncCompetitors(div, rencontres, classement);
-                const s = await syncMatches(div, rencontres, ids);
-                console.log(`${div.competition} : ${s.total} rencontres lues, ${s.nouveaux} nouvelles, ${s.termines} terminées, ${s.direct} en cours` +
-                  (s.ignores ? `, ${s.ignores} ignorées` : '') + (s.inattendus ? `, ${s.inattendus} scores inattendus` : ''));
-              } catch (e) {
-                erreurs++;
-                console.error(`ERREUR ${div.competition} : ${e.message}`);
-              }
-            }
-            if (erreurs) process.exit(1);
-          }
-
-          main();
-          EOF
-
-      - name: Synchroniser les matchs Pro A
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: node robot/synchro.mjs
+              if (status === 'live') s.di
