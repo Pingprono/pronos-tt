@@ -1,7 +1,11 @@
-name: Exploration des sites (a lancer une seule fois)
+name: Exploration des sites (v2)
 
 on:
   workflow_dispatch:
+    inputs:
+      pages:
+        description: 'Pages a explorer, au format adresse|texte a cliquer,autre texte ; adresse suivante'
+        default: 'https://www.worldtabletennis.com/eventInfo?eventId=3254|Schedule,Draw,Results,Matches'
 
 jobs:
   explorer:
@@ -23,7 +27,7 @@ jobs:
       - name: Ecrire le script d'exploration
         run: |
           cat > robot/explore.mjs <<'EOF'
-          // Robot d'exploration : ouvre quelques pages publiques comme un visiteur et
+          // Robot d'exploration (version 2) : ouvre les pages demandées comme un visiteur et
           // enregistre ce qu'elles affichent ainsi que les données qu'elles chargent.
           import { chromium } from 'playwright';
           import fs from 'node:fs';
@@ -32,29 +36,22 @@ jobs:
           fs.mkdirSync(OUT, { recursive: true });
           const sleep = ms => new Promise(r => setTimeout(r, ms));
           const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50);
+          const BRUIT = /google|facebook|doubleclick|youtube|clarity|b2clogin|GetPlayers\?|all_player_profile_pics|prizemoney|ticket|cookie/i;
 
-          const PAGES = [
-            { name: 'fftt-pro', url: 'https://www.fftt.com/pro/', clics: ['Calendrier', 'Classement', 'Pro A Messieurs'] },
-            { name: 'wtt-resultats', url: 'https://www.worldtabletennis.com/results', clics: [] },
-            { name: 'wtt-calendrier', url: 'https://www.worldtabletennis.com/events_calendar', clics: [] },
-            { name: 'wtt-evenements', url: 'https://www.worldtabletennis.com/eventslist', clics: [] },
-          ];
+          // Format : adresse|texte à cliquer,autre texte ; adresse suivante|...
+          const PAGES = (process.env.PAGES || '').split(';').map(s => s.trim()).filter(Boolean).map((s, i) => {
+            const [url, clics = ''] = s.split('|');
+            return { name: `page${i + 1}-${slug(new URL(url).pathname + new URL(url).search)}`, url: url.trim(), clics: clics.split(',').map(x => x.trim()).filter(Boolean) };
+          });
 
           const report = [];
           const browser = await chromium.launch();
-          const context = await browser.newContext({
-            locale: 'fr-FR',
-            timezoneId: 'Europe/Paris',
-            viewport: { width: 1280, height: 1600 },
-          });
+          const context = await browser.newContext({ locale: 'en-GB', timezoneId: 'Europe/Paris', viewport: { width: 1280, height: 1600 } });
           context.setDefaultTimeout(30000);
 
           async function accepterCookies(page) {
             for (const label of ['Tout accepter', 'Accepter', 'Accept all', 'Accept', 'I agree']) {
-              try {
-                await page.getByRole('button', { name: label }).first().click({ timeout: 1500 });
-                return;
-              } catch {}
+              try { await page.getByRole('button', { name: label }).first().click({ timeout: 1500 }); return; } catch {}
             }
           }
 
@@ -65,12 +62,10 @@ jobs:
               fs.writeFileSync(`${OUT}/${name}.texte.txt`, `URL : ${page.url()}\n\n${text}`);
               if (withHtml) fs.writeFileSync(`${OUT}/${name}.html`, await page.content());
               const links = await page.evaluate(() =>
-                [...document.querySelectorAll('a[href]')].map(a => ({ texte: a.innerText.trim().slice(0, 80), href: a.href })));
+                [...document.querySelectorAll('a[href], [role=tab], button')].map(a => ({ texte: (a.innerText || '').trim().slice(0, 80), href: a.href || '' })).filter(x => x.texte));
               fs.writeFileSync(`${OUT}/${name}.liens.json`, JSON.stringify(links, null, 2));
               await page.screenshot({ path: `${OUT}/${name}.png` });
-            } catch (e) {
-              info.erreur = String(e.message).split('\n')[0];
-            }
+            } catch (e) { info.erreur = String(e.message).split('\n')[0]; }
             fs.writeFileSync(`${OUT}/${name}.reseau.json`, JSON.stringify(calls, null, 2));
             report.push(info);
             calls.length = 0;
@@ -83,9 +78,10 @@ jobs:
               try {
                 const req = res.request();
                 if (!['xhr', 'fetch'].includes(req.resourceType())) return;
+                if (BRUIT.test(res.url())) return;
                 const type = res.headers()['content-type'] || '';
                 if (!/json|text|xml/i.test(type) || calls.length >= 80) return;
-                const corps = (await res.text()).slice(0, 120000);
+                const corps = (await res.text()).slice(0, 300000);
                 calls.push({ methode: req.method(), url: res.url(), statut: res.status(), type, corps });
               } catch {}
             });
@@ -94,9 +90,7 @@ jobs:
               await sleep(4000);
               await accepterCookies(page);
               await sleep(1500);
-            } catch (e) {
-              report.push({ name: p.name, url: p.url, erreur: String(e.message).split('\n')[0] });
-            }
+            } catch (e) { report.push({ name: p.name, url: p.url, erreur: String(e.message).split('\n')[0] }); }
             await snapshot(page, p.name, calls, true);
 
             for (const label of p.clics) {
@@ -105,9 +99,7 @@ jobs:
                 await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
                 await sleep(3000);
                 await snapshot(page, `${p.name}--${slug(label)}`, calls, false);
-              } catch (e) {
-                report.push({ name: `${p.name}--${label}`, erreur: 'clic impossible : ' + String(e.message).split('\n')[0] });
-              }
+              } catch (e) { report.push({ name: `${p.name}--${label}`, erreur: 'clic impossible : ' + String(e.message).split('\n')[0] }); }
             }
             await page.close();
           }
@@ -119,6 +111,8 @@ jobs:
 
       - name: Lancer l'exploration
         working-directory: robot
+        env:
+          PAGES: ${{ inputs.pages }}
         run: node explore.mjs
 
       - name: Sauvegarder les resultats
