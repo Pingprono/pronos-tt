@@ -42,7 +42,7 @@ jobs:
           const WTT_CONFIG = {
             eventTypes: ['WTT Grand Smash', 'WTT Champions', 'WTT Finals', 'WTT Star Contender'], // ni Feeder, ni Youth, ni Contender
             subEvents: ["Men's Singles", "Women's Singles"],   // simples messieurs et dames
-            rounds: ['8FNL', 'QFNL', 'SFNL', 'FNL-'],          // à partir des huitièmes de finale
+            rounds: null,                                       // null = tout le tableau principal ; ou une liste, ex : ['8FNL', 'QFNL', 'SFNL', 'FNL-'] (dès les huitièmes)
             daysAhead: 7,                                       // on regarde les tournois qui commencent dans les 7 jours
             daysAfter: 2,                                       // et ceux terminés depuis moins de 2 jours
             winsByType: { 'WTT Star Contender': 3 },            // victoires nécessaires (3 = au meilleur des 5), 3 par défaut
@@ -195,4 +195,264 @@ jobs:
               s.total++;
               if (!old) s.nouveaux++;
               if (status === 'finished') s.termines++;
-              if (status === 'live') s.di
+              if (status === 'live') s.direct++;
+            }
+
+            for (let i = 0; i < rows.length; i += 100) {
+              await db('POST', 'matches?on_conflict=source,external_id', rows.slice(i, i + 100), 'resolution=merge-duplicates,return=minimal');
+            }
+            return s;
+          }
+
+          async function syncProA() {
+            const erreurs = [];
+            for (const div of DIVISIONS) {
+              try {
+                const rencontres = await getJson(`${FFTT}?division=${div.code}`);
+                if (!Array.isArray(rencontres) || rencontres.length === 0) throw new Error('calendrier vide ou format inattendu');
+                let classement = [];
+                try {
+                  const c = await getJson(`${FFTT}?division=${div.code}&classement=1`);
+                  if (Array.isArray(c)) classement = c;
+                } catch (e) { console.warn('Classement non lu :', e.message); }
+                const ids = await syncCompetitors(div, rencontres, classement);
+                const s = await syncMatches(div, rencontres, ids);
+                console.log(`${div.competition} : ${s.total} rencontres lues, ${s.nouveaux} nouvelles, ${s.termines} terminées, ${s.direct} en cours` +
+                  (s.ignores ? `, ${s.ignores} ignorées` : '') + (s.inattendus ? `, ${s.inattendus} scores inattendus` : ''));
+              } catch (e) {
+                erreurs.push(`${div.competition} : ${e.message}`);
+              }
+            }
+            if (erreurs.length) throw new Error(erreurs.join(' ; '));
+          }
+
+          /* =============================== WTT =============================== */
+
+          const ROUND_FR = { '8FNL': '8e de finale', 'QFNL': 'quart de finale', 'SFNL': 'demi-finale', 'FNL-': 'finale' };
+          const roundFr = r => {
+            if (ROUND_FR[r]) return ROUND_FR[r];
+            const m = /^R(\d+)/.exec(r || '');            // R32- = 32 joueurs restants = 16e de finale
+            return m ? `${Number(m[1]) / 2}e de finale` : String(r || '');
+          };
+          const SUBEVENT_FR = { "Men's Singles": 'Simple messieurs', "Women's Singles": 'Simple dames' };
+          const STATUS_RANK = { 'Start List': 0, 'Scheduled': 1, 'Official': 2 };
+
+          // Fuseau horaire des pays hôtes (utilisé tant qu'aucun résultat ne permet de le déduire).
+          const TZ_BY_COUNTRY = {
+            'Kazakhstan': 'Asia/Almaty', 'China': 'Asia/Shanghai', 'Hong Kong, China': 'Asia/Hong_Kong', 'Chinese Taipei': 'Asia/Taipei',
+            'Japan': 'Asia/Tokyo', 'Korea': 'Asia/Seoul', 'South Korea': 'Asia/Seoul', 'Thailand': 'Asia/Bangkok', 'Singapore': 'Asia/Singapore',
+            'Qatar': 'Asia/Qatar', 'Oman': 'Asia/Muscat', 'Saudi Arabia': 'Asia/Riyadh', 'India': 'Asia/Kolkata', 'Uzbekistan': 'Asia/Tashkent',
+            'Kuwait': 'Asia/Kuwait', 'Egypt': 'Africa/Cairo', 'Nigeria': 'Africa/Lagos', 'Morocco': 'Africa/Casablanca',
+            'Türkiye': 'Europe/Istanbul', 'Turkey': 'Europe/Istanbul', 'Bulgaria': 'Europe/Sofia', 'Romania': 'Europe/Bucharest', 'Greece': 'Europe/Athens',
+            'Portugal': 'Europe/Lisbon', 'England': 'Europe/London', 'United Kingdom': 'Europe/London', 'Great Britain': 'Europe/London',
+            'France': 'Europe/Paris', 'Germany': 'Europe/Paris', 'Slovenia': 'Europe/Paris', 'Croatia': 'Europe/Paris', 'Sweden': 'Europe/Paris',
+            'Czech Republic': 'Europe/Paris', 'Czechia': 'Europe/Paris', 'Austria': 'Europe/Paris', 'Poland': 'Europe/Paris', 'Hungary': 'Europe/Paris',
+            'Slovakia': 'Europe/Paris', 'Denmark': 'Europe/Paris', 'Belgium': 'Europe/Paris', 'Netherlands': 'Europe/Paris', 'Italy': 'Europe/Paris',
+            'Spain': 'Europe/Paris', 'Norway': 'Europe/Paris', 'Switzerland': 'Europe/Paris', 'North Macedonia': 'Europe/Paris', 'Serbia': 'Europe/Paris',
+            'Kosovo': 'Europe/Paris', 'Luxembourg': 'Europe/Paris', 'Brazil': 'America/Sao_Paulo', 'Argentina': 'America/Argentina/Buenos_Aires',
+            'Chile': 'America/Santiago', 'Peru': 'America/Lima', 'Paraguay': 'America/Asuncion',
+          };
+
+          const qNow = () => new Date().toISOString().slice(0, 16);
+          const shortEventName = n => String(n || '').replace(/\s+presented\s+by\b.*$/i, '').replace(/\s+-\s+.*$/, '').trim();
+          const parseUS = s => { const m = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})$/.exec(s || ''); return m ? Date.UTC(+m[3], +m[1] - 1, +m[2], +m[4], +m[5], +m[6]) : NaN; };
+
+          function localToUTC(localISO, zone) {
+            const [d, t = '00:00'] = localISO.split('T');
+            const [y, m, dd] = d.split('-').map(Number);
+            const [hh, mm] = t.split(':').map(Number);
+            if (zone.offsetMs != null) return new Date(Date.UTC(y, m - 1, dd, hh, mm) - zone.offsetMs).toISOString();
+            return zonedToISO(y, m, dd, hh, mm, zone.tz);
+          }
+
+          // Décalage horaire du tournoi : déduit des résultats déjà publiés, sinon table des pays.
+          async function eventZone(ev) {
+            try {
+              const r = await getJson(`${WTT_STATIC}/${ev.EventId}/${ev.EventId}_take_10_official_results.json?q=${qNow()}`, { referer: WTT_REF, tries: 1 });
+              for (const x of r) {
+                const m = x && x.match_card && x.match_card.matchDateTime;
+                if (m) {
+                  const off = parseUS(m.startDateLocal) - parseUS(m.startDateUTC);
+                  if (Number.isFinite(off) && off % 900000 === 0 && Math.abs(off) <= 14 * 3600e3) return { offsetMs: off };
+                }
+              }
+            } catch {}
+            const tz = TZ_BY_COUNTRY[ev.Country];
+            return tz ? { tz } : null;
+          }
+
+          async function wttEvents() {
+            const now = Date.now();
+            const year = new Date(now).getUTCFullYear();
+            const rows = [];
+            for (const y of [year, year + 1]) {
+              try {
+                const j = await getJson(`${WTT_STATIC}/general/${y}_eventcalendar.json?q=${qNow()}`, { referer: WTT_REF });
+                rows.push(...(Array.isArray(j) ? j.flatMap(x => x.rows || []) : (j.rows || [])));
+              } catch (e) { if (y === year) throw e; }
+            }
+            const seen = new Set();
+            return rows.filter(r =>
+              WTT_CONFIG.eventTypes.includes(r.EventType) && !/youth/i.test(r.EventName) &&
+              Date.parse(r.StartDateTime) <= now + WTT_CONFIG.daysAhead * 864e5 &&
+              Date.parse(r.EndDateTime) >= now - WTT_CONFIG.daysAfter * 864e5 &&
+              !seen.has(r.EventId) && seen.add(r.EventId));
+          }
+
+          function wttPlayer(c) {
+            const a = c && c.Composition && c.Composition.Athlete && c.Composition.Athlete[0] && c.Composition.Athlete[0].Description;
+            const name = a && a.GivenName && a.FamilyName ? `${a.GivenName} ${a.FamilyName}` : ((c.Description && c.Description.TeamName) || '');
+            const seed = Number(c.Seed);
+            return { ext: String(c.Code), name: name.trim(), country: c.Organization || null, seed: Number.isFinite(seed) && seed > 0 ? seed : null };
+          }
+
+          async function wttCompetitorId(cache, p) {
+            const key = p.name.toLowerCase();
+            const sameName = cache.byName.get(key);
+            // Un joueur créé à la main est reconnu par son nom ; un autre joueur WTT de même nom est une autre personne.
+            const found = cache.byExt.get(p.ext) || (sameName && sameName.source !== 'wtt' ? sameName : null);
+            if (found && found.source === 'wtt' && found.name === p.name && (found.country || null) === p.country && (!p.seed || found.ranking === p.seed)) return found.id; // rien à changer
+            const fields = { name: p.name, kind: 'player', circuit: 'WTT', country: p.country, source: 'wtt', external_id: p.ext };
+            if (p.seed) fields.ranking = p.seed;
+            const write = async f => {
+              if (found) { await db('PATCH', `competitors?id=eq.${found.id}`, f, 'return=minimal'); return found.id; }
+              const rows = await db('POST', 'competitors', f, 'return=representation');
+              return rows[0].id;
+            };
+            let id;
+            try { id = await write(fields); }
+            catch (e) { id = await write({ ...fields, name: `${p.name} (${p.country || '?'})` }); } // deux joueurs de même nom
+            const rec = { id, name: fields.name, source: 'wtt', external_id: p.ext, country: p.country, ranking: p.seed || (found && found.ranking) || null };
+            cache.byExt.set(p.ext, rec); cache.byName.set(key, rec);
+            return id;
+          }
+
+          // Résultat d'un match terminé : nombre de manches gagnées par chaque joueur.
+          async function wttResult(eventId, code, idA, idB, wn) {
+            const doc = code.padEnd(42, '-');
+            let mc;
+            try { mc = await getJson(`${WTT_CACHED}/matchdata/${eventId}/${doc}.json?q=${qNow()}`, { referer: WTT_REF, tries: 2 }); }
+            catch (e) { console.warn(`WTT : résultat introuvable pour ${code} (${e.message})`); return null; }
+            const card = mc.match_card || mc;
+            if (String(card.resultStatus || '').toUpperCase() !== 'OFFICIAL') return null;
+            const comps = card.competitiors || [];
+            const ca = comps.find(c => String(c.competitiorId) === String(idA));
+            const cb = comps.find(c => String(c.competitiorId) === String(idB));
+            if (!ca || !cb) { console.warn(`WTT : joueurs non reconnus dans le résultat de ${code}`); return null; }
+            if (ca.irm || cb.irm) { console.warn(`WTT : abandon ou forfait sur ${code} (${ca.irm || cb.irm}) : à régler à la main dans l'onglet Admin`); return null; }
+            const A = String(ca.scores || '').split(',').map(Number), B = String(cb.scores || '').split(',').map(Number);
+            let wa = 0, wb = 0;
+            for (let i = 0; i < Math.max(A.length, B.length); i++) {
+              if (!(A[i] || B[i])) continue;
+              if (A[i] > B[i]) wa++; else if (B[i] > A[i]) wb++;
+            }
+            if (Math.max(wa, wb) !== wn || Math.min(wa, wb) >= wn) {
+              console.warn(`ATTENTION : résultat ${wa}-${wb} inattendu pour ${code} (${wn} victoires attendues) : ignoré`);
+              return null;
+            }
+            return [wa, wb];
+          }
+
+          async function syncWttEvent(ev, cache) {
+            const id = ev.EventId, label = shortEventName(ev.EventName);
+            let schedule;
+            try { schedule = await getJson(`${WTT_CACHED}/websitecacheddata/${id}/schedule/schedule.json?q=${qNow()}`, { referer: WTT_REF, tries: 2 }); }
+            catch (e) { console.log(`WTT ${label} : programme pas encore disponible (${e.message})`); return; }
+            const zone = await eventZone(ev);
+            if (!zone) { console.warn(`WTT ${label} : fuseau horaire inconnu pour "${ev.Country}" : ajoute ce pays à TZ_BY_COUNTRY`); return; }
+
+            // Chaque match apparaît en plusieurs versions : on garde la plus avancée.
+            const units = [];
+            for (const el of Array.isArray(schedule) ? schedule : []) {
+              const u = el && el.Competition && el.Competition.Unit;
+              if (Array.isArray(u)) units.push(...u); else if (u) units.push(u);
+            }
+            const isPlayer = x => x && x.Competitor && x.Competitor.Code && x.Competitor.Code !== 'TBD' && x.Competitor.Description && x.Competitor.Description.TeamName;
+            const knownPair = u => { const st = (u.StartList && u.StartList.Start) || []; return st.length === 2 && st.every(isPlayer); };
+            const better = (a, b) => { for (let k = 0; k < 3; k++) { if (a[k] !== b[k]) return a[k] > b[k]; } return true; };
+            const best = new Map();
+            units.forEach((u, i) => {
+              // On préfère la version où les deux joueurs sont connus, puis le statut le plus avancé, puis la plus récente.
+              const score = [knownPair(u) ? 1 : 0, STATUS_RANK[u.ScheduleStatus] ?? 1, i];
+              const cur = best.get(u.Code);
+              if (!cur || better(score, cur.score)) best.set(u.Code, { u, score, i });
+            });
+
+            const existing = await db('GET', `matches?source=eq.wtt&circuit=eq.WTT&external_id=like.${id}:*&select=external_id,status,score_a,score_b,wins_needed&limit=5000`);
+            const ex = new Map(existing.map(m => [String(m.external_id), m]));
+            const winsDefault = WTT_CONFIG.winsByType[ev.EventType] ?? WTT_CONFIG.winsDefault;
+            const s = { suivis: 0, nouveaux: 0, termines: 0, dejaJoues: 0, enAttente: 0 };
+            const rows = [];
+
+            for (const { u } of [...best.values()].sort((x, y) => x.i - y.i)) {
+              if (!WTT_CONFIG.subEvents.includes(u.SubEvent)) continue;
+              if (WTT_CONFIG.rounds && !WTT_CONFIG.rounds.includes(u.Round)) continue;
+              if (u.Draw && u.Draw !== 'MAIN') continue; // on saute les qualifications
+              if (/cancel/i.test(u.ScheduleStatus || '')) continue;
+              if (!knownPair(u)) { s.enAttente++; continue; }
+              const starts = u.StartList.Start.slice().sort((x, y) => (x.StartOrder || 0) - (y.StartOrder || 0));
+              const code = u.Code.replace(/-+$/, ''), ext = `${id}:${code}`;
+              const old = ex.get(ext);
+              const official = u.ScheduleStatus === 'Official';
+              if (official && !old) { s.dejaJoues++; continue; } // match déjà joué avant qu'on le suive : personne n'a pu pronostiquer
+
+              const pa = wttPlayer(starts[0].Competitor), pb = wttPlayer(starts[1].Competitor);
+              const wn = old && old.wins_needed ? old.wins_needed : winsDefault;
+              let status = 'scheduled', sa = null, sb = null;
+              if (old && (old.status === 'finished' || old.status === 'cancelled')) { status = old.status; sa = old.score_a; sb = old.score_b; }
+              else if (official) {
+                const res = await wttResult(id, code, pa.ext, pb.ext, wn);
+                if (res) { status = 'finished'; [sa, sb] = res; }
+              }
+              rows.push({
+                circuit: 'WTT', competition: label,
+                round: `${SUBEVENT_FR[u.SubEvent] || u.SubEvent}, ${roundFr(u.Round)}`,
+                side_a: pa.name, side_b: pb.name,
+                competitor_a_id: await wttCompetitorId(cache, pa), competitor_b_id: await wttCompetitorId(cache, pb),
+                starts_at: localToUTC(u.StartDate, zone), wins_needed: wn,
+                status, score_a: sa, score_b: sb, source: 'wtt', external_id: ext,
+              });
+              s.suivis++;
+              if (!old) s.nouveaux++;
+              if (status === 'finished') s.termines++;
+            }
+            for (let i = 0; i < rows.length; i += 100) {
+              await db('POST', 'matches?on_conflict=source,external_id', rows.slice(i, i + 100), 'resolution=merge-duplicates,return=minimal');
+            }
+            console.log(`WTT ${label} : ${s.suivis} matchs suivis, ${s.nouveaux} nouveaux, ${s.termines} terminés` +
+              (s.dejaJoues ? `, ${s.dejaJoues} déjà joués ignorés` : '') + (s.enAttente ? `, ${s.enAttente} en attente d'adversaires` : ''));
+          }
+
+          async function syncWTT() {
+            const events = await wttEvents();
+            if (!events.length) { console.log('WTT : aucun tournoi à suivre en ce moment.'); return; }
+            const existing = await db('GET', 'competitors?circuit=eq.WTT&select=id,name,source,external_id,country,ranking&limit=5000');
+            const cache = {
+              byExt: new Map(existing.filter(c => c.source === 'wtt').map(c => [String(c.external_id), c])),
+              byName: new Map(existing.map(c => [c.name.toLowerCase(), c])),
+            };
+            const erreurs = [];
+            for (const ev of events) {
+              try { await syncWttEvent(ev, cache); }
+              catch (e) { erreurs.push(`${shortEventName(ev.EventName)} : ${e.message}`); }
+            }
+            if (erreurs.length) throw new Error(erreurs.join(' ; '));
+          }
+
+          async function main() {
+            let erreurs = 0;
+            for (const [nom, fn] of [['Pro A', syncProA], ['WTT', syncWTT]]) {
+              try { await fn(); }
+              catch (e) { erreurs++; console.error(`ERREUR ${nom} : ${e.message}`); }
+            }
+            if (erreurs) process.exit(1);
+          }
+
+          main();
+          EOF
+
+      - name: Synchroniser les matchs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node robot/synchro.mjs
