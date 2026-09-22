@@ -146,6 +146,16 @@ const APP_NAME = 'Pronos Ping';
 
 /* ===================================================================== */
 const CIRCUITS = { WTT: 'WTT', PRO_A: 'Pro A' };
+// Drapeaux par code pays (le WTT utilise les codes du CIO, sur 3 lettres).
+const FLAGS = {
+  FRA:'🇫🇷', GER:'🇩🇪', CHN:'🇨🇳', JPN:'🇯🇵', KOR:'🇰🇷', PRK:'🇰🇵', TPE:'🇹🇼', HKG:'🇭🇰', SGP:'🇸🇬', IND:'🇮🇳',
+  THA:'🇹🇭', VIE:'🇻🇳', MAS:'🇲🇾', INA:'🇮🇩', PHI:'🇵🇭', ROU:'🇷🇴', RUS:'🇷🇺', USA:'🇺🇸', CAN:'🇨🇦', BRA:'🇧🇷',
+  ARG:'🇦🇷', CHI:'🇨🇱', PER:'🇵🇪', PAR:'🇵🇾', EGY:'🇪🇬', NGR:'🇳🇬', RSA:'🇿🇦', GBR:'🇬🇧', ENG:'🏴', SWE:'🇸🇪',
+  POR:'🇵🇹', ESP:'🇪🇸', ITA:'🇮🇹', GRE:'🇬🇷', AUT:'🇦🇹', SUI:'🇨🇭', BEL:'🇧🇪', NED:'🇳🇱', LUX:'🇱🇺', DEN:'🇩🇰',
+  NOR:'🇳🇴', FIN:'🇫🇮', ISL:'🇮🇸', POL:'🇵🇱', CZE:'🇨🇿', SVK:'🇸🇰', HUN:'🇭🇺', CRO:'🇭🇷', SLO:'🇸🇮', SRB:'🇷🇸',
+  MKD:'🇲🇰', BUL:'🇧🇬', UKR:'🇺🇦', BLR:'🇧🇾', TUR:'🇹🇷', ISR:'🇮🇱', KAZ:'🇰🇿', UZB:'🇺🇿', QAT:'🇶🇦', OMA:'🇴🇲',
+  KSA:'🇸🇦', KUW:'🇰🇼', UAE:'🇦🇪', AUS:'🇦🇺', NZL:'🇳🇿',
+};
 const $app = document.getElementById('app');
 let sb = null;
 
@@ -394,7 +404,8 @@ function matchCard(m) {
   const fin = m.status === 'finished', canc = m.status === 'cancelled';
   const winA = fin && m.score_a > m.score_b, winB = fin && m.score_b > m.score_a;
   const ca = S.competitors[m.competitor_a_id], cb = S.competitors[m.competitor_b_id];
-  const rk = c => (c && c.ranking ? `Classement ${c.ranking}` : '');
+  const flag = c => (c && c.circuit === 'WTT' && c.country && FLAGS[c.country]) || '';
+  const rk = c => c && c.ranking ? `${c.circuit === 'WTT' ? 'Tête de série' : 'Classement'} ${c.ranking}` : '';
   let pill = '';
   if (fin) pill = '<span class="pill">Terminé</span>';
   else if (canc) pill = '<span class="pill">Annulé</span>';
@@ -439,11 +450,11 @@ function matchCard(m) {
     </div>
     <div class="court${fin ? ' done' : ''}">
       <div class="side">
-        <div class="name${winB ? ' lose' : ''}">${esc(m.side_a)}</div><div class="rk">${esc(rk(ca))}</div>
+        <div class="name${winB ? ' lose' : ''}">${flag(ca) ? flag(ca) + ' ' : ''}${esc(m.side_a)}</div><div class="rk">${esc(rk(ca))}</div>
         ${showChips ? chips(m, 'A', mine, locked) : ''}
       </div>
       <div class="side">
-        <div class="name${winA ? ' lose' : ''}">${esc(m.side_b)}</div><div class="rk">${esc(rk(cb))}</div>
+        <div class="name${winA ? ' lose' : ''}">${flag(cb) ? flag(cb) + ' ' : ''}${esc(m.side_b)}</div><div class="rk">${esc(rk(cb))}</div>
         ${showChips ? chips(m, 'B', mine, locked) : ''}
       </div>
       ${fin ? `<div class="netscore" aria-label="Résultat ${m.score_a} à ${m.score_b}">${m.score_a}–${m.score_b}</div>` : ''}
