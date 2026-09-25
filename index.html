@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css">
 <style>
 :root{
   --hall:#0A1C33;        /* fond de la salle */
@@ -62,7 +63,8 @@ button{cursor:pointer}
 .court{display:grid;grid-template-columns:1fr 1fr;position:relative;margin-top:4px}
 .court::before{content:"";position:absolute;left:50%;top:6px;bottom:6px;width:2px;margin-left:-1px;background:repeating-linear-gradient(to bottom,var(--line) 0 6px,transparent 6px 11px);opacity:.9;pointer-events:none}
 .side{padding:8px 10px 12px;text-align:center;min-width:0}
-.name{font:600 27px/1.05 var(--f-display);overflow-wrap:anywhere;min-height:2.1em;display:flex;align-items:center;justify-content:center}
+.name{font:600 27px/1.05 var(--f-display);overflow-wrap:anywhere;min-height:2.1em;display:flex;align-items:center;justify-content:center;gap:.3em}
+.flag{width:1.3em;height:1em;flex:none;border-radius:2px;box-shadow:0 0 0 1px rgba(232,238,246,.4)}
 .name.lose{opacity:.55}
 .rk{font-size:12px;color:var(--mute);margin:2px 0 8px;min-height:1.2em}
 .chips{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
@@ -146,15 +148,20 @@ const APP_NAME = 'Pronos Ping';
 
 /* ===================================================================== */
 const CIRCUITS = { WTT: 'WTT', PRO_A: 'Pro A' };
-// Drapeaux par code pays (le WTT utilise les codes du CIO, sur 3 lettres).
-const FLAGS = {
-  FRA:'🇫🇷', GER:'🇩🇪', CHN:'🇨🇳', JPN:'🇯🇵', KOR:'🇰🇷', PRK:'🇰🇵', TPE:'🇹🇼', HKG:'🇭🇰', SGP:'🇸🇬', IND:'🇮🇳',
-  THA:'🇹🇭', VIE:'🇻🇳', MAS:'🇲🇾', INA:'🇮🇩', PHI:'🇵🇭', ROU:'🇷🇴', RUS:'🇷🇺', USA:'🇺🇸', CAN:'🇨🇦', BRA:'🇧🇷',
-  ARG:'🇦🇷', CHI:'🇨🇱', PER:'🇵🇪', PAR:'🇵🇾', EGY:'🇪🇬', NGR:'🇳🇬', RSA:'🇿🇦', GBR:'🇬🇧', ENG:'🏴', SWE:'🇸🇪',
-  POR:'🇵🇹', ESP:'🇪🇸', ITA:'🇮🇹', GRE:'🇬🇷', AUT:'🇦🇹', SUI:'🇨🇭', BEL:'🇧🇪', NED:'🇳🇱', LUX:'🇱🇺', DEN:'🇩🇰',
-  NOR:'🇳🇴', FIN:'🇫🇮', ISL:'🇮🇸', POL:'🇵🇱', CZE:'🇨🇿', SVK:'🇸🇰', HUN:'🇭🇺', CRO:'🇭🇷', SLO:'🇸🇮', SRB:'🇷🇸',
-  MKD:'🇲🇰', BUL:'🇧🇬', UKR:'🇺🇦', BLR:'🇧🇾', TUR:'🇹🇷', ISR:'🇮🇱', KAZ:'🇰🇿', UZB:'🇺🇿', QAT:'🇶🇦', OMA:'🇴🇲',
-  KSA:'🇸🇦', KUW:'🇰🇼', UAE:'🇦🇪', AUS:'🇦🇺', NZL:'🇳🇿',
+// Code pays du WTT (CIO, 3 lettres) -> code du drapeau (ISO, 2 lettres).
+const FLAG_ISO = {
+  FRA:'fr', GER:'de', CHN:'cn', JPN:'jp', KOR:'kr', PRK:'kp', TPE:'tw', HKG:'hk', SGP:'sg', IND:'in',
+  THA:'th', VIE:'vn', MAS:'my', INA:'id', PHI:'ph', ROU:'ro', RUS:'ru', USA:'us', CAN:'ca', BRA:'br',
+  ARG:'ar', CHI:'cl', PER:'pe', PAR:'py', EGY:'eg', NGR:'ng', RSA:'za', GBR:'gb', ENG:'gb-eng', SWE:'se',
+  POR:'pt', ESP:'es', ITA:'it', GRE:'gr', AUT:'at', SUI:'ch', BEL:'be', NED:'nl', LUX:'lu', DEN:'dk',
+  NOR:'no', FIN:'fi', ISL:'is', POL:'pl', CZE:'cz', SVK:'sk', HUN:'hu', CRO:'hr', SLO:'si', SRB:'rs',
+  MKD:'mk', BUL:'bg', UKR:'ua', BLR:'by', TUR:'tr', ISR:'il', KAZ:'kz', UZB:'uz', QAT:'qa', OMA:'om',
+  KSA:'sa', KUW:'kw', UAE:'ae', AUS:'au', NZL:'nz',
+};
+// Image du drapeau à insérer devant le nom d'un joueur WTT (rien pour la Pro A ou un pays inconnu).
+const flagHtml = c => {
+  const iso = c && c.circuit === 'WTT' && c.country && FLAG_ISO[c.country];
+  return iso ? `<span class="flag fi fi-${iso}" aria-hidden="true"></span>` : '';
 };
 const $app = document.getElementById('app');
 let sb = null;
@@ -404,8 +411,11 @@ function matchCard(m) {
   const fin = m.status === 'finished', canc = m.status === 'cancelled';
   const winA = fin && m.score_a > m.score_b, winB = fin && m.score_b > m.score_a;
   const ca = S.competitors[m.competitor_a_id], cb = S.competitors[m.competitor_b_id];
-  const flag = c => (c && c.circuit === 'WTT' && c.country && FLAGS[c.country]) || '';
-  const rk = c => c && c.ranking ? `${c.circuit === 'WTT' ? 'Tête de série' : 'Classement'} ${c.ranking}` : '';
+  const flag = flagHtml;
+  const rk = c => {
+    if (!c || !c.ranking) return '';
+    return c.circuit === 'WTT' ? `<strong>#${c.ranking}</strong>` : `Classement ${c.ranking}`;
+  };
   let pill = '';
   if (fin) pill = '<span class="pill">Terminé</span>';
   else if (canc) pill = '<span class="pill">Annulé</span>';
@@ -450,11 +460,11 @@ function matchCard(m) {
     </div>
     <div class="court${fin ? ' done' : ''}">
       <div class="side">
-        <div class="name${winB ? ' lose' : ''}">${flag(ca) ? flag(ca) + ' ' : ''}${esc(m.side_a)}</div><div class="rk">${esc(rk(ca))}</div>
+        <div class="name${winB ? ' lose' : ''}">${flag(ca)}${esc(m.side_a)}</div><div class="rk">${rk(ca)}</div>
         ${showChips ? chips(m, 'A', mine, locked) : ''}
       </div>
       <div class="side">
-        <div class="name${winA ? ' lose' : ''}">${flag(cb) ? flag(cb) + ' ' : ''}${esc(m.side_b)}</div><div class="rk">${esc(rk(cb))}</div>
+        <div class="name${winA ? ' lose' : ''}">${flag(cb)}${esc(m.side_b)}</div><div class="rk">${rk(cb)}</div>
         ${showChips ? chips(m, 'B', mine, locked) : ''}
       </div>
       ${fin ? `<div class="netscore" aria-label="Résultat ${m.score_a} à ${m.score_b}">${m.score_a}–${m.score_b}</div>` : ''}
