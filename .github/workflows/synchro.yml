@@ -378,7 +378,7 @@ jobs:
               if (!cur || better(score, cur.score)) best.set(u.Code, { u, score, i });
             });
 
-            const existing = await db('GET', `matches?source=eq.wtt&circuit=eq.WTT&external_id=like.${id}:*&select=external_id,status,score_a,score_b,wins_needed&limit=5000`);
+            const existing = await db('GET', `matches?source=eq.wtt&circuit=eq.WTT&external_id=like.${id}:*&select=external_id,status,score_a,score_b,wins_needed,seed_a,seed_b&limit=5000`);
             const ex = new Map(existing.map(m => [String(m.external_id), m]));
             const winsDefault = WTT_CONFIG.winsByType[ev.EventType] ?? WTT_CONFIG.winsDefault;
             const s = { suivis: 0, nouveaux: 0, termines: 0, dejaJoues: 0, enAttente: 0 };
@@ -398,6 +398,10 @@ jobs:
 
               const pa = wttPlayer(starts[0].Competitor), pb = wttPlayer(starts[1].Competitor);
               const wn = old && old.wins_needed ? old.wins_needed : winsDefault;
+              // Tête de série figée une fois pour toutes à la création du match, pour un bonus "outsider"
+              // stable même si le classement du joueur change ensuite (par exemple à son tournoi suivant).
+              const seedA = old && old.seed_a !== undefined ? old.seed_a : (pa.seed ?? null);
+              const seedB = old && old.seed_b !== undefined ? old.seed_b : (pb.seed ?? null);
               let status = 'scheduled', sa = null, sb = null;
               if (old && (old.status === 'finished' || old.status === 'cancelled')) { status = old.status; sa = old.score_a; sb = old.score_b; }
               else if (official) {
@@ -410,7 +414,7 @@ jobs:
                 side_a: pa.name, side_b: pb.name,
                 competitor_a_id: await wttCompetitorId(cache, pa), competitor_b_id: await wttCompetitorId(cache, pb),
                 starts_at: localToUTC(u.StartDate, zone), wins_needed: wn,
-                status, score_a: sa, score_b: sb, source: 'wtt', external_id: ext,
+                status, score_a: sa, score_b: sb, seed_a: seedA, seed_b: seedB, source: 'wtt', external_id: ext,
               });
               s.suivis++;
               if (!old) s.nouveaux++;
