@@ -252,10 +252,28 @@ function trend(m) {
   const q = setProbFromMatchProb(pA, m.wins_needed);
   return { pA, score: bestScore(q, m.wins_needed) };
 }
-function points(m, p) {
+// Bonus "outsider" (WTT uniquement) : un pronostic gagnant sur le joueur le moins bien classé
+// au tirage au sort rapporte un supplément, d'autant plus grand que l'écart est important.
+// Basé sur la tête de série figée à la création du match : elle ne bouge jamais après coup,
+// même si le classement du joueur change ensuite (pour son tournoi suivant, par exemple).
+function outsiderBonus(m, bonVainqueur) {
+  if (!bonVainqueur || m.circuit !== 'WTT' || m.seed_a == null || m.seed_b == null) return 0;
+  const aGagne = m.score_a > m.score_b;
+  const outsiderGagne = aGagne ? m.seed_a > m.seed_b : m.seed_b > m.seed_a;
+  if (!outsiderGagne) return 0;
+  return Math.min(Math.floor(Math.abs(m.seed_a - m.seed_b) / 4), 5);
+}
+function pointsDetail(m, p) {
   if (m.status !== 'finished' || !p) return null;
-  if (p.pred_a === m.score_a && p.pred_b === m.score_b) return 3;
-  return Math.sign(p.pred_a - p.pred_b) === Math.sign(m.score_a - m.score_b) ? 1 : 0;
+  const exact = p.pred_a === m.score_a && p.pred_b === m.score_b;
+  const bonVainqueur = Math.sign(p.pred_a - p.pred_b) === Math.sign(m.score_a - m.score_b);
+  const base = exact ? 3 : (bonVainqueur ? 1 : 0);
+  const bonus = outsiderBonus(m, bonVainqueur);
+  return { total: base + bonus, base, bonus, exact };
+}
+function points(m, p) {
+  const d = pointsDetail(m, p);
+  return d ? d.total : null;
 }
 
 /* ---------- Chargement des données ---------- */
@@ -438,8 +456,9 @@ function matchCard(m) {
   else if (!locked) foot = `<div class="mfoot"><span>${mine ? `Prono enregistré : ${mine.pred_a}–${mine.pred_b}. Modifiable jusqu'au début du match.` : 'Touche un score pour faire ton prono.'}</span></div>`;
   else {
     const pt = points(m, mine);
+    const det = mine ? pointsDetail(m, mine) : null;
     foot = `<div class="mfoot"><span>${mine ? `Ton prono : ${mine.pred_a}–${mine.pred_b}` : `Tu n'as pas fait de prono.`}</span>
-      ${pt !== null ? `<span class="pts p${pt}">${pt > 0 ? '+' : ''}${pt} pt${pt > 1 ? 's' : ''}</span>` : ''}
+      ${pt !== null ? `<span class="pts ${pt === 0 ? 'p0' : (det.exact ? 'p3' : 'p1')}">${pt > 0 ? '+' : ''}${pt} pt${pt > 1 ? 's' : ''}${det.bonus ? ` (dont bonus outsider +${det.bonus})` : ''}</span>` : ''}
       <button class="linkbtn" data-act="friends" data-id="${m.id}">${S.openFriends[m.id] ? 'Masquer' : 'Voir'} les pronos des amis</button></div>`;
   }
 
@@ -508,7 +527,7 @@ function boardView() {
   }).join('');
   return seg + `<ol class="lb">${rows}</ol>` + rules();
 }
-const rules = () => `<p class="rules">Barème : 1 point pour le bon vainqueur, 3 points pour le score exact. En cas d'égalité, le plus de scores exacts passe devant.</p>`;
+const rules = () => `<p class="rules">Barème : 1 point pour le bon vainqueur, 3 points pour le score exact. En WTT, un pronostic gagnant sur l'outsider (moins bien classé au tirage au sort) rapporte un bonus, d'autant plus grand que l'écart de tête de série est important (jusqu'à +5 points). En cas d'égalité au classement, le plus de scores exacts passe devant.</p>`;
 
 /* --- Administration --- */
 function adminView() {
