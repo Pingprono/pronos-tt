@@ -14,16 +14,25 @@
 :root{
   --paper:#EAE0C8;         /* fond : papier ancien */
   --paper-deep:#DECBA0;    /* variante soutenue, pour le dégradé de fond */
-  --card:#F7F0DE;          /* panneaux et formulaires */
+  --card:#FBF4E4;          /* panneaux et cartes, plus clair que le fond */
+  --card-top:#FFFCF4;      /* reflet du haut de carte */
   --ink:#2E1B12;           /* texte principal : brun très sombre, jamais noir pur */
   --ink-soft:#7A6349;      /* texte secondaire, discret */
   --bordeaux:#6B1C2A;      /* couleur dominante : titres, actions, sélection */
   --bordeaux-deep:#4E121C;
+  --bordeaux-rgb:107,28,42;
   --terracotta:#B8532F;    /* accent secondaire : direct, tendance */
+  --terracotta-rgb:184,83,47;
   --gold:#93701F;          /* accent tertiaire : numéros, filets, ornements */
+  --gold-rgb:147,112,31;
   --good:#4B6B3E;
   --bad:#A23327;
-  --line-soft:rgba(46,27,18,.15);
+  --line-soft:rgba(46,27,18,.14);
+  --shadow-1:0 1px 1px rgba(46,27,18,.06), 0 1px 0 rgba(255,255,255,.5) inset;
+  --shadow-card:0 1px 1px rgba(46,27,18,.07), 0 14px 30px -14px rgba(75,15,20,.38), 0 3px 8px -3px rgba(75,15,20,.16);
+  --shadow-card-active:0 1px 1px rgba(46,27,18,.07), 0 6px 14px -8px rgba(75,15,20,.32);
+  --ease-spring:cubic-bezier(.22,1.4,.36,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
   --f-display:'Fraunces','Iowan Old Style',Georgia,serif;
   --f-body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
 }
@@ -45,91 +54,110 @@ body{
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--bordeaux);outline-offset:2px}
-.wrap{max-width:680px;margin:0 auto;padding:0 18px 118px}
+.wrap{max-width:680px;margin:0 auto;padding:0 16px 128px}
 .mark{color:var(--bordeaux);flex:none;display:block}
+@media (prefers-reduced-motion:no-preference){
+  button, .chip, .btn, input, select, .day, .name{transition:background-color .16s var(--ease-out), color .16s var(--ease-out), border-color .16s var(--ease-out), box-shadow .18s var(--ease-out), transform .16s var(--ease-out)}
+}
+button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 
 /* En-tête */
-.top{display:flex;align-items:center;justify-content:space-between;padding:22px 0 14px;border-bottom:1px solid var(--line-soft);margin-bottom:4px}
-.brand{font:600 29px/1 var(--f-display);display:flex;align-items:center;gap:9px;color:var(--bordeaux);letter-spacing:-.01em}
+.top{display:flex;align-items:center;justify-content:space-between;padding:20px 2px 14px}
+.brand{font:600 28px/1 var(--f-display);display:flex;align-items:center;gap:9px;color:var(--bordeaux);letter-spacing:-.01em}
+.brand .mark{animation:markIn .5s var(--ease-spring)}
 .me{display:flex;align-items:center;gap:9px;color:var(--ink-soft);font-size:13.5px}
 .linkbtn{background:none;border:0;padding:6px 2px;color:var(--bordeaux);text-decoration:underline;text-underline-offset:3px;font-size:inherit}
 .linkbtn:hover{color:var(--bordeaux-deep)}
 
-/* Navigation du bas */
-.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line-soft);padding:8px 10px calc(6px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:4px;z-index:5;box-shadow:0 -8px 20px rgba(46,27,18,.07)}
-.nav button{flex:1;max-width:220px;background:none;border:0;padding:10px 6px 8px;font:600 17px/1 var(--f-display);color:var(--ink-soft);position:relative}
-.nav button[aria-current="page"]{color:var(--bordeaux)}
-.nav button[aria-current="page"]::after{content:"";position:absolute;left:26%;right:26%;bottom:-1px;height:2px;background:var(--bordeaux);border-radius:2px}
-.badge{background:var(--terracotta);color:#FBF1E4;border-radius:8px;padding:1px 7px;font-size:12.5px;margin-left:5px;font-family:var(--f-body);font-weight:600}
+/* Petit tableau de bord perso, en haut de l'onglet Matchs */
+.stats{display:flex;gap:10px;margin:2px 0 22px}
+.stat{flex:1;background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:14px;padding:12px 14px;box-shadow:var(--shadow-1);position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--bordeaux),var(--terracotta))}
+.stat b{display:block;font:700 26px/1 var(--f-display);color:var(--bordeaux)}
+.stat span{font-size:12px;color:var(--ink-soft)}
 
-/* Filtres : rangée d'onglets, pas de pastilles */
-.seg{display:flex;gap:20px;margin:6px 0 20px;flex-wrap:wrap;border-bottom:1px solid var(--line-soft)}
-.seg button{background:none;border:0;padding:5px 0 11px;font:600 14.5px/1 var(--f-body);color:var(--ink-soft);position:relative}
+/* Navigation du bas, avec curseur qui glisse */
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line-soft);padding:9px 10px calc(7px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:2px;z-index:5;box-shadow:0 -10px 24px rgba(46,27,18,.09)}
+.nav{position:fixed}
+.navthumb{position:absolute;top:9px;height:calc(100% - 16px - env(safe-area-inset-bottom));background:rgba(var(--bordeaux-rgb),.1);border-radius:12px;transition:left .32s var(--ease-spring), width .32s var(--ease-spring);pointer-events:none;opacity:0}
+.nav button{flex:1;max-width:220px;background:none;border:0;padding:10px 6px 8px;font:600 17px/1 var(--f-display);color:var(--ink-soft);position:relative;z-index:1;border-radius:12px}
+.nav button[aria-current="page"]{color:var(--bordeaux)}
+.badge{background:var(--terracotta);color:#FBF1E4;border-radius:8px;padding:1px 7px;font-size:12.5px;margin-left:5px;font-family:var(--f-body);font-weight:600;display:inline-block;animation:popIn .3s var(--ease-spring)}
+
+/* Filtres : rangée d'onglets avec curseur qui glisse */
+.seg{display:flex;gap:4px;margin:6px 0 20px;position:relative;border-bottom:1px solid var(--line-soft);flex-wrap:wrap;isolation:isolate}
+.segthumb{position:absolute;bottom:-1px;height:2px;background:var(--bordeaux);border-radius:2px;transition:left .3s var(--ease-spring), width .3s var(--ease-spring);opacity:0}
+.seg button{background:none;border:0;padding:7px 10px 11px;font:600 14.5px/1 var(--f-body);color:var(--ink-soft);position:relative}
 .seg button[aria-pressed="true"]{color:var(--bordeaux)}
-.seg button[aria-pressed="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--bordeaux)}
-.day{font:italic 500 19px/1.2 var(--f-display);margin:28px 0 8px;color:var(--gold);display:flex;align-items:center;gap:12px;text-transform:capitalize}
+.day{font:italic 500 19px/1.2 var(--f-display);margin:30px 0 12px;color:var(--gold);display:flex;align-items:center;gap:12px;text-transform:capitalize}
 .day::after{content:"";flex:1;height:1px;background:var(--line-soft)}
 
-/* Un match = une ligne de registre, pas une carte encadrée */
-.match{position:relative;padding:16px 0 14px;border-top:1px solid var(--line-soft)}
-.day + .match{border-top:0;padding-top:6px}
-.mhead{display:flex;justify-content:space-between;gap:10px}
+/* Un match = une vraie carte, avec relief et une tranche de couleur */
+.match{position:relative;background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:16px;box-shadow:var(--shadow-card);margin:0 0 16px;overflow:hidden}
+.match.enter{animation:cardIn .38s var(--ease-out) backwards}
+.match::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--bordeaux),var(--terracotta))}
+.match:active{box-shadow:var(--shadow-card-active);transform:translateY(1px)}
+.mhead{display:flex;justify-content:space-between;gap:10px;padding:16px 18px 0 20px}
 .comp{font-weight:600;font-size:13.5px;color:var(--ink)}
 .rnd{color:var(--ink-soft);font-size:12.5px;font-style:italic;margin-top:1px}
 .when{font-size:12.5px;color:var(--ink-soft);text-align:right;white-space:nowrap}
-.pill{display:inline-block;font:italic 600 12.5px/1 var(--f-display);color:var(--bordeaux);margin-top:5px}
-.pill.live{color:var(--terracotta)}
-.court{display:grid;grid-template-columns:1fr 1fr;position:relative;margin-top:10px}
+.pill{display:inline-block;font:italic 600 12px/1 var(--f-display);color:var(--bordeaux);margin-top:6px;padding:3px 9px;border-radius:999px;background:rgba(var(--bordeaux-rgb),.1)}
+.pill.live{color:#fff;background:var(--terracotta);animation:pulseLive 1.6s ease-in-out infinite}
+.court{display:grid;grid-template-columns:1fr 1fr;position:relative;margin-top:8px;padding:0 20px}
 .court::before{content:"";position:absolute;left:50%;top:2px;bottom:2px;width:1px;margin-left:-.5px;background:var(--line-soft);pointer-events:none}
-.side{padding:6px 12px 4px;text-align:center;min-width:0}
-.name{font:600 25px/1.15 var(--f-display);overflow-wrap:anywhere;min-height:2.2em;display:flex;align-items:center;justify-content:center;gap:.3em;color:var(--ink)}
+.side{padding:10px 10px 14px;text-align:center;min-width:0}
+.name{font:600 24px/1.15 var(--f-display);overflow-wrap:anywhere;min-height:2.2em;display:flex;align-items:center;justify-content:center;gap:.3em;color:var(--ink)}
 .flag{width:1.25em;height:.95em;flex:none;border-radius:2px;box-shadow:0 0 0 1px var(--line-soft)}
-.name.lose{opacity:.5}
-.rk{font-size:12px;color:var(--ink-soft);margin:3px 0 10px;min-height:1.2em;font-family:var(--f-body)}
+.name.lose{opacity:.48}
+.win-badge{display:inline-flex;align-items:center;justify-content:center;width:1.05em;height:1.05em;border-radius:50%;background:var(--good);color:#fff;font-size:.5em;flex:none;animation:popIn .35s .1s var(--ease-spring) backwards}
+.rk{font-size:12px;color:var(--ink-soft);margin:3px 0 12px;min-height:1.2em;font-family:var(--f-body)}
 .rk .seed{color:var(--bordeaux);font-family:var(--f-display)}
-.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.chip{flex:1 1 42px;min-width:42px;height:40px;background:var(--card);border:1px solid var(--line-soft);border-radius:999px;font:600 16px/1 var(--f-display);color:var(--ink)}
-.chip[aria-pressed="true"]{background:var(--bordeaux);color:#F7EEDF;border-color:var(--bordeaux)}
+.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.chip{flex:1 1 42px;min-width:42px;height:42px;background:var(--paper);border:1px solid var(--line-soft);border-radius:999px;font:600 16px/1 var(--f-display);color:var(--ink);box-shadow:var(--shadow-1)}
+.chip[aria-pressed="true"]{background:linear-gradient(165deg,var(--bordeaux),var(--bordeaux-deep));color:#F7EEDF;border-color:var(--bordeaux-deep);box-shadow:0 4px 10px -3px rgba(var(--bordeaux-rgb),.55)}
+.chip.pop{animation:chipPop .32s var(--ease-spring)}
+.chip:not(:disabled):hover{border-color:var(--bordeaux)}
 .chip:disabled{opacity:.5;cursor:not-allowed}
 .chip[aria-pressed="true"]:disabled{opacity:1}
-.court.done .side{padding-bottom:46px}
-.netscore{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);background:var(--paper);border:2px solid var(--bordeaux);border-radius:999px;padding:6px 18px;font:700 28px/1 var(--f-display);color:var(--bordeaux);z-index:1;white-space:nowrap}
-.trend{padding:4px 2px 2px}
+.court.done{padding-bottom:16px}
+.court.done .side{padding-bottom:50px}
+.netscore{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);background:var(--card);border:2px solid var(--bordeaux);border-radius:999px;padding:6px 18px;font:700 28px/1 var(--f-display);color:var(--bordeaux);z-index:1;white-space:nowrap;box-shadow:var(--shadow-1);animation:popIn .4s var(--ease-spring)}
+.trend{padding:6px 20px 4px}
 .trendrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font:600 15px/1 var(--f-body);color:var(--ink-soft)}
-.bar{height:4px;border-radius:2px;background:var(--line-soft);overflow:hidden}
-.bar i{display:block;height:100%;background:var(--terracotta)}
+.bar{height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--terracotta),var(--bordeaux));animation:barfill .9s .1s var(--ease-out) forwards}
 .tnote{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;text-align:center;font-style:italic}
 .tnote .linkbtn{font-style:normal}
-.mfoot{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:12px 0 4px;border-top:1px solid var(--line-soft);margin-top:8px;font-size:13.5px;color:var(--ink-soft)}
-.pts{font:700 15px/1 var(--f-display);padding:5px 12px;border-radius:999px}
+.mfoot{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:12px 20px;margin-top:8px;background:rgba(46,27,18,.03);font-size:13.5px;color:var(--ink-soft)}
+.pts{font:700 15px/1 var(--f-display);padding:5px 12px;border-radius:999px;display:inline-block;animation:popIn .4s var(--ease-spring)}
 .pts.p3{background:var(--bordeaux);color:#F7EEDF}
 .pts.p1{background:rgba(75,107,62,.16);color:var(--good)}
 .pts.p0{background:rgba(46,27,18,.08);color:var(--ink-soft)}
-.friends{list-style:none;margin:4px 0 0;padding:0;font-size:13.5px}
-.friends li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line-soft)}
+.friends{list-style:none;margin:4px 0 0;padding:0 20px 14px;font-size:13.5px}
+.friends li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line-soft);animation:rowIn .25s var(--ease-out) backwards}
 .friends li:first-child{border-top:0}
 
 /* Classement, façon carte de restaurant */
 .lb{list-style:none;margin:0;padding:0}
-.lb li{display:grid;grid-template-columns:42px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--line-soft);position:relative}
-.lb li:first-child{border-top:0}
-.lb li.me::before{content:"";position:absolute;left:-18px;top:0;bottom:0;width:3px;background:var(--bordeaux)}
+.lb li{display:grid;grid-template-columns:42px 1fr auto;gap:14px;align-items:center;padding:14px 16px;border-radius:14px;margin-bottom:8px;background:linear-gradient(180deg,var(--card-top),var(--card));box-shadow:var(--shadow-1);position:relative;animation:rowIn .32s var(--ease-out) backwards}
+.lb li.me{box-shadow:var(--shadow-1), 0 0 0 2px var(--bordeaux)}
 .rank{font:700 27px/1 var(--f-display);color:var(--gold);text-align:center}
 .lbname{font:600 20px/1.15 var(--f-display);overflow-wrap:anywhere;color:var(--ink)}
 .lbsub{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
 .lbpts{font:700 29px/1 var(--f-display);text-align:right;color:var(--bordeaux)}
 .lbpts small{font-size:13.5px;font-weight:500;color:var(--ink-soft);margin-left:3px;font-family:var(--f-body)}
-.rules{color:var(--ink-soft);font-size:13px;margin:20px 0 4px;line-height:1.65}
+.rules{color:var(--ink-soft);font-size:13px;margin:20px 2px 4px;line-height:1.65}
 
 /* Formulaires et administration */
-.panel{background:var(--card);border:1px solid var(--line-soft);border-radius:14px;padding:20px;margin:0 0 18px}
+.panel{background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:16px;padding:20px;margin:0 0 18px;box-shadow:var(--shadow-card)}
 .panel h2{font:600 23px/1.15 var(--f-display);margin:0 0 4px;color:var(--bordeaux)}
 .panel h3{font:600 18px/1.2 var(--f-display);margin:0;color:var(--ink)}
 .hint{color:var(--ink-soft);font-size:13.5px;margin:4px 0 0}
 label{display:block;font-size:13px;font-weight:600;margin:14px 0 5px;color:var(--ink-soft)}
 input,select{width:100%;background:var(--paper);border:1px solid var(--line-soft);border-radius:9px;padding:11px 12px;font-size:16px;color:var(--ink)}
-.btn{background:var(--bordeaux);color:#F7EEDF;border:0;border-radius:999px;padding:13px 20px;font:600 17px/1 var(--f-display);margin-top:18px;width:100%}
-.btn.sec{background:transparent;color:var(--bordeaux);border:1px solid var(--bordeaux)}
+input:focus-visible,select:focus-visible{outline:none;border-color:var(--bordeaux);box-shadow:0 0 0 3px rgba(var(--bordeaux-rgb),.16)}
+.btn{background:linear-gradient(165deg,var(--bordeaux),var(--bordeaux-deep));color:#F7EEDF;border:0;border-radius:999px;padding:13px 20px;font:600 17px/1 var(--f-display);margin-top:18px;width:100%;box-shadow:0 6px 16px -6px rgba(var(--bordeaux-rgb),.55)}
+.btn.sec{background:transparent;color:var(--bordeaux);border:1px solid var(--bordeaux);box-shadow:none}
 .btn.small{width:auto;margin-top:0;padding:9px 16px;font-size:14.5px;border-radius:999px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .adm-item{padding:14px 0;border-top:1px solid var(--line-soft)}
@@ -147,11 +175,28 @@ input,select{width:100%;background:var(--paper);border:1px solid var(--line-soft
 .fok{color:var(--good)}
 .switch{text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:12px}
 
-.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:999px;font-weight:600;font-size:14px;z-index:10;max-width:90vw;text-align:center;box-shadow:0 10px 26px rgba(46,27,18,.28)}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:999px;font-weight:600;font-size:14px;z-index:10;max-width:90vw;text-align:center;box-shadow:0 10px 26px rgba(46,27,18,.32);animation:toastIn .32s var(--ease-spring)}
+.toast.leaving{animation:toastOut .2s ease-in forwards}
 .toast.err{background:var(--bad);color:#FBEAE6}
 .empty{padding:34px 4px;text-align:center;color:var(--ink-soft);font-style:italic}
-.loading{padding:70px 0;text-align:center;color:var(--ink-soft)}
-@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+.loading{padding:70px 0;text-align:center;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:12px}
+.loading .mark{animation:loadBounce 1s ease-in-out infinite}
+
+@keyframes markIn{from{transform:scale(.5) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes popIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+@keyframes chipPop{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes barfill{from{width:0}to{width:var(--w)}}
+@keyframes pulseLive{0%,100%{box-shadow:0 0 0 0 rgba(var(--terracotta-rgb),.5)}50%{box-shadow:0 0 0 5px rgba(var(--terracotta-rgb),0)}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,10px) scale(.95)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translate(-50%,10px) scale(.95)}}
+@keyframes loadBounce{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-8px) rotate(12deg)}}
+@media (prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
+  ::view-transition-old(root),::view-transition-new(root){animation:none!important}
+}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.28s;animation-timing-function:cubic-bezier(.16,1,.3,1)}
 </style>
 </head>
 <body>
@@ -198,7 +243,8 @@ const S = {
   matches: [], competitors: {}, myPreds: {},
   board: null, boardScope: 'ALL',
   friends: {}, openFriends: {},
-  authMode: 'login', adminCircuit: 'WTT', bootError: ''
+  authMode: 'login', adminCircuit: 'WTT', bootError: '',
+  _freshMatches: true, // vrai à l'ouverture : la toute première liste a le droit d'entrer en scène
 };
 
 /* ---------- Petits outils ---------- */
@@ -213,7 +259,40 @@ function toast(msg, isErr) {
   el.setAttribute('role', 'status');
   el.textContent = msg;
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), isErr ? 4200 : 2200);
+  setTimeout(() => {
+    el.classList.add('leaving');
+    setTimeout(() => el.remove(), 200);
+  }, isErr ? 4000 : 2000);
+}
+
+/* ---------- Curseurs qui glissent (navigation du bas, filtres) ----------
+   L'ensemble de la page est reconstruit à chaque rendu, donc chaque curseur
+   est un nouvel élément à chaque fois : pour qu'il ait l'air de glisser
+   plutôt que de sauter, on le repositionne d'abord sans transition sur sa
+   dernière position connue, puis on l'anime vers la nouvelle (technique FLIP). */
+const S_THUMBS = {};
+function moveThumb(key, thumb, target) {
+  if (!thumb || !target) { if (thumb) thumb.style.opacity = 0; return; }
+  const c = thumb.parentElement.getBoundingClientRect(), r = target.getBoundingClientRect();
+  const pos = { left: r.left - c.left, width: r.width };
+  const prev = S_THUMBS[key];
+  thumb.style.transition = 'none';
+  thumb.style.left = (prev ? prev.left : pos.left) + 'px';
+  thumb.style.width = (prev ? prev.width : pos.width) + 'px';
+  thumb.style.opacity = prev ? 1 : 0;
+  void thumb.offsetWidth;
+  thumb.style.transition = '';
+  thumb.style.left = pos.left + 'px';
+  thumb.style.width = pos.width + 'px';
+  thumb.style.opacity = 1;
+  S_THUMBS[key] = pos;
+}
+function updateThumbs() {
+  const nav = $app.querySelector('.nav');
+  if (nav) moveThumb('nav', nav.querySelector('.navthumb'), nav.querySelector('button[aria-current="page"]'));
+  $app.querySelectorAll('.seg[data-seg]').forEach(seg => {
+    moveThumb('seg:' + seg.dataset.seg, seg.querySelector('.segthumb'), seg.querySelector('button[aria-pressed="true"]'));
+  });
 }
 
 function friendlyError(e) {
@@ -327,6 +406,7 @@ async function loadAll() {
   S.myPreds = {};
   (preds.data || []).forEach(x => { S.myPreds[x.match_id] = x; });
   S.isAdmin = adm.data === true;
+  loadBoard().then(render); // chargé à part : n'empêche pas la connexion s'il échoue
 }
 async function loadBoard() {
   const q = S.boardScope === 'ALL'
@@ -360,16 +440,29 @@ function render() {
   $app.innerHTML = `
     <div class="wrap">
       <header class="top">
-        <div class="brand"><span class="ball"></span>${esc(APP_NAME)}</div>
+        <div class="brand">${MARK(26)}${esc(APP_NAME)}</div>
         <div class="me"><span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
       </header>
       <main>${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
     </div>
     <nav class="nav" aria-label="Navigation principale">
+      <span class="navthumb" aria-hidden="true"></span>
       ${tabs.map(([k, label]) => `<button data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${label}${k === 'matches' && todo ? `<span class="badge" title="Matchs sans prono">${todo}</span>` : ''}</button>`).join('')}
     </nav>`;
+  requestAnimationFrame(updateThumbs);
 }
 function keepRender() { const y = window.scrollY; render(); window.scrollTo(0, y); }
+// Change d'écran avec un fondu enchaîné natif quand le navigateur le sait faire
+// (tout le monde sauf les très vieux Firefox/Safari) ; sinon, bascule sans effet.
+function navigate(fn) {
+  if (document.startViewTransition) document.startViewTransition(fn);
+  else fn();
+}
+// Une rangée de filtres avec un curseur qui glisse jusqu'à l'onglet actif.
+function segRow(items, cur, act) {
+  return `<div class="seg" data-seg="${act}"><span class="segthumb" aria-hidden="true"></span>
+    ${items.map(([k, l]) => `<button data-act="${act}" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div>`;
+}
 
 function tabView() {
   if (S.tab === 'board') return boardView();
@@ -382,7 +475,7 @@ function authView() {
   const su = S.authMode === 'signup';
   return `
   <div class="auth">
-    <h1><span class="ball"></span>${esc(APP_NAME)}</h1>
+    <h1>${MARK(38)}${esc(APP_NAME)}</h1>
     <p class="lead">Les pronostics de tennis de table entre amis : WTT et Pro A.</p>
     <form id="authform" class="panel">
       ${su ? `<label for="pseudo">Pseudo</label><input id="pseudo" required minlength="2" maxlength="20" autocomplete="nickname">` : ''}
@@ -416,11 +509,13 @@ async function submitAuth(f) {
 
 /* --- Matchs --- */
 function matchesView() {
+  // "fresh" : la liste vient d'être ouverte ou filtrée (pas juste un prono posé
+  // ailleurs sur la même liste) -> les cartes ont le droit de rejouer leur entrée.
+  const fresh = S._freshMatches; S._freshMatches = false;
   const list = S.matches.filter(m => S.circuit === 'ALL' || m.circuit === S.circuit);
   const up = list.filter(m => m.status === 'scheduled' || m.status === 'live').sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
   const done = list.filter(m => m.status === 'finished' || m.status === 'cancelled').sort((a, b) => new Date(b.starts_at) - new Date(a.starts_at)).slice(0, 60);
   const shown = S.view === 'upcoming' ? up : done;
-  const seg = (items, cur, act) => `<div class="seg">${items.map(([k, l]) => `<button data-act="${act}" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div>`;
   let body = '';
   if (!shown.length) {
     body = `<div class="empty">${S.view === 'upcoming'
@@ -428,15 +523,35 @@ function matchesView() {
       : "Aucun match terminé pour l'instant."}</div>`;
   } else {
     let lastDay = '';
+    let i = 0;
     for (const m of shown) {
       const d = fmtDay(m.starts_at);
       if (d !== lastDay) { body += `<h2 class="day">${esc(d)}</h2>`; lastDay = d; }
-      body += matchCard(m);
+      body += matchCard(m, fresh, i++);
     }
   }
-  return seg([['upcoming', 'À venir'], ['done', 'Terminés']], S.view, 'view')
-    + seg([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit')
+  return statsStrip(up) + segRow([['upcoming', 'À venir'], ['done', 'Terminés']], S.view, 'view')
+    + segRow([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit')
     + body;
+}
+// Petit résumé personnel en tête de l'onglet Matchs : ce qu'il te reste à
+// faire, et ta position au classement général si tu l'as déjà consultée.
+function statsStrip(upcoming) {
+  const todo = upcoming.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
+  const mine = S.board && S.board.find(r => r.user_id === S.session.user.id);
+  return `<div class="stats">
+    <div class="stat"><b>${todo}</b><span>${todo > 1 ? 'pronos à faire' : 'prono à faire'}</span></div>
+    <div class="stat"><b>${mine ? mine.total_points : '—'}</b><span>${mine ? `point${mine.total_points > 1 ? 's' : ''}, ${ordinalRank(S.board, mine)}` : 'pas encore de points'}</span></div>
+  </div>`;
+}
+function ordinalRank(board, mine) {
+  let rank = 1, prev = null;
+  for (let i = 0; i < board.length; i++) {
+    const k = board[i].total_points + '/' + board[i].exact_scores;
+    if (k !== prev) { rank = i + 1; prev = k; }
+    if (board[i].user_id === mine.user_id) return rank + (rank === 1 ? 'er' : 'e');
+  }
+  return '';
 }
 
 function chips(m, side, mine, disabled) {
@@ -450,7 +565,7 @@ function chips(m, side, mine, disabled) {
   return `<div class="chips">${out.join('')}</div>`;
 }
 
-function matchCard(m) {
+function matchCard(m, fresh, i) {
   const locked = isLocked(m), mine = S.myPreds[m.id];
   const fin = m.status === 'finished', canc = m.status === 'cancelled';
   const winA = fin && m.score_a > m.score_b, winB = fin && m.score_b > m.score_a;
@@ -471,7 +586,7 @@ function matchCard(m) {
   const trendHtml = t ? `
     <div class="trend">
       <div class="trendrow"><span>${Math.round(t.pA * 100)} %</span>
-        <div class="bar" role="img" aria-label="Chances de victoire : ${esc(m.side_a)} ${Math.round(t.pA * 100)} %, ${esc(m.side_b)} ${100 - Math.round(t.pA * 100)} %"><i style="width:${Math.round(t.pA * 100)}%"></i></div>
+        <div class="bar" role="img" aria-label="Chances de victoire : ${esc(m.side_a)} ${Math.round(t.pA * 100)} %, ${esc(m.side_b)} ${100 - Math.round(t.pA * 100)} %"><i style="--w:${Math.round(t.pA * 100)}%;width:${Math.round(t.pA * 100)}%"></i></div>
         <span>${100 - Math.round(t.pA * 100)} %</span></div>
       <p class="tnote">Tendance statistique : score le plus probable ${t.score.a}–${t.score.b}.
         <button class="linkbtn" data-act="pick" data-id="${m.id}" data-a="${t.score.a}" data-b="${t.score.b}">Suivre la tendance</button></p>
@@ -498,18 +613,18 @@ function matchCard(m) {
   }
 
   return `
-  <article class="match" data-card="${m.id}">
+  <article class="match${fresh ? ' enter' : ''}" data-card="${m.id}"${fresh ? ` style="animation-delay:${Math.min(i, 8) * 45}ms"` : ''}>
     <div class="mhead">
       <div><div class="comp">${esc(m.competition)}</div>${m.round ? `<div class="rnd">${esc(m.round)}</div>` : ''}</div>
       <div><div class="when"><time datetime="${esc(m.starts_at)}">${esc(fmtWhen(m.starts_at))}</time></div><div class="when">${pill}</div></div>
     </div>
     <div class="court${fin ? ' done' : ''}">
       <div class="side">
-        <div class="name${winB ? ' lose' : ''}">${flag(ca)}${esc(m.side_a)}</div><div class="rk">${rk(ca)}</div>
+        <div class="name${winB ? ' lose' : ''}">${flag(ca)}${esc(m.side_a)}${winA ? '<span class="win-badge" aria-hidden="true">✓</span>' : ''}</div><div class="rk">${rk(ca)}</div>
         ${showChips ? chips(m, 'A', mine, locked) : ''}
       </div>
       <div class="side">
-        <div class="name${winA ? ' lose' : ''}">${flag(cb)}${esc(m.side_b)}</div><div class="rk">${rk(cb)}</div>
+        <div class="name${winA ? ' lose' : ''}">${flag(cb)}${esc(m.side_b)}${winB ? '<span class="win-badge" aria-hidden="true">✓</span>' : ''}</div><div class="rk">${rk(cb)}</div>
         ${showChips ? chips(m, 'B', mine, locked) : ''}
       </div>
       ${fin ? `<div class="netscore" aria-label="Résultat ${m.score_a} à ${m.score_b}">${m.score_a}–${m.score_b}</div>` : ''}
@@ -538,7 +653,7 @@ async function toggleFriends(id) {
 
 /* --- Classement --- */
 function boardView() {
-  const seg = `<div class="seg">${[['ALL', 'Général'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']].map(([k, l]) => `<button data-act="boardscope" data-v="${k}" aria-pressed="${S.boardScope === k}">${l}</button>`).join('')}</div>`;
+  const seg = segRow([['ALL', 'Général'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.boardScope, 'boardscope');
   if (S.board === null) return seg + '<div class="loading">Chargement…</div>';
   if (!S.board.length) return seg + `<div class="empty">Pas encore de points. Le classement se remplit dès que les premiers matchs sont terminés.</div>${rules()}`;
   let prev = null, rank = 0;
@@ -698,12 +813,13 @@ $app.addEventListener('click', async e => {
   else if (act === 'logout') { await sb.auth.signOut(); }
   else if (act === 'tab') {
     S.tab = el.dataset.tab;
-    if (S.tab === 'board') { S.board = null; render(); await loadBoard(); }
-    render(); window.scrollTo(0, 0);
+    if (S.tab === 'matches') S._freshMatches = true;
+    if (S.tab === 'board') { S.board = null; navigate(render); await loadBoard(); }
+    navigate(render); window.scrollTo(0, 0);
   }
-  else if (act === 'view') { S.view = v; render(); }
-  else if (act === 'circuit') { S.circuit = v; render(); }
-  else if (act === 'boardscope') { S.boardScope = v; S.board = null; render(); await loadBoard(); render(); }
+  else if (act === 'view') { S.view = v; S._freshMatches = true; navigate(render); }
+  else if (act === 'circuit') { S.circuit = v; S._freshMatches = true; navigate(render); }
+  else if (act === 'boardscope') { S.boardScope = v; S.board = null; navigate(render); await loadBoard(); navigate(render); }
   else if (act === 'pick') pick(id, Number(el.dataset.a), Number(el.dataset.b));
   else if (act === 'friends') toggleFriends(id);
   else if (act === 'adm-result') saveResult(id);
