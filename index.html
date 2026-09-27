@@ -54,35 +54,75 @@ body{
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--bordeaux);outline-offset:2px}
-.wrap{max-width:680px;margin:0 auto;padding:0 16px 128px}
+:focus-visible{outline:2px solid var(--bordeaux);outline-offset:2px}
 .mark{color:var(--bordeaux);flex:none;display:block}
+
+/* Ossature générale : une colonne de navigation qui devient une vraie
+   barre latérale sur grand écran, un contenu qui respire davantage. */
+.shell{max-width:1320px;margin:0 auto;min-height:100vh}
+.content{padding:0 16px 128px;min-width:0}
+@media (min-width:900px){
+  .shell{display:grid;grid-template-columns:252px minmax(0,1fr);align-items:start}
+  .content{padding:36px 44px 64px}
+}
+
+/* Un fond qui respire lentement, derrière tout le reste. */
+body::after{
+  content:"";position:fixed;inset:-12%;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(640px 520px at 18% 28%, rgba(var(--terracotta-rgb),.12), transparent 62%),
+    radial-gradient(760px 640px at 86% 78%, rgba(var(--bordeaux-rgb),.13), transparent 60%);
+  animation:ambientDrift 24s ease-in-out infinite alternate;
+}
+@keyframes ambientDrift{from{transform:translate(0,0) scale(1)}to{transform:translate(-2.5%,2%) scale(1.04)}}
+
 @media (prefers-reduced-motion:no-preference){
   button, .chip, .btn, input, select, .day, .name{transition:background-color .16s var(--ease-out), color .16s var(--ease-out), border-color .16s var(--ease-out), box-shadow .18s var(--ease-out), transform .16s var(--ease-out)}
 }
 button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 
-/* En-tête */
-.top{display:flex;align-items:center;justify-content:space-between;padding:20px 2px 14px}
+/* En-tête mobile (masqué sur grand écran : la barre latérale prend le relais) */
+.top{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px}
+@media (min-width:900px){ .top{display:none} }
 .brand{font:600 28px/1 var(--f-display);display:flex;align-items:center;gap:9px;color:var(--bordeaux);letter-spacing:-.01em}
 .brand .mark{animation:markIn .5s var(--ease-spring)}
 .me{display:flex;align-items:center;gap:9px;color:var(--ink-soft);font-size:13.5px}
 .linkbtn{background:none;border:0;padding:6px 2px;color:var(--bordeaux);text-decoration:underline;text-underline-offset:3px;font-size:inherit}
 .linkbtn:hover{color:var(--bordeaux-deep)}
 
-/* Petit tableau de bord perso, en haut de l'onglet Matchs */
-.stats{display:flex;gap:10px;margin:2px 0 22px}
-.stat{flex:1;background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:14px;padding:12px 14px;box-shadow:var(--shadow-1);position:relative;overflow:hidden}
-.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--bordeaux),var(--terracotta))}
-.stat b{display:block;font:700 26px/1 var(--f-display);color:var(--bordeaux)}
-.stat span{font-size:12px;color:var(--ink-soft)}
+/* Bandeau d'accueil de l'onglet Matchs : grand, chaud, jamais tout à fait immobile */
+.hero{position:relative;overflow:hidden;border-radius:20px;padding:26px 26px 24px;margin:4px 0 26px;color:#F8EFE2;
+  background:linear-gradient(120deg,var(--bordeaux),var(--bordeaux-deep) 48%,var(--terracotta));
+  background-size:220% 220%;animation:heroDrift 16s ease-in-out infinite;box-shadow:var(--shadow-card)}
+.hero::before{content:"";position:absolute;inset:0;opacity:.5;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")}
+@keyframes heroDrift{0%,100%{background-position:0% 30%}50%{background-position:100% 70%}}
+.herotop{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.herogreet{font:italic 600 27px/1.2 var(--f-display)}
+.herosub{font-size:13.5px;opacity:.82;margin-top:4px;max-width:46ch}
+.livechip{position:relative;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.16);border-radius:999px;padding:7px 13px 7px 11px;font:600 12.5px/1 var(--f-body);white-space:nowrap;animation:pulseLive 1.7s ease-in-out infinite}
+.livedot{width:7px;height:7px;border-radius:50%;background:#fff;flex:none}
+.herostats{position:relative;display:flex;gap:34px;margin-top:22px;flex-wrap:wrap}
+.herostat b{display:block;font:700 36px/1 var(--f-display)}
+.herostat span{font-size:12.5px;opacity:.8}
 
-/* Navigation du bas, avec curseur qui glisse */
+/* Vieux tableau de bord (supprimé : remplacé par le bandeau .hero ci-dessus) */
+
+/* Navigation : barre fixe en bas sur mobile, vraie barre latérale sur grand écran */
 .nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line-soft);padding:9px 10px calc(7px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:2px;z-index:5;box-shadow:0 -10px 24px rgba(46,27,18,.09)}
-.nav{position:fixed}
 .navthumb{position:absolute;top:9px;height:calc(100% - 16px - env(safe-area-inset-bottom));background:rgba(var(--bordeaux-rgb),.1);border-radius:12px;transition:left .32s var(--ease-spring), width .32s var(--ease-spring);pointer-events:none;opacity:0}
 .nav button{flex:1;max-width:220px;background:none;border:0;padding:10px 6px 8px;font:600 17px/1 var(--f-display);color:var(--ink-soft);position:relative;z-index:1;border-radius:12px}
 .nav button[aria-current="page"]{color:var(--bordeaux)}
+.navbrand,.navfoot{display:none}
 .badge{background:var(--terracotta);color:#FBF1E4;border-radius:8px;padding:1px 7px;font-size:12.5px;margin-left:5px;font-family:var(--f-body);font-weight:600;display:inline-block;animation:popIn .3s var(--ease-spring)}
+@media (min-width:900px){
+  .nav{position:sticky;top:0;left:auto;right:auto;bottom:auto;height:100vh;flex-direction:column;justify-content:flex-start;align-items:stretch;width:252px;padding:30px 20px;box-shadow:none;border-top:0;border-right:1px solid var(--line-soft);background:linear-gradient(180deg,var(--card-top),var(--card));gap:3px}
+  .navthumb{display:none}
+  .nav button{flex:none;max-width:none;display:flex;align-items:center;gap:11px;text-align:left;justify-content:flex-start;padding:12px 14px;font-size:16.5px}
+  .nav button[aria-current="page"]{background:rgba(var(--bordeaux-rgb),.12)}
+  .navbrand{display:flex;align-items:center;gap:10px;font:600 23px/1 var(--f-display);color:var(--bordeaux);margin:0 4px 26px;letter-spacing:-.01em}
+  .navfoot{display:flex;flex-direction:column;gap:9px;margin-top:auto;padding:18px 4px 0;border-top:1px solid var(--line-soft);font-size:13px;color:var(--ink-soft)}
+}
 
 /* Filtres : rangée d'onglets avec curseur qui glisse */
 .seg{display:flex;gap:4px;margin:6px 0 20px;position:relative;border-bottom:1px solid var(--line-soft);flex-wrap:wrap;isolation:isolate}
@@ -91,9 +131,11 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 .seg button[aria-pressed="true"]{color:var(--bordeaux)}
 .day{font:italic 500 19px/1.2 var(--f-display);margin:30px 0 12px;color:var(--gold);display:flex;align-items:center;gap:12px;text-transform:capitalize}
 .day::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+.matchgrid{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:4px;align-items:start}
+@media (min-width:720px){ .matchgrid{grid-template-columns:repeat(auto-fill,minmax(360px,1fr))} }
 
 /* Un match = une vraie carte, avec relief et une tranche de couleur */
-.match{position:relative;background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:16px;box-shadow:var(--shadow-card);margin:0 0 16px;overflow:hidden}
+.match{position:relative;background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:16px;box-shadow:var(--shadow-card);overflow:hidden;height:fit-content}
 .match.enter{animation:cardIn .38s var(--ease-out) backwards}
 .match::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--bordeaux),var(--terracotta))}
 .match:active{box-shadow:var(--shadow-card-active);transform:translateY(1px)}
@@ -167,9 +209,23 @@ input:focus-visible,select:focus-visible{outline:none;border-color:var(--bordeau
 .scorein{width:58px;text-align:center;font:600 18px/1 var(--f-display);padding:9px 6px;border-radius:9px}
 .vs{font:600 17px/1 var(--f-body);color:var(--ink-soft)}
 
-/* Connexion */
-.auth{max-width:420px;margin:0 auto;padding:60px 18px 60px}
-.auth h1{font:600 42px/1.1 var(--f-display);margin:0 0 12px;display:flex;align-items:center;gap:11px;color:var(--bordeaux)}
+/* Connexion : un vrai écran en deux volets sur grand écran, pas juste un formulaire perdu */
+.authshell{min-height:100vh;display:flex;flex-direction:column}
+.authbrand{position:relative;overflow:hidden;padding:44px 24px 36px;color:#F8EFE2;
+  background:linear-gradient(135deg,var(--bordeaux),var(--bordeaux-deep) 55%,var(--terracotta));
+  background-size:220% 220%;animation:heroDrift 16s ease-in-out infinite}
+.authbrand::before{content:"";position:absolute;inset:0;opacity:.5;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")}
+.authbrand-in{position:relative;max-width:440px}
+.authbrand h1{font:600 40px/1.1 var(--f-display);margin:0 0 14px;display:flex;align-items:center;gap:11px}
+.authbrand p{font-size:15.5px;opacity:.88;margin:0;max-width:40ch}
+.authform-col{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 18px 60px}
+@media (min-width:900px){
+  .authshell{flex-direction:row}
+  .authbrand{flex:1 1 44%;padding:0 60px;display:flex;align-items:center}
+  .authform-col{flex:1 1 56%}
+}
+.auth{max-width:400px;width:100%}
 .lead{color:var(--ink-soft);margin:0 0 24px;font-size:15.5px}
 .ferr{color:var(--bad);font-size:13.5px;margin-top:12px;min-height:1.2em}
 .fok{color:var(--good)}
@@ -195,6 +251,7 @@ input:focus-visible,select:focus-visible{outline:none;border-color:var(--bordeau
 @media (prefers-reduced-motion:reduce){
   *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
   ::view-transition-old(root),::view-transition-new(root){animation:none!important}
+  body::after{animation:none!important}
 }
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.28s;animation-timing-function:cubic-bezier(.16,1,.3,1)}
 </style>
@@ -438,17 +495,21 @@ function render() {
   const tabs = [['matches', 'Matchs'], ['board', 'Classement']];
   if (S.isAdmin) tabs.push(['admin', 'Admin']);
   $app.innerHTML = `
-    <div class="wrap">
-      <header class="top">
-        <div class="brand">${MARK(26)}${esc(APP_NAME)}</div>
-        <div class="me"><span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
-      </header>
-      <main>${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
-    </div>
-    <nav class="nav" aria-label="Navigation principale">
-      <span class="navthumb" aria-hidden="true"></span>
-      ${tabs.map(([k, label]) => `<button data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${label}${k === 'matches' && todo ? `<span class="badge" title="Matchs sans prono">${todo}</span>` : ''}</button>`).join('')}
-    </nav>`;
+    <div class="shell">
+      <nav class="nav" aria-label="Navigation principale">
+        <div class="navbrand">${MARK(24)}${esc(APP_NAME)}</div>
+        <span class="navthumb" aria-hidden="true"></span>
+        ${tabs.map(([k, label]) => `<button data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${label}${k === 'matches' && todo ? `<span class="badge" title="Matchs sans prono">${todo}</span>` : ''}</button>`).join('')}
+        <div class="navfoot"><span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
+      </nav>
+      <div class="content">
+        <header class="top">
+          <div class="brand">${MARK(26)}${esc(APP_NAME)}</div>
+          <div class="me"><span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
+        </header>
+        <main>${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
+      </div>
+    </div>`;
   requestAnimationFrame(updateThumbs);
 }
 function keepRender() { const y = window.scrollY; render(); window.scrollTo(0, y); }
@@ -474,18 +535,24 @@ function tabView() {
 function authView() {
   const su = S.authMode === 'signup';
   return `
-  <div class="auth">
-    <h1>${MARK(38)}${esc(APP_NAME)}</h1>
-    <p class="lead">Les pronostics de tennis de table entre amis : WTT et Pro A.</p>
-    <form id="authform" class="panel">
-      ${su ? `<label for="pseudo">Pseudo</label><input id="pseudo" required minlength="2" maxlength="20" autocomplete="nickname">` : ''}
-      <label for="email">Email</label><input id="email" type="email" required autocomplete="email">
-      <label for="pw">Mot de passe</label><input id="pw" type="password" required minlength="6" autocomplete="${su ? 'new-password' : 'current-password'}">
-      ${su ? `<label for="code">Code d'invitation</label><input id="code" required autocomplete="off" autocapitalize="characters">` : ''}
-      <button class="btn" type="submit">${su ? 'Créer mon compte' : 'Me connecter'}</button>
-      <div id="autherr" class="ferr" role="alert"></div>
-    </form>
-    <p class="switch">${su ? 'Déjà un compte ?' : 'Pas encore de compte ?'} <button class="linkbtn" data-act="authmode">${su ? 'Me connecter' : 'Créer un compte'}</button></p>
+  <div class="authshell">
+    <div class="authbrand"><div class="authbrand-in">
+      <h1>${MARK(36)}${esc(APP_NAME)}</h1>
+      <p>Les pronostics de tennis de table entre amis : WTT et Pro A. Vainqueur, score exact, et un bonus quand tu devines juste sur l'outsider.</p>
+    </div></div>
+    <div class="authform-col">
+      <div class="auth">
+        <form id="authform" class="panel">
+          ${su ? `<label for="pseudo">Pseudo</label><input id="pseudo" required minlength="2" maxlength="20" autocomplete="nickname">` : ''}
+          <label for="email">Email</label><input id="email" type="email" required autocomplete="email">
+          <label for="pw">Mot de passe</label><input id="pw" type="password" required minlength="6" autocomplete="${su ? 'new-password' : 'current-password'}">
+          ${su ? `<label for="code">Code d'invitation</label><input id="code" required autocomplete="off" autocapitalize="characters">` : ''}
+          <button class="btn" type="submit">${su ? 'Créer mon compte' : 'Me connecter'}</button>
+          <div id="autherr" class="ferr" role="alert"></div>
+        </form>
+        <p class="switch">${su ? 'Déjà un compte ?' : 'Pas encore de compte ?'} <button class="linkbtn" data-act="authmode">${su ? 'Me connecter' : 'Créer un compte'}</button></p>
+      </div>
+    </div>
   </div>`;
 }
 async function submitAuth(f) {
@@ -526,22 +593,37 @@ function matchesView() {
     let i = 0;
     for (const m of shown) {
       const d = fmtDay(m.starts_at);
-      if (d !== lastDay) { body += `<h2 class="day">${esc(d)}</h2>`; lastDay = d; }
+      if (d !== lastDay) {
+        if (lastDay) body += '</div>';
+        body += `<h2 class="day">${esc(d)}</h2><div class="matchgrid">`;
+        lastDay = d;
+      }
       body += matchCard(m, fresh, i++);
     }
+    body += '</div>';
   }
-  return statsStrip(up) + segRow([['upcoming', 'À venir'], ['done', 'Terminés']], S.view, 'view')
+  return heroBand(up) + segRow([['upcoming', 'À venir'], ['done', 'Terminés']], S.view, 'view')
     + segRow([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit')
     + body;
 }
-// Petit résumé personnel en tête de l'onglet Matchs : ce qu'il te reste à
-// faire, et ta position au classement général si tu l'as déjà consultée.
-function statsStrip(upcoming) {
+// Bandeau d'accueil de l'onglet Matchs : salutation, ce qu'il reste à faire,
+// ta position au classement, et un signal si un match est en direct.
+function heroBand(upcoming) {
   const todo = upcoming.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
   const mine = S.board && S.board.find(r => r.user_id === S.session.user.id);
-  return `<div class="stats">
-    <div class="stat"><b>${todo}</b><span>${todo > 1 ? 'pronos à faire' : 'prono à faire'}</span></div>
-    <div class="stat"><b>${mine ? mine.total_points : '—'}</b><span>${mine ? `point${mine.total_points > 1 ? 's' : ''}, ${ordinalRank(S.board, mine)}` : 'pas encore de points'}</span></div>
+  const live = S.matches.find(m => m.status === 'live');
+  return `<div class="hero">
+    <div class="herotop">
+      <div>
+        <div class="herogreet">Salut ${esc(S.pseudo)}</div>
+        <div class="herosub">${todo ? `Il te reste ${todo} prono${todo > 1 ? 's' : ''} à faire avant le coup d'envoi.` : "Tous tes pronos sont à jour, bien joué."}</div>
+      </div>
+      ${live ? `<span class="livechip"><span class="livedot" aria-hidden="true"></span>${esc(live.side_a)} ${live.score_a ?? 0}–${live.score_b ?? 0} ${esc(live.side_b)}</span>` : ''}
+    </div>
+    <div class="herostats">
+      <div class="herostat"><b>${todo}</b><span>${todo > 1 ? 'pronos à faire' : 'prono à faire'}</span></div>
+      <div class="herostat"><b>${mine ? mine.total_points : '—'}</b><span>${mine ? `point${mine.total_points > 1 ? 's' : ''}, ${ordinalRank(S.board, mine)}` : 'pas encore de points'}</span></div>
+    </div>
   </div>`;
 }
 function ordinalRank(board, mine) {
