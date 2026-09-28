@@ -72,11 +72,19 @@ button{cursor:pointer}
 body::after{
   content:"";position:fixed;inset:-12%;z-index:-1;pointer-events:none;
   background:
-    radial-gradient(640px 520px at 18% 28%, rgba(var(--terracotta-rgb),.12), transparent 62%),
-    radial-gradient(760px 640px at 86% 78%, rgba(var(--bordeaux-rgb),.13), transparent 60%);
-  animation:ambientDrift 24s ease-in-out infinite alternate;
+    radial-gradient(620px 520px at 16% 24%, rgba(var(--terracotta-rgb),.20), transparent 62%),
+    radial-gradient(740px 640px at 88% 20%, rgba(var(--gold-rgb),.16), transparent 60%),
+    radial-gradient(780px 660px at 82% 82%, rgba(var(--bordeaux-rgb),.20), transparent 60%);
+  animation:ambientDrift 18s ease-in-out infinite alternate;
 }
-@keyframes ambientDrift{from{transform:translate(0,0) scale(1)}to{transform:translate(-2.5%,2%) scale(1.04)}}
+@keyframes ambientDrift{from{transform:translate(0,0) scale(1)}to{transform:translate(-3.5%,3%) scale(1.06)}}
+
+/* Petites balles qui montent très lentement en fond, pour que la page ne soit jamais figée */
+#floaters{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.floater{position:absolute;bottom:-8vh;border-radius:50%;will-change:transform;
+  background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(var(--terracotta-rgb),.65) 55%, rgba(var(--bordeaux-rgb),.45));
+  animation:floatUp linear infinite}
+@keyframes floatUp{to{transform:translate(var(--drift,24px), -128vh) rotate(200deg)}}
 
 @media (prefers-reduced-motion:no-preference){
   button, .chip, .btn, input, select, .day, .name{transition:background-color .16s var(--ease-out), color .16s var(--ease-out), border-color .16s var(--ease-out), box-shadow .18s var(--ease-out), transform .16s var(--ease-out)}
@@ -142,6 +150,8 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
   background:none;border:0;border-radius:10px;padding:10px 18px;font:600 14.5px/1 var(--f-body);color:var(--ink-soft)}
 .seg button:not([aria-pressed="true"]):hover{color:var(--ink)}
 .seg button[aria-pressed="true"]{color:var(--bordeaux)}
+.seg[data-seg="circuit"] .segthumb{box-shadow:0 1px 2px rgba(46,27,18,.22), 0 6px 12px -6px rgba(75,15,20,.38), 0 0 0 1.5px color-mix(in srgb, var(--seg-accent,var(--bordeaux)) 40%, transparent)}
+.seg[data-seg="circuit"] button[aria-pressed="true"]{color:var(--seg-accent,var(--bordeaux))}
 .cnt{font:600 11.5px/1 var(--f-body);padding:3px 7px;border-radius:999px;background:rgba(46,27,18,.1);color:var(--ink-soft)}
 .seg button[aria-pressed="true"] .cnt{background:rgba(var(--bordeaux-rgb),.13);color:var(--bordeaux)}
 .day{font:italic 500 19px/1.2 var(--f-display);margin:30px 0 12px;color:var(--gold);display:flex;align-items:center;gap:12px;text-transform:capitalize}
@@ -152,7 +162,7 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 /* Un match = une vraie carte, avec relief et une tranche de couleur */
 .match{position:relative;background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:16px;box-shadow:var(--shadow-card);overflow:hidden;height:fit-content}
 .match.enter{animation:cardIn .38s var(--ease-out) backwards}
-.match::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--bordeaux),var(--terracotta))}
+.match::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--spine-a,var(--bordeaux)),var(--spine-b,var(--terracotta)))}
 .match:active{box-shadow:var(--shadow-card-active);transform:translateY(1px)}
 .mhead{display:flex;justify-content:space-between;gap:10px;padding:16px 18px 0 20px}
 .comp{font-weight:600;font-size:13.5px;color:var(--ink)}
@@ -267,6 +277,7 @@ input:focus-visible,select:focus-visible{outline:none;border-color:var(--bordeau
   *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
   ::view-transition-old(root),::view-transition-new(root){animation:none!important}
   body::after,.hero::after,.authbrand::after{animation:none!important}
+  #floaters{display:none!important}
 }
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.28s;animation-timing-function:cubic-bezier(.16,1,.3,1)}
 </style>
@@ -536,8 +547,12 @@ function navigate(fn) {
 }
 // Une rangée de filtres avec un curseur qui glisse jusqu'à l'onglet actif.
 const SEG_LABELS = { view: 'Période', circuit: 'Circuit', boardscope: 'Classement' };
+// Couleur d'accent par circuit : bleu du logo pour le WTT, terracotta pour la Pro A,
+// bordeaux (la couleur par défaut du site) quand les deux sont mélangés.
+const CIRCUIT_ACCENT = { WTT: 'var(--navy)', PRO_A: 'var(--terracotta)' };
 function segRow(items, cur, act) {
-  return `<div class="seg" data-seg="${act}" role="group" aria-label="${SEG_LABELS[act] || ''}"><span class="segthumb" aria-hidden="true"></span>
+  const accent = act === 'circuit' ? ` style="--seg-accent:${CIRCUIT_ACCENT[cur] || 'var(--bordeaux)'}"` : '';
+  return `<div class="seg" data-seg="${act}" role="group" aria-label="${SEG_LABELS[act] || ''}"${accent}><span class="segthumb" aria-hidden="true"></span>
     ${items.map(([k, l]) => `<button data-act="${act}" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div>`;
 }
 
@@ -713,8 +728,12 @@ function matchCard(m, fresh, i) {
       : `<p class="hint" style="padding:0 14px 12px">Personne n'a fait de prono sur ce match.</p>`;
   }
 
+  const spine = m.circuit === 'WTT'
+    ? '--spine-a:var(--navy);--spine-b:color-mix(in srgb, var(--navy) 45%, white)'
+    : '--spine-a:var(--terracotta);--spine-b:var(--gold)';
+  const cardStyle = `${spine}${fresh ? `;animation-delay:${Math.min(i, 8) * 45}ms` : ''}`;
   return `
-  <article class="match${fresh ? ' enter' : ''}" data-card="${m.id}"${fresh ? ` style="animation-delay:${Math.min(i, 8) * 45}ms"` : ''}>
+  <article class="match${fresh ? ' enter' : ''}" data-card="${m.id}" style="${cardStyle}">
     <div class="mhead">
       <div><div class="comp">${esc(m.competition)}</div>${m.round ? `<div class="rnd">${esc(m.round)}</div>` : ''}</div>
       <div><div class="when"><time datetime="${esc(m.starts_at)}">${esc(fmtWhen(m.starts_at))}</time></div><div class="when">${pill}</div></div>
@@ -938,7 +957,31 @@ $app.addEventListener('change', e => {
 });
 
 /* ---------- Démarrage ---------- */
+// Petites balles flottantes en fond, créées une seule fois pour de bon (en dehors
+// de #app, qui lui se redessine sans arrêt) : elles ne redémarrent jamais leur course.
+function spawnFloaters() {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const box = document.createElement('div');
+  box.id = 'floaters';
+  box.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 10; i++) {
+    const f = document.createElement('span');
+    f.className = 'floater';
+    const size = 6 + Math.round(Math.random() * 16);
+    f.style.left = `${Math.round(Math.random() * 100)}%`;
+    f.style.width = f.style.height = `${size}px`;
+    f.style.opacity = (0.08 + Math.random() * 0.1).toFixed(2);
+    f.style.setProperty('--drift', `${Math.round((Math.random() - 0.5) * 160)}px`);
+    const duration = 34 + Math.random() * 30;
+    f.style.animationDuration = `${duration}s`;
+    f.style.animationDelay = `-${Math.round(Math.random() * duration)}s`; // déjà en vol au chargement
+    box.appendChild(f);
+  }
+  document.body.appendChild(box);
+}
+
 async function boot() {
+  spawnFloaters();
   if (!window.supabase) {
     $app.innerHTML = '<div class="auth"><h1>Oups</h1><p class="lead">Impossible de charger le service de connexion. Vérifie ta connexion internet et recharge la page.</p></div>';
     return;
