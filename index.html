@@ -263,30 +263,50 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 .namebtn{all:unset;cursor:pointer}
 .namebtn:hover,.namebtn:focus-visible{text-decoration:underline;text-decoration-color:rgba(var(--accent-rgb),.45);text-underline-offset:3px;outline:none}
 
-/* Fiche détail d'un joueur/équipe : panneau modal */
+/* Fiche détail d'un joueur/équipe : panneau modal.
+   Trois zones bien séparées visuellement : un bandeau d'identité teinté en
+   haut (nom + chiffres clés dans des pastilles), puis le corps où chaque
+   bloc d'info (effectif, à venir, résultats) est sa propre carte avec un
+   fond et un repère de couleur distincts — pas juste des titres sur un
+   flux continu. */
 .modalbackdrop{position:fixed;inset:0;z-index:50;background:rgba(46,27,18,.55);display:flex;align-items:flex-end;justify-content:center;
   animation:modalBgIn .2s var(--ease-out)}
 @media (min-width:640px){ .modalbackdrop{align-items:center;padding:20px} }
 .modal{position:relative;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:20px 20px 0 0;box-shadow:var(--shadow-card);
-  padding:26px 22px 30px;animation:modalIn .32s var(--ease-spring)}
+  background:var(--card);border-radius:20px 20px 0 0;box-shadow:var(--shadow-card);
+  animation:modalIn .32s var(--ease-spring)}
 @media (min-width:640px){ .modal{border-radius:18px} }
-.modalclose{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:999px;border:0;background:rgba(46,27,18,.08);
-  color:var(--ink-soft);font-size:21px;line-height:1;cursor:pointer}
-.modalclose:hover{background:rgba(46,27,18,.14);color:var(--ink)}
-.modalhead{padding-right:38px}
+.modalclose{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:999px;border:0;background:rgba(255,255,255,.3);
+  color:var(--ink-soft);font-size:21px;line-height:1;cursor:pointer;z-index:1}
+.modalclose:hover{background:rgba(255,255,255,.55);color:var(--ink)}
+/* Bandeau d'identité : fond teinté à la couleur du circuit (bordeaux WTT,
+   terracotta Pro A), nettement distinct du corps de la fiche en dessous. */
+.modalhead{padding:24px 46px 20px 22px;background:linear-gradient(165deg,rgba(var(--accent-rgb),.16),rgba(var(--accent-rgb),.05));
+  border-bottom:1px solid rgba(var(--accent-rgb),.18)}
 .modalname{font:600 25px/1.2 var(--f-display);color:var(--ink);display:flex;align-items:center;gap:9px}
 .modalsub{font-size:13.5px;color:var(--ink-soft);margin-top:3px}
-.modalstats{display:flex;gap:26px;margin:16px 0 2px;padding:14px 0;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
-.modalstats div{display:flex;flex-direction:column;gap:2px}
-.modalstats b{font:700 24px/1 var(--f-display);color:var(--accent)}
-.modalstats span{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.02em}
-.modal h3{font:600 12.5px/1 var(--f-body);color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin:20px 0 8px}
+.modalstats{display:flex;gap:9px;margin-top:16px}
+.statbox{flex:1;background:var(--card-top);border:1px solid rgba(var(--accent-rgb),.2);border-radius:12px;padding:9px 12px;
+  display:flex;flex-direction:column;gap:1px;box-shadow:var(--shadow-1)}
+.statbox b{font:700 21px/1.1 var(--f-display);color:var(--accent)}
+.statbox span{font-size:11px;color:var(--ink-soft)}
+/* Corps : chaque catégorie d'info est une carte à part, avec une pastille de
+   couleur qui dit ce qu'elle contient (or = effectif, accent = à venir,
+   neutre = passé) plutôt qu'un simple mot-clé au-dessus du texte. */
+.modalbody{padding:16px 18px 20px;display:flex;flex-direction:column;gap:12px}
+.modalsec{background:var(--card-top);border:1px solid var(--line-soft);border-radius:14px;padding:14px 16px 16px}
+.modalsec h3{display:flex;align-items:center;gap:9px;font:600 15.5px/1 var(--f-display);color:var(--ink);margin:0 0 11px}
+.secdot{width:9px;height:9px;border-radius:50%;flex:none}
+.sec-roster .secdot{background:var(--gold)}
+.sec-upcoming .secdot{background:var(--accent)}
+.sec-recent .secdot{background:var(--ink-soft)}
+.sec-empty{color:var(--ink-soft);font-size:13.5px;text-align:center;padding:10px 0}
 /* Chaque match : nom de l'adversaire en évidence sur sa propre ligne, date et
    résultat relégués en-dessous en plus petit -> un coup d'œil suffit. */
 .cmlist{list-style:none;margin:0;padding:0}
-.cmrow{padding:10px 0;border-bottom:1px solid var(--line-soft)}
-.cmlist li:last-child{border-bottom:0}
+.cmrow{padding:9px 0;border-bottom:1px solid var(--line-soft)}
+.cmlist li:first-child{padding-top:0}
+.cmlist li:last-child{border-bottom:0;padding-bottom:0}
 .cmopp{font:600 15.5px/1.3 var(--f-display);color:var(--ink)}
 .cmopp .namebtn{font:inherit}
 .cmmeta{display:flex;align-items:center;gap:8px;margin-top:3px}
@@ -296,7 +316,7 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 .cmres.loss{color:var(--bad);background:rgba(162,51,39,.14)}
 /* Effectif d'une équipe Pro A : grille de puces, pas une liste à puces classique */
 .roster{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
-.roster li{background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.16);border-radius:10px;
+.roster li{background:rgba(var(--gold-rgb),.1);border:1px solid rgba(var(--gold-rgb),.22);border-radius:10px;
   padding:9px 11px;font:600 14px/1.25 var(--f-body);color:var(--ink)}
 @keyframes modalBgIn{from{opacity:0}to{opacity:1}}
 @keyframes modalIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
@@ -959,23 +979,41 @@ function competitorModal(id) {
     <div class="cmmeta"><span class="cmdate">${esc(fmtDay(m.starts_at))}</span>${resultTag(m)}</div>
   </li>`;
   const roster = c.circuit === 'PRO_A' ? (c.roster || []) : [];
+  const nothing = !upcoming.length && !recent.length && !roster.length;
+
+  const rosterSec = roster.length ? `
+    <section class="modalsec sec-roster">
+      <h3><span class="secdot" aria-hidden="true"></span>Effectif</h3>
+      <ul class="roster">${roster.map(p => `<li>${esc(p)}</li>`).join('')}</ul>
+    </section>` : '';
+  const upcomingSec = upcoming.length ? `
+    <section class="modalsec sec-upcoming">
+      <h3><span class="secdot" aria-hidden="true"></span>À venir</h3>
+      <ul class="cmlist">${upcoming.slice(0, 5).map(matchRow).join('')}</ul>
+    </section>` : '';
+  const recentSec = recent.length ? `
+    <section class="modalsec sec-recent">
+      <h3><span class="secdot" aria-hidden="true"></span>Derniers résultats</h3>
+      <ul class="cmlist">${recent.map(matchRow).join('')}</ul>
+    </section>` : '';
+
   return `
   <div class="modalbackdrop" data-act="closecompetitor">
     <div class="modal" role="dialog" aria-modal="true" aria-label="${esc(c.name)}" data-act="stop">
       <button class="modalclose" data-act="closecompetitor" aria-label="Fermer">&times;</button>
       <div class="modalhead">
         <div class="modalname">${flagHtml(c)}${esc(c.name)}</div>
-        <div class="modalsub">${c.circuit === 'WTT' ? 'Simple messieurs/dames — WTT' : 'Équipe — Pro A'}${c.circuit === 'WTT' && c.country ? ' · ' + esc(c.country) : ''}</div>
+        <div class="modalsub">${c.circuit === 'WTT' ? 'Simple messieurs/dames, circuit WTT' : 'Équipe de Pro A'}</div>
+        <div class="modalstats">
+          <div class="statbox"><b>${c.ranking ?? '—'}</b><span>${c.circuit === 'WTT' ? 'classement mondial' : 'classement Pro A'}</span></div>
+          ${c.ranking_points ? `<div class="statbox"><b>${c.ranking_points}</b><span>points</span></div>` : ''}
+          ${roster.length ? `<div class="statbox"><b>${roster.length}</b><span>joueur${roster.length > 1 ? 's' : ''}</span></div>` : ''}
+        </div>
       </div>
-      <div class="modalstats">
-        <div><b>${c.ranking ?? '—'}</b><span>${c.circuit === 'WTT' ? 'classement mondial' : 'classement Pro A'}</span></div>
-        ${c.ranking_points ? `<div><b>${c.ranking_points}</b><span>points</span></div>` : ''}
-        ${roster.length ? `<div><b>${roster.length}</b><span>joueur${roster.length > 1 ? 's' : ''}</span></div>` : ''}
+      <div class="modalbody">
+        ${rosterSec}${upcomingSec}${recentSec}
+        ${nothing ? `<p class="sec-empty">Aucune information suivie pour le moment.</p>` : ''}
       </div>
-      ${roster.length ? `<h3>Effectif</h3><ul class="roster">${roster.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
-      ${upcoming.length ? `<h3>À venir</h3><ul class="cmlist">${upcoming.slice(0, 5).map(matchRow).join('')}</ul>` : ''}
-      ${recent.length ? `<h3>Derniers résultats</h3><ul class="cmlist">${recent.map(matchRow).join('')}</ul>` : ''}
-      ${!upcoming.length && !recent.length && !roster.length ? `<p class="hint">Aucune information suivie pour le moment.</p>` : ''}
     </div>
   </div>`;
 }
