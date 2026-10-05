@@ -255,6 +255,43 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 .lbpts{font:700 29px/1 var(--f-display);text-align:right;color:var(--accent)}
 .lbpts small{font-size:13.5px;font-weight:500;color:var(--ink-soft);margin-left:3px;font-family:var(--f-body)}
 .rules{color:var(--ink-soft);font-size:13px;margin:20px 2px 4px;line-height:1.65}
+/* Ligne de classement joueur/équipe cliquable (fiche détail) */
+.lb li.lbrow{cursor:pointer;transition:box-shadow .15s}
+.lb li.lbrow:hover,.lb li.lbrow:focus-visible{box-shadow:var(--shadow-1), 0 0 0 2px rgba(var(--accent-rgb),.35);outline:none}
+/* Nom de joueur/équipe cliquable dans une carte de match : garde l'apparence
+   du texte normal, juste une invite au survol/focus. */
+.namebtn{all:unset;cursor:pointer}
+.namebtn:hover,.namebtn:focus-visible{text-decoration:underline;text-decoration-color:rgba(var(--accent-rgb),.45);text-underline-offset:3px;outline:none}
+
+/* Fiche détail d'un joueur/équipe : panneau modal */
+.modalbackdrop{position:fixed;inset:0;z-index:50;background:rgba(46,27,18,.55);display:flex;align-items:flex-end;justify-content:center;
+  animation:modalBgIn .2s var(--ease-out)}
+@media (min-width:640px){ .modalbackdrop{align-items:center;padding:20px} }
+.modal{position:relative;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:20px 20px 0 0;box-shadow:var(--shadow-card);
+  padding:26px 22px 30px;animation:modalIn .32s var(--ease-spring)}
+@media (min-width:640px){ .modal{border-radius:18px} }
+.modalclose{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:999px;border:0;background:rgba(46,27,18,.08);
+  color:var(--ink-soft);font-size:21px;line-height:1;cursor:pointer}
+.modalclose:hover{background:rgba(46,27,18,.14);color:var(--ink)}
+.modalhead{padding-right:38px}
+.modalname{font:600 25px/1.2 var(--f-display);color:var(--ink);display:flex;align-items:center;gap:9px}
+.modalsub{font-size:13.5px;color:var(--ink-soft);margin-top:3px}
+.modalstats{display:flex;gap:26px;margin:16px 0 2px;padding:14px 0;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.modalstats div{display:flex;flex-direction:column;gap:2px}
+.modalstats b{font:700 24px/1 var(--f-display);color:var(--accent)}
+.modalstats span{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.02em}
+.modal h3{font:600 12.5px/1 var(--f-body);color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin:20px 0 6px}
+.cmlist{list-style:none;margin:0;padding:0}
+.cmlist li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:14px}
+.cmlist li:last-child{border-bottom:0}
+.cmopp{color:var(--ink)}
+.cmres{flex:0 0 auto;font-weight:700;font-size:12.5px;padding:3px 9px;border-radius:999px;background:rgba(46,27,18,.08);color:var(--ink-soft)}
+.cmres.win{color:var(--good);background:rgba(75,107,62,.14)}
+.cmres.loss{color:var(--bad);background:rgba(162,51,39,.14)}
+@keyframes modalBgIn{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@media (min-width:640px){ @keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}} }
 
 /* Formulaires et administration */
 .panel{background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:16px;padding:20px;margin:0 0 18px;box-shadow:var(--shadow-card)}
@@ -370,6 +407,8 @@ const S = {
   authMode: 'login', adminCircuit: 'WTT', bootError: '',
   _freshMatches: true, // vrai à l'ouverture : la toute première liste a le droit d'entrer en scène
   proJournee: null, // journée Pro A sélectionnée ; null = pas encore choisie (auto-sélection au prochain rendu)
+  rankView: 'WTT', // circuit affiché dans l'onglet "Classements" (joueurs/équipes, pas les amis)
+  openCompetitor: null, // id du joueur/équipe dont la fiche détail est ouverte (null = fermée)
 };
 
 /* ---------- Petits outils ---------- */
@@ -561,7 +600,7 @@ function render() {
   if (!S.session) { document.documentElement.dataset.circuit = 'ALL'; $app.innerHTML = authView(); return; }
   document.documentElement.dataset.circuit = S.tab === 'matches' ? S.circuit : 'ALL';
   const todo = S.matches.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
-  const tabs = [['matches', 'Matchs'], ['board', 'Classement']];
+  const tabs = [['matches', 'Matchs'], ['board', 'Amis'], ['rankings', 'Classements']];
   if (S.isAdmin) tabs.push(['admin', 'Admin']);
   $app.innerHTML = `
     <div class="shell">
@@ -578,7 +617,7 @@ function render() {
         </header>
         <main>${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
       </div>
-    </div>`;
+    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}`;
   requestAnimationFrame(updateThumbs);
 }
 function keepRender() { const y = window.scrollY; render(); window.scrollTo(0, y); }
@@ -589,7 +628,7 @@ function navigate(fn) {
   else fn();
 }
 // Une rangée de filtres avec un curseur qui glisse jusqu'à l'onglet actif.
-const SEG_LABELS = { view: 'Période', circuit: 'Circuit', boardscope: 'Classement' };
+const SEG_LABELS = { view: 'Période', circuit: 'Circuit', boardscope: 'Classement', rankview: 'Circuit' };
 function segRow(items, cur, act) {
   return `<div class="seg" data-seg="${act}" role="group" aria-label="${SEG_LABELS[act] || ''}"><span class="segthumb" aria-hidden="true"></span>
     ${items.map(([k, l]) => `<button data-act="${act}" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div>`;
@@ -597,6 +636,7 @@ function segRow(items, cur, act) {
 
 function tabView() {
   if (S.tab === 'board') return boardView();
+  if (S.tab === 'rankings') return rankingsView();
   if (S.tab === 'admin' && S.isAdmin) return adminView();
   return matchesView();
 }
@@ -749,6 +789,11 @@ function matchCard(m, fresh, i) {
     if (!c || !c.ranking) return '';
     return c.circuit === 'WTT' ? `<strong>#${c.ranking}</strong>` : `Classement ${c.ranking}`;
   };
+  // Nom cliquable vers la fiche détail quand on a une fiche joueur/équipe liée
+  // (un match ajouté à la main par l'admin sans lien n'a pas de fiche : texte simple).
+  const nameBtn = (c, label) => c
+    ? `<button class="namebtn" data-act="competitor" data-id="${c.id}">${esc(label)}</button>`
+    : esc(label);
   let pill = '';
   if (fin) pill = '<span class="pill">Terminé</span>';
   else if (canc) pill = '<span class="pill">Annulé</span>';
@@ -798,11 +843,11 @@ function matchCard(m, fresh, i) {
     </div>
     <div class="court${fin ? ' done' : ''}">
       <div class="side">
-        <div class="name${winB ? ' lose' : ''}">${flag(ca)}${esc(m.side_a)}${winA ? '<span class="win-badge" aria-hidden="true">✓</span>' : ''}</div><div class="rk">${rk(ca)}</div>
+        <div class="name${winB ? ' lose' : ''}">${flag(ca)}${nameBtn(ca, m.side_a)}${winA ? '<span class="win-badge" aria-hidden="true">✓</span>' : ''}</div><div class="rk">${rk(ca)}</div>
         ${showChips ? chips(m, 'A', mine, locked) : ''}
       </div>
       <div class="side">
-        <div class="name${winA ? ' lose' : ''}">${flag(cb)}${esc(m.side_b)}${winB ? '<span class="win-badge" aria-hidden="true">✓</span>' : ''}</div><div class="rk">${rk(cb)}</div>
+        <div class="name${winA ? ' lose' : ''}">${flag(cb)}${nameBtn(cb, m.side_b)}${winB ? '<span class="win-badge" aria-hidden="true">✓</span>' : ''}</div><div class="rk">${rk(cb)}</div>
         ${showChips ? chips(m, 'B', mine, locked) : ''}
       </div>
       ${fin ? `<div class="netscore" aria-label="Résultat ${m.score_a} à ${m.score_b}">${m.score_a}–${m.score_b}</div>` : ''}
@@ -847,6 +892,75 @@ function boardView() {
   return seg + `<ol class="lb">${rows}</ol>` + rules();
 }
 const rules = () => `<p class="rules">Barème : 1 point pour le bon vainqueur, 3 points pour le score exact. En WTT, un pronostic gagnant sur l'outsider (moins bien classé au tirage au sort) rapporte un bonus, d'autant plus grand que l'écart de tête de série est important (jusqu'à +5 points). En cas d'égalité au classement, le plus de scores exacts passe devant.</p>`;
+
+/* --- Classements WTT (mondial) et Pro A (championnat) : à distinguer du
+   classement des amis (points de pronostics) affiché dans l'onglet "Amis". --- */
+function rankingsView() {
+  const scope = S.rankView;
+  const seg = segRow([['WTT', 'WTT'], ['PRO_A', 'Pro A']], scope, 'rankview');
+  const list = Object.values(S.competitors)
+    .filter(c => c.circuit === scope && c.ranking != null)
+    .sort((a, b) => a.ranking - b.ranking || a.name.localeCompare(b.name));
+  if (!list.length) {
+    return seg + `<div class="empty">${scope === 'WTT'
+      ? "Aucun classement mondial pour l'instant. Il se remplit au fil des tournois suivis."
+      : "Aucun classement Pro A pour l'instant. Il se remplit dès que la saison commence."}</div>`;
+  }
+  const rows = list.map(c => `
+    <li class="lbrow" data-act="competitor" data-id="${c.id}" role="button" tabindex="0" aria-label="Voir le détail de ${esc(c.name)}">
+      <div class="rank">${c.ranking}</div>
+      <div><div class="lbname">${flagHtml(c)}${esc(c.name)}</div>
+      ${scope === 'WTT' && c.country ? `<div class="lbsub">${esc(c.country)}</div>` : ''}</div>
+      ${c.ranking_points ? `<div class="lbpts">${c.ranking_points}<small>pts</small></div>` : '<div></div>'}
+    </li>`).join('');
+  const note = scope === 'WTT'
+    ? `<p class="rules">Classement mondial simple, limité aux joueurs déjà croisés dans les tournois suivis par le site (pas la totalité du circuit).</p>`
+    : `<p class="rules">Classement Pro A messieurs, mis à jour par le robot de synchronisation.</p>`;
+  return seg + `<ol class="lb">${rows}</ol>` + note;
+}
+
+/* --- Fiche détail d'un joueur ou d'une équipe (clic sur son nom, où qu'il
+   apparaisse : carte de match, classement...). --- */
+function competitorModal(id) {
+  const c = S.competitors[id];
+  if (!c) return '';
+  const mine = S.matches.filter(m => m.competitor_a_id === id || m.competitor_b_id === id);
+  const upcoming = mine.filter(m => m.status === 'scheduled' || m.status === 'live')
+    .sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+  const recent = mine.filter(m => m.status === 'finished' || m.status === 'cancelled')
+    .sort((a, b) => new Date(b.starts_at) - new Date(a.starts_at)).slice(0, 8);
+  const oppOf = m => m.competitor_a_id === id
+    ? { name: m.side_b, id: m.competitor_b_id }
+    : { name: m.side_a, id: m.competitor_a_id };
+  const oppHtml = m => {
+    const o = oppOf(m);
+    return o.id ? `<button class="namebtn" data-act="competitor" data-id="${o.id}">${esc(o.name)}</button>` : esc(o.name);
+  };
+  const resultTag = m => {
+    if (m.status === 'cancelled') return `<span class="cmres">Annulé</span>`;
+    if (m.status !== 'finished') return '';
+    const won = (m.competitor_a_id === id && m.score_a > m.score_b) || (m.competitor_b_id === id && m.score_b > m.score_a);
+    return `<span class="cmres ${won ? 'win' : 'loss'}">${won ? 'V' : 'D'} ${m.score_a}–${m.score_b}</span>`;
+  };
+  const matchRow = m => `<li><span class="cmopp">${esc(fmtDay(m.starts_at))} — vs ${oppHtml(m)}</span>${resultTag(m)}</li>`;
+  return `
+  <div class="modalbackdrop" data-act="closecompetitor">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="${esc(c.name)}" data-act="stop">
+      <button class="modalclose" data-act="closecompetitor" aria-label="Fermer">&times;</button>
+      <div class="modalhead">
+        <div class="modalname">${flagHtml(c)}${esc(c.name)}</div>
+        <div class="modalsub">${c.circuit === 'WTT' ? 'Simple messieurs/dames — WTT' : 'Équipe — Pro A'}${c.circuit === 'WTT' && c.country ? ' · ' + esc(c.country) : ''}</div>
+      </div>
+      <div class="modalstats">
+        <div><b>${c.ranking ?? '—'}</b><span>${c.circuit === 'WTT' ? 'classement mondial' : 'classement Pro A'}</span></div>
+        ${c.ranking_points ? `<div><b>${c.ranking_points}</b><span>points</span></div>` : ''}
+      </div>
+      ${upcoming.length ? `<h3>À venir</h3><ul class="cmlist">${upcoming.slice(0, 5).map(matchRow).join('')}</ul>` : ''}
+      ${recent.length ? `<h3>Derniers résultats</h3><ul class="cmlist">${recent.map(matchRow).join('')}</ul>` : ''}
+      ${!upcoming.length && !recent.length ? `<p class="hint">Aucun match suivi pour le moment.</p>` : ''}
+    </div>
+  </div>`;
+}
 
 /* --- Administration --- */
 function adminView() {
@@ -999,12 +1113,19 @@ $app.addEventListener('click', async e => {
   else if (act === 'circuit') { S.circuit = v; S._freshMatches = true; S.proJournee = null; navigate(render); }
   else if (act === 'journee') { S.proJournee = +v; S._freshMatches = true; navigate(render); }
   else if (act === 'boardscope') { S.boardScope = v; S.board = null; navigate(render); await loadBoard(); navigate(render); }
+  else if (act === 'rankview') { S.rankView = v; navigate(render); }
+  else if (act === 'competitor') { S.openCompetitor = id; keepRender(); }
+  else if (act === 'closecompetitor') { S.openCompetitor = null; keepRender(); }
+  else if (act === 'stop') { /* clic à l'intérieur de la fiche détail : ne pas la fermer */ }
   else if (act === 'pick') pick(id, Number(el.dataset.a), Number(el.dataset.b));
   else if (act === 'friends') toggleFriends(id);
   else if (act === 'adm-result') saveResult(id);
   else if (act === 'adm-cancel') cancelMatch(id);
   else if (act === 'adm-delete') deleteMatch(id);
   else if (act === 'adm-rank') saveRank(id);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && S.openCompetitor) { S.openCompetitor = null; keepRender(); }
 });
 $app.addEventListener('submit', e => {
   e.preventDefault();
