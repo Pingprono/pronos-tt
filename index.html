@@ -221,8 +221,9 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 .rk{font-size:12px;color:var(--ink-soft);margin:3px 0 12px;min-height:1.2em;font-family:var(--f-body)}
 .rk .seed{color:var(--accent);font-family:var(--f-display)}
 .chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
-.chip{flex:1 1 42px;min-width:42px;height:42px;background:var(--paper);border:1px solid var(--line-soft);border-radius:999px;font:600 16px/1 var(--f-display);color:var(--ink);box-shadow:var(--shadow-1)}
-.chip[aria-pressed="true"]{background:linear-gradient(165deg,var(--accent),var(--accent-deep));color:#F7EEDF;border-color:var(--accent-deep);box-shadow:0 4px 10px -3px rgba(var(--accent-rgb),.55)}
+.chip{flex:1 1 42px;min-width:42px;height:42px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:var(--paper);border:1px solid var(--line-soft);border-radius:999px;font:600 16px/1 var(--f-display);color:var(--ink);box-shadow:var(--shadow-1);padding:4px 2px}
+.chip[aria-pressed="true"]{height:auto;min-height:42px;border-radius:16px;background:linear-gradient(165deg,var(--accent),var(--accent-deep));color:#F7EEDF;border-color:var(--accent-deep);box-shadow:0 4px 10px -3px rgba(var(--accent-rgb),.55)}
+.chipprob{font:700 10.5px/1 var(--f-body);letter-spacing:.02em;opacity:.85}
 .chip.pop{animation:chipPop .32s var(--ease-spring)}
 .chip:not(:disabled):hover{border-color:var(--accent)}
 .chip:disabled{opacity:.5;cursor:not-allowed}
@@ -230,12 +231,6 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 .court.done{padding-bottom:16px}
 .court.done .side{padding-bottom:50px}
 .netscore{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);background:var(--card);border:2px solid var(--accent);border-radius:999px;padding:6px 18px;font:700 28px/1 var(--f-display);color:var(--accent);z-index:1;white-space:nowrap;box-shadow:var(--shadow-1);animation:popIn .4s var(--ease-spring)}
-.trend{padding:6px 20px 4px}
-.trendrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font:600 15px/1 var(--f-body);color:var(--ink-soft)}
-.bar{height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden}
-.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));animation:barfill .9s .1s var(--ease-out) forwards}
-.tnote{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;text-align:center;font-style:italic}
-.tnote .linkbtn{font-style:normal}
 .mfoot{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:12px 20px;margin-top:8px;background:rgba(46,27,18,.03);font-size:13.5px;color:var(--ink-soft)}
 .pts{font:700 15px/1 var(--f-display);padding:5px 12px;border-radius:999px;display:inline-block;animation:popIn .4s var(--ease-spring)}
 .pts.p3{background:var(--accent);color:#F7EEDF}
@@ -376,7 +371,6 @@ textarea{resize:vertical}
 @keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes popIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
 @keyframes chipPop{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
-@keyframes barfill{from{width:0}to{width:var(--w)}}
 @keyframes pulseLive{0%,100%{box-shadow:0 0 0 0 rgba(var(--accent2-rgb),.5)}50%{box-shadow:0 0 0 5px rgba(var(--accent2-rgb),0)}}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,10px) scale(.95)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
 @keyframes toastOut{to{opacity:0;transform:translate(-50%,10px) scale(.95)}}
@@ -648,7 +642,15 @@ function trend(m) {
   if (h.wa + h.wb > 0) z += 0.5 * (h.wa - h.wb) / (h.wa + h.wb);
   const pA = 1 / (1 + Math.exp(-z));
   const q = setProbFromMatchProb(pA, m.wins_needed);
-  return { pA, score: bestScore(q, m.wins_needed) };
+  return { pA, q, score: bestScore(q, m.wins_needed) };
+}
+// Probabilité d'un score exact précis (a–b), à partir de q (probabilité de
+// gagner une manche pour le côté A) : sert à afficher "X % de chances" sur le
+// score sélectionné, plutôt qu'un pourcentage global de victoire par côté.
+function scoreProb(q, n, a, b) {
+  if (a === n) return binom(n - 1 + b, b) * Math.pow(q, n) * Math.pow(1 - q, b);
+  if (b === n) return binom(n - 1 + a, a) * Math.pow(1 - q, n) * Math.pow(q, a);
+  return 0;
 }
 // Bonus "outsider" (WTT uniquement) : un pronostic gagnant sur le joueur le moins bien classé
 // au tirage au sort rapporte un supplément, d'autant plus grand que l'écart est important.
@@ -901,13 +903,16 @@ function ordinalRank(board, mine) {
   return '';
 }
 
-function chips(m, side, mine, disabled) {
+function chips(m, side, mine, disabled, t) {
   const n = m.wins_needed, out = [];
   for (let k = 0; k < n; k++) {
     const a = side === 'A' ? n : k, b = side === 'A' ? k : n;
     const sel = !!mine && mine.pred_a === a && mine.pred_b === b;
     const who = side === 'A' ? m.side_a : m.side_b;
-    out.push(`<button class="chip" data-act="pick" data-id="${m.id}" data-a="${a}" data-b="${b}" aria-pressed="${sel}" aria-label="${esc(who)} gagne ${a} à ${b}" ${disabled ? 'disabled' : ''}>${a}–${b}</button>`);
+    // Le pourcentage de ce score précis n'apparaît que sur le score choisi
+    // (une fois qu'on a appuyé dessus), pas affiché d'avance sur tous les chips.
+    const prob = sel && t ? `<span class="chipprob">${Math.round(scoreProb(t.q, n, a, b) * 100)} %</span>` : '';
+    out.push(`<button class="chip" data-act="pick" data-id="${m.id}" data-a="${a}" data-b="${b}" aria-pressed="${sel}" aria-label="${esc(who)} gagne ${a} à ${b}" ${disabled ? 'disabled' : ''}>${a}–${b}${prob}</button>`);
   }
   return `<div class="chips">${out.join('')}</div>`;
 }
@@ -935,14 +940,6 @@ function matchCard(m, fresh, i) {
 
   const showChips = !fin && !canc;
   const t = (!locked && !canc) ? trend(m) : null;
-  const trendHtml = t ? `
-    <div class="trend">
-      <div class="trendrow"><span>${Math.round(t.pA * 100)} %</span>
-        <div class="bar" role="img" aria-label="Chances de victoire : ${esc(m.side_a)} ${Math.round(t.pA * 100)} %, ${esc(m.side_b)} ${100 - Math.round(t.pA * 100)} %"><i style="--w:${Math.round(t.pA * 100)}%;width:${Math.round(t.pA * 100)}%"></i></div>
-        <span>${100 - Math.round(t.pA * 100)} %</span></div>
-      <p class="tnote">Tendance statistique : score le plus probable ${t.score.a}–${t.score.b}.
-        <button class="linkbtn" data-act="pick" data-id="${m.id}" data-a="${t.score.a}" data-b="${t.score.b}">Suivre la tendance</button></p>
-    </div>` : '';
 
   let foot;
   if (canc) foot = `<div class="mfoot"><span>Match annulé : aucun point en jeu.</span></div>`;
@@ -976,15 +973,15 @@ function matchCard(m, fresh, i) {
     <div class="court${fin ? ' done' : ''}">
       <div class="side">
         <div class="name${winB ? ' lose' : ''}">${flag(ca)}${nameBtn(ca, m.side_a)}${winA ? '<span class="win-badge" aria-hidden="true">✓</span>' : ''}</div><div class="rk">${rk(ca)}</div>
-        ${showChips ? chips(m, 'A', mine, locked) : ''}
+        ${showChips ? chips(m, 'A', mine, locked, t) : ''}
       </div>
       <div class="side">
         <div class="name${winA ? ' lose' : ''}">${flag(cb)}${nameBtn(cb, m.side_b)}${winB ? '<span class="win-badge" aria-hidden="true">✓</span>' : ''}</div><div class="rk">${rk(cb)}</div>
-        ${showChips ? chips(m, 'B', mine, locked) : ''}
+        ${showChips ? chips(m, 'B', mine, locked, t) : ''}
       </div>
       ${fin ? `<div class="netscore" aria-label="Résultat ${m.score_a} à ${m.score_b}">${m.score_a}–${m.score_b}</div>` : ''}
     </div>
-    ${trendHtml}${foot}${friends}
+    ${foot}${friends}
   </article>`;
 }
 
