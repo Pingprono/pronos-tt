@@ -403,7 +403,16 @@ jobs:
               const u = el && el.Competition && el.Competition.Unit;
               if (Array.isArray(u)) units.push(...u); else if (u) units.push(u);
             }
-            const isPlayer = x => x && x.Competitor && x.Competitor.Code && x.Competitor.Code !== 'TBD' && x.Competitor.Description && x.Competitor.Description.TeamName;
+            // Le WTT met parfois un nom générique ("Qualifier 7", "Alternate 2", "Lucky
+            // Loser 1"...) à la place d'un adversaire tant que le vrai joueur qualifié
+            // n'est pas encore officiellement connu de leur système. Si on l'acceptait
+            // comme un nom réel, les amis verraient ce nom générique comme si c'était
+            // un vrai joueur. On attend donc d'avoir un vrai nom : le match apparaîtra
+            // (ou se corrigera) automatiquement dès que le WTT le publie, à la prochaine
+            // synchronisation.
+            const isPlaceholder = name => /^(qualifier|alternate|lucky\s*loser)\b/i.test(String(name || '').trim());
+            const isPlayer = x => x && x.Competitor && x.Competitor.Code && x.Competitor.Code !== 'TBD' && x.Competitor.Description && x.Competitor.Description.TeamName &&
+              !isPlaceholder(x.Competitor.Description.TeamName);
             const knownPair = u => { const st = (u.StartList && u.StartList.Start) || []; return st.length === 2 && st.every(isPlayer); };
             const better = (a, b) => { for (let k = 0; k < 3; k++) { if (a[k] !== b[k]) return a[k] > b[k]; } return true; };
             const best = new Map();
