@@ -459,7 +459,9 @@ jobs:
                 side_a: pa.name, side_b: pb.name,
                 competitor_a_id: await wttCompetitorId(cache, pa), competitor_b_id: await wttCompetitorId(cache, pb),
                 starts_at: localToUTC(u.StartDate, zone), wins_needed: wn,
-                status, score_a: sa, score_b: sb, seed_a: seedA, seed_b: seedB, source: 'wtt', external_id: ext,
+                status, score_a: sa, score_b: sb, seed_a: seedA, seed_b: seedB,
+                tier: ev.EventType, // Grand Smash / Champions / Star Contender / Finals : sert à adapter les couleurs du site au tournoi
+                source: 'wtt', external_id: ext,
               });
               s.suivis++;
               if (!old) s.nouveaux++;
