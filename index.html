@@ -206,7 +206,8 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 .match::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--spine-a,var(--accent)),var(--spine-b,var(--terracotta)))}
 .match:active{box-shadow:var(--shadow-card-active);transform:translateY(1px)}
 .mhead{display:flex;justify-content:space-between;gap:10px;padding:16px 18px 0 20px}
-.comp{font-weight:600;font-size:13.5px;color:var(--ink)}
+.comp{font-weight:600;font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:6px}
+.compdot{flex:none;width:7px;height:7px;border-radius:50%}
 .rnd{color:var(--ink-soft);font-size:12.5px;font-style:italic;margin-top:1px}
 .when{font-size:12.5px;color:var(--ink-soft);text-align:right;white-space:nowrap}
 .pill{display:inline-block;font:italic 600 12px/1 var(--f-display);color:var(--accent);margin-top:6px;padding:3px 9px;border-radius:999px;background:rgba(var(--accent-rgb),.1)}
@@ -443,6 +444,17 @@ const S = {
 
 /* ---------- Petits outils ---------- */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// Couleur propre à chaque tournoi WTT (le WTT ne fournit pas de charte
+// graphique par tournoi) : une teinte stable est calculée à partir du nom du
+// tournoi, pour que chaque tournoi garde toujours la même couleur et que
+// plusieurs tournois en cours en même temps restent visuellement distincts.
+function tourHue(name) {
+  let h = 0;
+  const s = String(name || '');
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h % 360;
+}
 const fmtWhen = iso => new Date(iso).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const fmtDay = iso => new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 const isLocked = m => m.status !== 'scheduled' || new Date(m.starts_at) <= new Date();
@@ -861,14 +873,16 @@ function matchCard(m, fresh, i) {
       : `<p class="hint" style="padding:0 14px 12px">Personne n'a fait de prono sur ce match.</p>`;
   }
 
+  const hue = m.circuit === 'WTT' ? tourHue(m.competition) : null;
   const spine = m.circuit === 'WTT'
-    ? '--spine-a:var(--navy);--spine-b:color-mix(in srgb, var(--navy) 45%, white)'
+    ? `--spine-a:hsl(${hue} 56% 30%);--spine-b:hsl(${(hue + 32) % 360} 62% 58%)`
     : '--spine-a:var(--terracotta);--spine-b:var(--gold)';
   const cardStyle = `${spine}${fresh ? `;animation-delay:${Math.min(i, 8) * 45}ms` : ''}`;
+  const compDot = m.circuit === 'WTT' ? `<span class="compdot" style="background:hsl(${hue} 60% 45%)" aria-hidden="true"></span>` : '';
   return `
   <article class="match${fresh ? ' enter' : ''}" data-card="${m.id}" style="${cardStyle}">
     <div class="mhead">
-      <div><div class="comp">${esc(m.competition)}</div>${m.round ? `<div class="rnd">${esc(m.round)}</div>` : ''}</div>
+      <div><div class="comp">${compDot}${esc(m.competition)}</div>${m.round ? `<div class="rnd">${esc(m.round)}</div>` : ''}</div>
       <div><div class="when"><time datetime="${esc(m.starts_at)}">${esc(fmtWhen(m.starts_at))}</time></div><div class="when">${pill}</div></div>
     </div>
     <div class="court${fin ? ' done' : ''}">
