@@ -530,9 +530,16 @@ function currentThemeKey() {
   if (S.circuit !== 'WTT') return 'ALL';
   const wtt = S.matches.filter(m => m.circuit === 'WTT');
   if (!wtt.length) return 'WTT_DEFAULT';
-  const live = wtt.find(m => m.status === 'live');
+  const now = Date.now();
+  const live = wtt.filter(m => m.status === 'live');
+  // Plusieurs matchs peuvent être "en direct" en même temps (plusieurs tables,
+  // ou un match resté coincé en direct faute de résultat synchronisé) : on
+  // prend celui dont l'heure de début est la plus proche de maintenant, qui
+  // correspond le mieux au tournoi réellement en cours aujourd'hui.
   const next = wtt.filter(m => m.status === 'scheduled').sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at))[0];
-  const pick = live || next || wtt[0];
+  const pick = live.length
+    ? live.reduce((a, b) => Math.abs(new Date(b.starts_at) - now) < Math.abs(new Date(a.starts_at) - now) ? b : a)
+    : (next || wtt[0]);
   return TIER_KEY[pick.tier] || 'WTT_DEFAULT';
 }
 const fmtWhen = iso => new Date(iso).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
