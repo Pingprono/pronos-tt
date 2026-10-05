@@ -1,509 +1,1352 @@
-name: Synchro des matchs (Pro A et WTT)
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EAE0C8">
+<title>SPIN</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SPIN">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;0,900;1,500;1,600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css">
+<style>
+:root{
+  --paper:#EAE0C8;         /* fond : papier ancien */
+  --paper-deep:#DECBA0;    /* variante soutenue, pour le dégradé de fond */
+  --card:#FBF4E4;          /* panneaux et cartes, plus clair que le fond */
+  --card-top:#FFFCF4;      /* reflet du haut de carte */
+  --ink:#2E1B12;           /* texte principal : brun très sombre, jamais noir pur */
+  --ink-soft:#7A6349;      /* texte secondaire, discret */
+  --bordeaux:#6B1C2A;      /* couleur dominante : titres, actions, sélection */
+  --bordeaux-deep:#4E121C;
+  --bordeaux-rgb:107,28,42;
+  --terracotta:#B8532F;    /* accent secondaire : direct, tendance */
+  --terracotta-rgb:184,83,47;
+  --gold:#93701F;          /* accent tertiaire : numéros, filets, ornements */
+  --gold-rgb:147,112,31;
+  --navy:#012C59;          /* bleu du logo SPIN */
+  --navy-rgb:1,44,89;
+  --navy-deep:#001A38;
+  --terracotta-deep:#7E3A1B;
+  /* Couleur d'accent de toute l'interface : changée en JS (voir THEME dans le
+     script) selon le tournoi actuellement affiché — couleurs officielles WTT
+     (violet WTT Champions, or/noir WTT Grand Smash, bleu/rouge Pro A...).
+     Par défaut : bordeaux. --accent2 est la teinte secondaire du thème. */
+  --accent:var(--bordeaux);
+  --accent-rgb:var(--bordeaux-rgb);
+  --accent-deep:var(--bordeaux-deep);
+  --accent2:var(--terracotta);
+  --accent2-rgb:var(--terracotta-rgb);
+  --paper-glow:rgba(255,252,240,.55);
+  --good:#4B6B3E;
+  --bad:#A23327;
+  --line-soft:rgba(46,27,18,.14);
+  --shadow-1:0 1px 1px rgba(46,27,18,.06), 0 1px 0 rgba(255,255,255,.5) inset;
+  --shadow-card:0 1px 1px rgba(46,27,18,.07), 0 14px 30px -14px rgba(75,15,20,.38), 0 3px 8px -3px rgba(75,15,20,.16);
+  --shadow-card-active:0 1px 1px rgba(46,27,18,.07), 0 6px 14px -8px rgba(75,15,20,.32);
+  --ease-spring:cubic-bezier(.22,1.4,.36,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --f-display:'Fraunces','Iowan Old Style',Georgia,serif;
+  --f-body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;min-height:100vh;color:var(--ink);font:400 16px/1.5 var(--f-body);
+  background-color:var(--paper);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E"),
+    radial-gradient(1100px 750px at 10% -10%, var(--paper-glow), transparent 55%),
+    radial-gradient(900px 700px at 106% 4%, rgba(var(--accent-rgb),.16), transparent 60%),
+    linear-gradient(165deg, var(--paper) 0%, var(--paper-deep) 100%);
+  background-repeat:repeat, no-repeat, no-repeat, no-repeat;
+  background-size:160px 160px, 230% 230%, 230% 230%, cover;
+  background-attachment:fixed, fixed, fixed, fixed;
+  background-blend-mode:multiply, normal, normal, normal;
+  animation:paperDrift 42s ease-in-out infinite alternate;
+  transition:background-image 1.1s var(--ease-out);
+}
+@keyframes paperDrift{
+  0%{background-position:0 0, 4% -16%, 114% 0%, 0 0}
+  100%{background-position:0 0, 18% -2%, 98% 16%, 0 0}
+}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Le logo est peint en aplat : un pochoir CSS (mask) rempli avec la couleur
+   d'accent du moment, pour qu'il change de teinte avec le reste de l'appli. */
+.mark{flex:none;display:inline-block;background-color:var(--accent);
+  -webkit-mask-image:var(--logo);mask-image:var(--logo);
+  -webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}
+.mark.light{background-color:#F8EFE2}
 
-on:
-  schedule:
-    - cron: '*/30 * * * *'
-  workflow_dispatch:
+/* Ossature générale : une colonne de navigation qui devient une vraie
+   barre latérale sur grand écran, un contenu qui respire davantage. */
+.shell{max-width:1320px;margin:0 auto;min-height:100vh}
+.content{padding:0 16px 128px;min-width:0}
+@media (min-width:900px){
+  .shell{display:grid;grid-template-columns:252px minmax(0,1fr);align-items:start}
+  .content{padding:36px 44px 64px}
+}
 
-concurrency:
-  group: synchro
-  cancel-in-progress: false
+/* Un fond qui respire lentement, derrière tout le reste. */
+/* Fond : une trame de points façon impression ancienne, qui dérive sans arrêt
+   très lentement, et de grands anneaux graphiques qui tournent en fond de scène
+   (comme un cadran ou les cercles d'un impact de balle). Toujours la même
+   couleur d'accent, mais plus rien à voir avec les halos flous d'avant. */
+body::after{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:radial-gradient(rgba(var(--accent-rgb),.5) 1.5px, transparent 1.6px);
+  background-size:30px 30px;
+  animation:dotsPan 50s linear infinite;
+  -webkit-mask-image:linear-gradient(180deg, transparent, black 14%, black 86%, transparent);
+  mask-image:linear-gradient(180deg, transparent, black 14%, black 86%, transparent);
+}
+@keyframes dotsPan{to{background-position:300px 150px}}
 
-jobs:
-  synchro:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+#rings{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+.ring{position:absolute;border-radius:50%;border:2px dashed rgba(var(--accent-rgb),.24);will-change:transform;animation:ringSpin linear infinite}
+.ring.gold{border-color:rgba(var(--gold-rgb),.28)}
+@keyframes ringSpin{to{transform:rotate(360deg)}}
 
-      - name: Ecrire le script
-        run: |
-          mkdir robot
-          cat > robot/synchro.mjs <<'EOF'
-          // Synchronisation des matchs : Pro A (FFTT) et WTT.
-          // Lit les calendriers et résultats publics et les enregistre dans la base Supabase
-          // du jeu de pronostics. Le programme ne supprime rien : il ajoute et met à jour.
+@media (prefers-reduced-motion:no-preference){
+  button, .chip, .btn, input, select, .day, .name, .pill, .netscore, .lbpts, .rk .seed, .linkbtn, .stat b{transition:background-color .28s var(--ease-out), color .28s var(--ease-out), border-color .28s var(--ease-out), box-shadow .28s var(--ease-out), transform .16s var(--ease-out)}
+}
+button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 
-          const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
-          const SUPABASE_KEY = (process.env.SUPABASE_SERVICE_KEY || '').trim();
-          if (!SUPABASE_URL || !SUPABASE_KEY) {
-            console.error("ERREUR : les secrets SUPABASE_URL et SUPABASE_SERVICE_KEY ne sont pas renseignés dans GitHub.");
-            process.exit(1);
-          }
+/* En-tête mobile (masqué sur grand écran : la barre latérale prend le relais) */
+.top{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px}
+@media (min-width:900px){ .top{display:none} }
+.brand{font:700 26px/1 var(--f-display);display:flex;align-items:center;gap:10px;color:var(--ink);letter-spacing:.14em}
+.brand .mark{animation:markIn .5s var(--ease-spring)}
+.me{display:flex;align-items:center;gap:9px;color:var(--ink-soft);font-size:13.5px}
+.linkbtn{background:none;border:0;padding:6px 2px;color:var(--accent);text-decoration:underline;text-underline-offset:3px;font-size:inherit}
+.linkbtn:hover{color:var(--accent-deep)}
 
-          // ---------------------------- RÉGLAGES ----------------------------
-          // Pro A : pour ajouter les dames plus tard : { code: 'proad', competition: 'Pro A Dames', circuit: 'PRO_A', winsNeeded: 3 }
-          const DIVISIONS = [
-            { code: 'proam', competition: 'Pro A Messieurs', circuit: 'PRO_A', winsNeeded: 3 },
-          ];
-          // WTT : quels tournois et quels matchs suivre.
-          const WTT_CONFIG = {
-            eventTypes: ['WTT Grand Smash', 'WTT Champions', 'WTT Finals', 'WTT Star Contender'], // ni Feeder, ni Youth, ni Contender
-            subEvents: ["Men's Singles", "Women's Singles"],   // simples messieurs et dames
-            rounds: null,                                       // null = tout le tableau principal ; ou une liste, ex : ['8FNL', 'QFNL', 'SFNL', 'FNL-'] (dès les huitièmes)
-            daysAhead: 7,                                       // on regarde les tournois qui commencent dans les 7 jours
-            daysAfter: 2,                                       // et ceux terminés depuis moins de 2 jours
-            winsByType: { 'WTT Star Contender': 3 },            // victoires nécessaires (3 = au meilleur des 5), 3 par défaut
-            winsDefault: 3,
-          };
-          // ------------------------------------------------------------------
+/* Bandeau d'accueil de l'onglet Matchs : grand, chaud, jamais tout à fait immobile */
+.hero{position:relative;overflow:hidden;border-radius:20px;padding:26px 26px 24px;margin:4px 0 26px;color:#F8EFE2;
+  background:linear-gradient(120deg,var(--accent),var(--accent-deep) 48%,var(--terracotta));
+  background-size:220% 220%;animation:heroDrift 16s ease-in-out infinite;box-shadow:var(--shadow-card)}
+.hero::before{content:"";position:absolute;inset:0;opacity:.5;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")}
+@keyframes heroDrift{0%,100%{background-position:0% 30%}50%{background-position:100% 70%}}
+.hero::after,.authbrand::after{content:"";position:absolute;right:-56px;top:50%;width:270px;height:270px;margin-top:-135px;background:var(--logo) center/contain no-repeat;filter:brightness(0) invert(1);opacity:.09;pointer-events:none;animation:spinSlow 60s linear infinite}
+.hero>*,.authbrand-in{z-index:1}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+.herotop{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.herogreet{font:italic 600 27px/1.2 var(--f-display)}
+.herosub{font-size:13.5px;opacity:.82;margin-top:4px;max-width:46ch}
+.livechip{position:relative;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.16);border-radius:999px;padding:7px 13px 7px 11px;font:600 12.5px/1 var(--f-body);white-space:nowrap;animation:pulseLive 1.7s ease-in-out infinite}
+.livedot{width:7px;height:7px;border-radius:50%;background:#fff;flex:none}
+.herostats{position:relative;display:flex;gap:34px;margin-top:22px;flex-wrap:wrap}
+.herostat b{display:block;font:700 36px/1 var(--f-display)}
+.herostat span{font-size:12.5px;opacity:.8}
 
-          const FFTT = 'https://www.fftt.com/pro/server/getEquResult.php';
-          const WTT_STATIC = 'https://wtt-web-frontdoor-cthahjeqhbh6aqe3.a01.azurefd.net/websitestaticapifiles';
-          const WTT_CACHED = 'https://wtt-web-frontdoor-withoutcache-cqakg0andqf5hchn.a01.azurefd.net';
-          const WTT_REF = 'https://www.worldtabletennis.com/';
-          const UA = 'PronosPing/1.0 (jeu de pronostics prive entre amis; lecture rare et legere)';
+/* Vieux tableau de bord (supprimé : remplacé par le bandeau .hero ci-dessus) */
 
-          const sleep = ms => new Promise(r => setTimeout(r, ms));
+/* Navigation : barre fixe en bas sur mobile, vraie barre latérale sur grand écran */
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line-soft);padding:9px 10px calc(7px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:2px;z-index:5;box-shadow:0 -10px 24px rgba(46,27,18,.09)}
+.navthumb{position:absolute;top:9px;height:calc(100% - 16px - env(safe-area-inset-bottom));background:rgba(var(--accent-rgb),.1);border-radius:12px;transition:left .32s var(--ease-spring), width .32s var(--ease-spring);pointer-events:none;opacity:0}
+.nav button{flex:1;max-width:220px;background:none;border:0;padding:10px 6px 8px;font:600 17px/1 var(--f-display);color:var(--ink-soft);position:relative;z-index:1;border-radius:12px}
+.nav button[aria-current="page"]{color:var(--accent)}
+.navbrand,.navfoot{display:none}
+.badge{background:var(--terracotta);color:#FBF1E4;border-radius:8px;padding:1px 7px;font-size:12.5px;margin-left:5px;font-family:var(--f-body);font-weight:600;display:inline-block;animation:popIn .3s var(--ease-spring)}
+@media (min-width:900px){
+  .nav{position:sticky;top:0;left:auto;right:auto;bottom:auto;height:100vh;flex-direction:column;justify-content:flex-start;align-items:stretch;width:252px;padding:30px 20px;box-shadow:none;border-top:0;border-right:1px solid var(--line-soft);background:linear-gradient(180deg,var(--card-top),var(--card));gap:3px}
+  .navthumb{display:none}
+  .nav button{flex:none;max-width:none;display:flex;align-items:center;gap:11px;text-align:left;justify-content:flex-start;padding:12px 14px;font-size:16.5px}
+  .nav button[aria-current="page"]{background:rgba(var(--accent-rgb),.12)}
+  .navbrand{display:flex;align-items:center;gap:11px;font:700 25px/1 var(--f-display);color:var(--ink);margin:0 4px 26px;letter-spacing:.14em}
+  .navfoot{display:flex;flex-direction:column;gap:9px;margin-top:auto;padding:18px 4px 0;border-top:1px solid var(--line-soft);font-size:13px;color:var(--ink-soft)}
+}
 
-          async function getJson(url, { tries = 3, referer = 'https://www.fftt.com/pro/' } = {}) {
-            let last;
-            for (let i = 1; i <= tries; i++) {
-              try {
-                const headers = { 'User-Agent': UA, Accept: 'application/json, text/plain, */*', Referer: referer };
-                if (referer.includes('worldtabletennis')) headers.Origin = 'https://www.worldtabletennis.com';
-                const res = await fetch(url, { headers });
-                if (res.status === 404) { const e = new Error('HTTP 404'); e.notFound = true; throw e; }
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return JSON.parse(await res.text());
-              } catch (e) {
-                last = e;
-                if (e.notFound) break;
-                if (i < tries) await sleep(1500 * i);
-              }
-            }
-            const err = new Error(`lecture impossible de ${url.split('?')[0]} : ${last.message}`);
-            err.notFound = !!last.notFound;
-            throw err;
-          }
+/* Filtres : rangée d'onglets avec curseur qui glisse */
+.filters{position:sticky;top:0;z-index:4;display:flex;flex-wrap:wrap;gap:10px 16px;margin:6px -4px 10px;padding:10px 4px;
+  background:linear-gradient(180deg,rgba(234,224,200,.92) 70%,rgba(234,224,200,0));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.seg{display:inline-flex;gap:2px;padding:4px;position:relative;isolation:isolate;margin:6px 0 20px;border-radius:14px;
+  background:rgba(46,27,18,.075);box-shadow:inset 0 1px 3px rgba(46,27,18,.16), inset 0 0 0 1px var(--line-soft)}
+.filters .seg{margin:0;flex:1 1 auto}
+.segthumb{position:absolute;top:4px;bottom:4px;z-index:0;border-radius:10px;background:linear-gradient(180deg,var(--card-top),var(--card));
+  box-shadow:0 1px 2px rgba(46,27,18,.22), 0 6px 12px -6px rgba(75,15,20,.38), 0 0 0 1px rgba(var(--accent-rgb),.14);
+  transition:left .3s var(--ease-spring), width .3s var(--ease-spring);opacity:0}
+.seg button{position:relative;z-index:1;flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;
+  background:none;border:0;border-radius:10px;padding:10px 18px;font:600 14.5px/1 var(--f-body);color:var(--ink-soft)}
+.seg button:not([aria-pressed="true"]):hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{color:var(--accent)}
+.seg[data-seg="circuit"] .segthumb{box-shadow:0 1px 2px rgba(46,27,18,.22), 0 6px 12px -6px rgba(75,15,20,.38), 0 0 0 1.5px rgba(var(--accent-rgb),.4)}
+.cnt{font:600 11.5px/1 var(--f-body);padding:3px 7px;border-radius:999px;background:rgba(46,27,18,.1);color:var(--ink-soft)}
+.seg button[aria-pressed="true"] .cnt{background:rgba(var(--accent-rgb),.13);color:var(--accent)}
+/* Pro A : bande de journées à défilement horizontal (remplace le défilement
+   infini de la liste par un choix explicite — bien plus lisible avec ~18
+   journées qu'un segmented control à largeur égale). */
+.journeerow{display:flex;gap:8px;margin:0 0 20px;padding:2px 2px 10px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;
+  scrollbar-width:thin}
+.journeerow::-webkit-scrollbar{height:5px}
+.journeerow::-webkit-scrollbar-thumb{background:rgba(46,27,18,.18);border-radius:999px}
+.jchip{flex:0 0 auto;padding:9px 16px;border-radius:999px;font:600 14px/1 var(--f-body);color:var(--ink-soft);
+  background:var(--paper);border:1px solid var(--line-soft);box-shadow:var(--shadow-1);white-space:nowrap;scroll-snap-align:start}
+.jchip:hover{color:var(--ink)}
+.jchip[aria-pressed="true"]{color:#fff;background:var(--accent);border-color:var(--accent);box-shadow:0 2px 6px rgba(var(--accent-rgb),.35)}
+.day{font:italic 500 19px/1.2 var(--f-display);margin:30px 0 12px;color:var(--gold);display:flex;align-items:center;gap:12px;text-transform:capitalize}
+.day::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+.matchgrid{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:4px;align-items:start}
+@media (min-width:720px){ .matchgrid{grid-template-columns:repeat(auto-fill,minmax(360px,1fr))} }
 
-          const HEAD = { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' };
-          if (SUPABASE_KEY.startsWith('eyJ')) HEAD.Authorization = `Bearer ${SUPABASE_KEY}`;
+/* Un match = une vraie carte, avec relief et une tranche de couleur */
+.match{position:relative;background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:16px;box-shadow:var(--shadow-card);overflow:hidden;height:fit-content}
+.match.enter{animation:cardIn .38s var(--ease-out) backwards}
+.match::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--accent),var(--accent2))}
+.match:active{box-shadow:var(--shadow-card-active);transform:translateY(1px)}
+.mhead{display:flex;justify-content:space-between;gap:10px;padding:16px 18px 0 20px}
+.comp{font-weight:600;font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:6px}
+.compdot{flex:none;width:7px;height:7px;border-radius:50%}
+.rnd{color:var(--ink-soft);font-size:12.5px;font-style:italic;margin-top:1px}
+.when{font-size:12.5px;color:var(--ink-soft);text-align:right;white-space:nowrap}
+.pill{display:inline-block;font:italic 600 12px/1 var(--f-display);color:var(--accent);margin-top:6px;padding:3px 9px;border-radius:999px;background:rgba(var(--accent-rgb),.1)}
+.pill.live{color:#fff;background:var(--accent2);animation:pulseLive 1.6s ease-in-out infinite}
+.court{display:grid;grid-template-columns:1fr 1fr;position:relative;margin-top:8px;padding:0 20px}
+.court::before{content:"";position:absolute;left:50%;top:2px;bottom:2px;width:1px;margin-left:-.5px;background:var(--line-soft);pointer-events:none}
+.side{padding:10px 10px 14px;text-align:center;min-width:0}
+.name{font:600 24px/1.15 var(--f-display);overflow-wrap:anywhere;min-height:2.2em;display:flex;align-items:center;justify-content:center;gap:.3em;color:var(--ink)}
+.flag{width:1.25em;height:.95em;flex:none;border-radius:2px;box-shadow:0 0 0 1px var(--line-soft)}
+.name.lose{opacity:.48}
+.win-badge{display:inline-flex;align-items:center;justify-content:center;width:1.05em;height:1.05em;border-radius:50%;background:var(--good);color:#fff;font-size:.5em;flex:none;animation:popIn .35s .1s var(--ease-spring) backwards}
+.rk{font-size:12px;color:var(--ink-soft);margin:3px 0 12px;min-height:1.2em;font-family:var(--f-body)}
+.rk .seed{color:var(--accent);font-family:var(--f-display)}
+.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.chip{flex:1 1 42px;min-width:42px;height:42px;background:var(--paper);border:1px solid var(--line-soft);border-radius:999px;font:600 16px/1 var(--f-display);color:var(--ink);box-shadow:var(--shadow-1)}
+.chip[aria-pressed="true"]{background:linear-gradient(165deg,var(--accent),var(--accent-deep));color:#F7EEDF;border-color:var(--accent-deep);box-shadow:0 4px 10px -3px rgba(var(--accent-rgb),.55)}
+.chip.pop{animation:chipPop .32s var(--ease-spring)}
+.chip:not(:disabled):hover{border-color:var(--accent)}
+.chip:disabled{opacity:.5;cursor:not-allowed}
+.chip[aria-pressed="true"]:disabled{opacity:1}
+.court.done{padding-bottom:16px}
+.court.done .side{padding-bottom:50px}
+.netscore{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);background:var(--card);border:2px solid var(--accent);border-radius:999px;padding:6px 18px;font:700 28px/1 var(--f-display);color:var(--accent);z-index:1;white-space:nowrap;box-shadow:var(--shadow-1);animation:popIn .4s var(--ease-spring)}
+.trend{padding:6px 20px 4px}
+.trendrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font:600 15px/1 var(--f-body);color:var(--ink-soft)}
+.bar{height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));animation:barfill .9s .1s var(--ease-out) forwards}
+.tnote{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;text-align:center;font-style:italic}
+.tnote .linkbtn{font-style:normal}
+.mfoot{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:12px 20px;margin-top:8px;background:rgba(46,27,18,.03);font-size:13.5px;color:var(--ink-soft)}
+.pts{font:700 15px/1 var(--f-display);padding:5px 12px;border-radius:999px;display:inline-block;animation:popIn .4s var(--ease-spring)}
+.pts.p3{background:var(--accent);color:#F7EEDF}
+.pts.p1{background:rgba(75,107,62,.16);color:var(--good)}
+.pts.p0{background:rgba(46,27,18,.08);color:var(--ink-soft)}
+.friends{list-style:none;margin:4px 0 0;padding:0 20px 14px;font-size:13.5px}
+.friends li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line-soft);animation:rowIn .25s var(--ease-out) backwards}
+.friends li:first-child{border-top:0}
 
-          async function db(method, path, body, prefer) {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-              method,
-              headers: { ...HEAD, ...(prefer ? { Prefer: prefer } : {}) },
-              body: body === undefined ? undefined : JSON.stringify(body),
-            });
-            const text = await res.text();
-            if (!res.ok) throw new Error(`Supabase ${method} ${path.split('?')[0]} : HTTP ${res.status} ${text.slice(0, 300)}`);
-            return text ? JSON.parse(text) : null;
-          }
+/* Classement, façon carte de restaurant */
+.lb{list-style:none;margin:0;padding:0}
+.lb li{display:grid;grid-template-columns:42px 1fr auto;gap:14px;align-items:center;padding:14px 16px;border-radius:14px;margin-bottom:8px;background:linear-gradient(180deg,var(--card-top),var(--card));box-shadow:var(--shadow-1);position:relative;animation:rowIn .32s var(--ease-out) backwards}
+.lb li.me{box-shadow:var(--shadow-1), 0 0 0 2px var(--accent)}
+.rank{font:700 27px/1 var(--f-display);color:var(--gold);text-align:center}
+.lbname{font:600 20px/1.15 var(--f-display);overflow-wrap:anywhere;color:var(--ink)}
+.lbsub{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.lbpts{font:700 29px/1 var(--f-display);text-align:right;color:var(--accent)}
+.lbpts small{font-size:13.5px;font-weight:500;color:var(--ink-soft);margin-left:3px;font-family:var(--f-body)}
+.rules{color:var(--ink-soft);font-size:13px;margin:20px 2px 4px;line-height:1.65}
+/* Ligne de classement joueur/équipe cliquable (fiche détail) */
+.lb li.lbrow{cursor:pointer;transition:box-shadow .15s}
+.lb li.lbrow:hover,.lb li.lbrow:focus-visible{box-shadow:var(--shadow-1), 0 0 0 2px rgba(var(--accent-rgb),.35);outline:none}
+/* Nom de joueur/équipe cliquable dans une carte de match : garde l'apparence
+   du texte normal, juste une invite au survol/focus. */
+.namebtn{all:unset;cursor:pointer}
+.namebtn:hover,.namebtn:focus-visible{text-decoration:underline;text-decoration-color:rgba(var(--accent-rgb),.45);text-underline-offset:3px;outline:none}
 
-          // Convertit une date et une heure locales d'un fuseau (ex : Europe/Paris) en heure universelle.
-          function zonedToISO(y, m, d, hh, mm, tz) {
-            const guess = Date.UTC(y, m - 1, d, hh, mm);
-            const fmt = new Intl.DateTimeFormat('en-GB', {
-              timeZone: tz, hourCycle: 'h23',
-              year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
-            });
-            const p = Object.fromEntries(fmt.formatToParts(new Date(guess)).map(x => [x.type, x.value]));
-            const asZone = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute);
-            return new Date(guess - (asZone - guess)).toISOString();
-          }
-          function parisToISO(dateStr, timeStr) {
-            const [d, m, y] = dateStr.split('/').map(Number);
-            const [hh, mm] = (timeStr || '00:00').split(':').map(Number);
-            return zonedToISO(y, m, d, hh, mm, 'Europe/Paris');
-          }
+/* Fiche détail d'un joueur/équipe : panneau modal.
+   Trois zones bien séparées visuellement : un bandeau d'identité teinté en
+   haut (nom + chiffres clés dans des pastilles), puis le corps où chaque
+   bloc d'info (effectif, à venir, résultats) est sa propre carte avec un
+   fond et un repère de couleur distincts — pas juste des titres sur un
+   flux continu. */
+.modalbackdrop{position:fixed;inset:0;z-index:50;background:rgba(46,27,18,.55);display:flex;align-items:flex-end;justify-content:center;
+  animation:modalBgIn .2s var(--ease-out)}
+@media (min-width:640px){ .modalbackdrop{align-items:center;padding:20px} }
+.modal{position:relative;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:var(--card);border-radius:20px 20px 0 0;box-shadow:var(--shadow-card);
+  animation:modalIn .32s var(--ease-spring)}
+@media (min-width:640px){ .modal{border-radius:18px} }
+.modalclose{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:999px;border:0;background:rgba(255,255,255,.3);
+  color:var(--ink-soft);font-size:21px;line-height:1;cursor:pointer;z-index:1}
+.modalclose:hover{background:rgba(255,255,255,.55);color:var(--ink)}
+/* Bandeau d'identité : fond teinté à la couleur du circuit (bordeaux WTT,
+   terracotta Pro A), nettement distinct du corps de la fiche en dessous. */
+.modalhead{padding:24px 46px 20px 22px;background:linear-gradient(165deg,rgba(var(--accent-rgb),.16),rgba(var(--accent-rgb),.05));
+  border-bottom:1px solid rgba(var(--accent-rgb),.18)}
+.modalname{font:600 25px/1.2 var(--f-display);color:var(--ink);display:flex;align-items:center;gap:9px}
+.modalsub{font-size:13.5px;color:var(--ink-soft);margin-top:3px}
+.modalstats{display:flex;gap:9px;margin-top:16px}
+.statbox{flex:1;background:var(--card-top);border:1px solid rgba(var(--accent-rgb),.2);border-radius:12px;padding:9px 12px;
+  display:flex;flex-direction:column;gap:1px;box-shadow:var(--shadow-1)}
+.statbox b{font:700 21px/1.1 var(--f-display);color:var(--accent)}
+.statbox span{font-size:11px;color:var(--ink-soft)}
+/* Corps : chaque catégorie d'info est une carte à part, avec une pastille de
+   couleur qui dit ce qu'elle contient (or = effectif, accent = à venir,
+   neutre = passé) plutôt qu'un simple mot-clé au-dessus du texte. */
+.modalbody{padding:16px 18px 20px;display:flex;flex-direction:column;gap:12px}
+.modalsec{background:var(--card-top);border:1px solid var(--line-soft);border-radius:14px;padding:14px 16px 16px}
+.modalsec h3{display:flex;align-items:center;gap:9px;font:600 15.5px/1 var(--f-display);color:var(--ink);margin:0 0 11px}
+.secdot{width:9px;height:9px;border-radius:50%;flex:none}
+.sec-roster .secdot{background:var(--gold)}
+.sec-upcoming .secdot{background:var(--accent)}
+.sec-recent .secdot{background:var(--ink-soft)}
+.sec-empty{color:var(--ink-soft);font-size:13.5px;text-align:center;padding:10px 0}
+/* Chaque match : nom de l'adversaire en évidence sur sa propre ligne, date et
+   résultat relégués en-dessous en plus petit -> un coup d'œil suffit. */
+.cmlist{list-style:none;margin:0;padding:0}
+.cmrow{padding:9px 0;border-bottom:1px solid var(--line-soft)}
+.cmlist li:first-child{padding-top:0}
+.cmlist li:last-child{border-bottom:0;padding-bottom:0}
+.cmopp{font:600 15.5px/1.3 var(--f-display);color:var(--ink)}
+.cmopp .namebtn{font:inherit}
+.cmmeta{display:flex;align-items:center;gap:8px;margin-top:3px}
+.cmdate{font-size:12px;color:var(--ink-soft);text-transform:capitalize}
+.cmres{flex:0 0 auto;font-weight:700;font-size:12px;padding:2px 9px;border-radius:999px;background:rgba(46,27,18,.08);color:var(--ink-soft)}
+.cmres.win{color:var(--good);background:rgba(75,107,62,.14)}
+.cmres.loss{color:var(--bad);background:rgba(162,51,39,.14)}
+/* Effectif d'une équipe Pro A : grille de puces, pas une liste à puces classique */
+.roster{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.roster li{background:rgba(var(--gold-rgb),.1);border:1px solid rgba(var(--gold-rgb),.22);border-radius:10px;
+  padding:9px 11px;font:600 14px/1.25 var(--f-body);color:var(--ink)}
+@keyframes modalBgIn{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@media (min-width:640px){ @keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}} }
 
-          const params = s => new URLSearchParams(s || '');
-          const cleanName = s => String(s || '').replace(/\s+1$/, '').trim();
+/* Formulaires et administration */
+.panel{background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:16px;padding:20px;margin:0 0 18px;box-shadow:var(--shadow-card)}
+.panel h2{font:600 23px/1.15 var(--f-display);margin:0 0 4px;color:var(--accent)}
+.panel h3{font:600 18px/1.2 var(--f-display);margin:0;color:var(--ink)}
+.hint{color:var(--ink-soft);font-size:13.5px;margin:4px 0 0}
+label{display:block;font-size:13px;font-weight:600;margin:14px 0 5px;color:var(--ink-soft)}
+input,select,textarea{width:100%;background:var(--paper);border:1px solid var(--line-soft);border-radius:9px;padding:11px 12px;font-size:16px;color:var(--ink);font-family:var(--f-body)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.16)}
+textarea{resize:vertical}
+.btn{background:linear-gradient(165deg,var(--accent),var(--accent-deep));color:#F7EEDF;border:0;border-radius:999px;padding:13px 20px;font:600 17px/1 var(--f-display);margin-top:18px;width:100%;box-shadow:0 6px 16px -6px rgba(var(--accent-rgb),.55)}
+.btn.sec{background:transparent;color:var(--accent);border:1px solid var(--accent);box-shadow:none}
+.btn.small{width:auto;margin-top:0;padding:9px 16px;font-size:14.5px;border-radius:999px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.adm-item{padding:14px 0;border-top:1px solid var(--line-soft)}
+.adm-item:first-of-type{border-top:0}
+.adm-title{font-weight:600;color:var(--ink)}
+.adm-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.scorein{width:58px;text-align:center;font:600 18px/1 var(--f-display);padding:9px 6px;border-radius:9px}
+.vs{font:600 17px/1 var(--f-body);color:var(--ink-soft)}
 
-          // La FFTT donne parfois une "dateprevue" qui n'est qu'un placeholder
-          // (souvent le 1er janvier) pour les rencontres dont la date réelle n'est
-          // pas encore fixée. Si on l'utilisait telle quelle, plusieurs journées
-          // distinctes se retrouveraient toutes à la même date/heure : des équipes
-          // semblent alors "jouer 2 fois" le même jour. Cette fonction repère les
-          // dateprevue suspectes (seulement quand datereelle est absente) pour
-          // qu'on les ignore plutôt que de les importer avec une fausse date.
-          function suspiciousProvisionalDates(rencontres) {
-            const byDate = new Map(); // date (dd/mm/yyyy) -> Set de journées vues sur cette date
-            for (const r of rencontres) {
-              if (r.datereelle) continue; // date réelle confirmée : pas concerné
-              const date = r.dateprevue;
-              if (!date) continue;
-              const tour = /tour n°\s*(\d+)/i.exec(r.libelle || '');
-              const journee = tour ? tour[1] : `?${params(r.lien).get('renc_id') || ''}`;
-              if (!byDate.has(date)) byDate.set(date, new Set());
-              byDate.get(date).add(journee);
-            }
-            const bad = new Set();
-            for (const [date, journees] of byDate) {
-              const isJan1 = /^01\/01\//.test(date);
-              const sharedAcrossJournees = journees.size >= 2;
-              if (isJan1 || sharedAcrossJournees) bad.add(date);
-            }
-            return bad;
-          }
+/* Connexion : un vrai écran en deux volets sur grand écran, pas juste un formulaire perdu */
+.authshell{min-height:100vh;display:flex;flex-direction:column}
+.authbrand{position:relative;overflow:hidden;padding:44px 24px 36px;color:#F8EFE2;
+  background:linear-gradient(135deg,var(--accent),var(--accent-deep) 55%,var(--terracotta));
+  background-size:220% 220%;animation:heroDrift 16s ease-in-out infinite}
+.authbrand::before{content:"";position:absolute;inset:0;opacity:.5;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")}
+.authbrand-in{position:relative;max-width:440px}
+.authbrand h1{font:700 52px/1 var(--f-display);letter-spacing:.14em;margin:0 0 16px;display:flex;align-items:center;gap:18px}
+.authbrand p{font-size:15.5px;opacity:.88;margin:0;max-width:40ch}
+.authform-col{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 18px 60px}
+@media (min-width:900px){
+  .authshell{flex-direction:row}
+  .authbrand{flex:1 1 44%;padding:0 60px;display:flex;align-items:center}
+  .authform-col{flex:1 1 56%}
+}
+.auth{max-width:400px;width:100%}
+.lead{color:var(--ink-soft);margin:0 0 24px;font-size:15.5px}
+.ferr{color:var(--bad);font-size:13.5px;margin-top:12px;min-height:1.2em}
+.fok{color:var(--good)}
+.switch{text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:12px}
 
-          async function syncCompetitors(div, rencontres, classement) {
-            const teams = new Map();
-            for (const r of rencontres) {
-              const p = params(r.lien);
-              for (const [id, name] of [[p.get('equip_id1'), r.equa], [p.get('equip_id2'), r.equb]]) {
-                if (id) teams.set(id, cleanName(name));
-              }
-            }
-            // Le classement n'a de sens qu'une fois la saison commencée (sinon tout le monde est 1er).
-            const started = classement.some(c => parseInt(c.joue, 10) > 0);
-            const rank = new Map(classement.map(c => [String(c.idequipe), c]));
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:999px;font-weight:600;font-size:14px;z-index:10;max-width:90vw;text-align:center;box-shadow:0 10px 26px rgba(46,27,18,.32);animation:toastIn .32s var(--ease-spring)}
+.toast.leaving{animation:toastOut .2s ease-in forwards}
+.toast.err{background:var(--bad);color:#FBEAE6}
+.empty{padding:34px 4px;text-align:center;color:var(--ink-soft);font-style:italic}
+.loading{padding:70px 0;text-align:center;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:12px}
+.loading .mark{animation:loadBounce 1s ease-in-out infinite}
 
-            const existing = await db('GET', `competitors?circuit=eq.${div.circuit}&select=id,name,source,external_id&limit=2000`);
-            const byExt = new Map(existing.filter(c => c.source === 'fftt').map(c => [String(c.external_id), c]));
-            const byName = new Map(existing.map(c => [c.name.toLowerCase(), c]));
+@keyframes markIn{from{transform:scale(.5) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes popIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+@keyframes chipPop{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes barfill{from{width:0}to{width:var(--w)}}
+@keyframes pulseLive{0%,100%{box-shadow:0 0 0 0 rgba(var(--accent2-rgb),.5)}50%{box-shadow:0 0 0 5px rgba(var(--accent2-rgb),0)}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,10px) scale(.95)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translate(-50%,10px) scale(.95)}}
+@keyframes loadBounce{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-8px) rotate(12deg)}}
+@media (prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
+  ::view-transition-old(root),::view-transition-new(root){animation:none!important}
+  body::after,.hero::after,.authbrand::after{animation:none!important}
+  #rings{display:none!important}
+}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.28s;animation-timing-function:cubic-bezier(.16,1,.3,1)}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Chargement…</div></div>
 
-            const idByExt = new Map();
-            for (const [ext, name] of teams) {
-              const fields = { name, kind: 'team', circuit: div.circuit, source: 'fftt', external_id: ext };
-              const r = rank.get(ext);
-              if (started && r) {
-                fields.ranking = parseInt(r.clt, 10) || null;
-                fields.ranking_points = parseInt(r.pts, 10) || 0;
-              }
-              const found = byExt.get(ext) || byName.get(name.toLowerCase());
-              if (found) {
-                await db('PATCH', `competitors?id=eq.${found.id}`, fields, 'return=minimal');
-                idByExt.set(ext, found.id);
-              } else {
-                const rows = await db('POST', 'competitors', fields, 'return=representation');
-                idByExt.set(ext, rows[0].id);
-              }
-            }
-            return idByExt;
-          }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =====================================================================
+   RÉGLAGES : ces deux valeurs viennent de ton projet Supabase.
+   La clé "publishable" est faite pour être publique : aucun risque.
+   ===================================================================== */
+const SUPABASE_URL = 'https://idkssxtsmeynjsivuehp.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Qq28e3LyJwXxsxGw4ibHKg_tM8FDysY';
+const APP_NAME = 'SPIN';
 
-          async function syncMatches(div, rencontres, idByExt) {
-            const existing = await db('GET', `matches?source=eq.fftt&circuit=eq.${div.circuit}&select=external_id,status,score_a,score_b,wins_needed&limit=5000`);
-            const ex = new Map(existing.map(m => [String(m.external_id), m]));
-            const rows = [];
-            const s = { total: 0, nouveaux: 0, termines: 0, direct: 0, ignores: 0, inattendus: 0, dates_suspectes: 0 };
-            const badDates = suspiciousProvisionalDates(rencontres);
+/* ===================================================================== */
+const CIRCUITS = { WTT: 'WTT', PRO_A: 'Pro A' };
+// Code pays du WTT (CIO, 3 lettres) -> code du drapeau (ISO, 2 lettres).
+const FLAG_ISO = {
+  FRA:'fr', GER:'de', CHN:'cn', JPN:'jp', KOR:'kr', PRK:'kp', TPE:'tw', HKG:'hk', SGP:'sg', IND:'in',
+  THA:'th', VIE:'vn', MAS:'my', INA:'id', PHI:'ph', ROU:'ro', RUS:'ru', USA:'us', CAN:'ca', BRA:'br',
+  ARG:'ar', CHI:'cl', PER:'pe', PAR:'py', EGY:'eg', NGR:'ng', RSA:'za', GBR:'gb', ENG:'gb-eng', SWE:'se',
+  POR:'pt', ESP:'es', ITA:'it', GRE:'gr', AUT:'at', SUI:'ch', BEL:'be', NED:'nl', LUX:'lu', DEN:'dk',
+  NOR:'no', FIN:'fi', ISL:'is', POL:'pl', CZE:'cz', SVK:'sk', HUN:'hu', CRO:'hr', SLO:'si', SRB:'rs',
+  MKD:'mk', BUL:'bg', UKR:'ua', BLR:'by', TUR:'tr', ISR:'il', KAZ:'kz', UZB:'uz', QAT:'qa', OMA:'om',
+  KSA:'sa', KUW:'kw', UAE:'ae', AUS:'au', NZL:'nz',
+};
+// Image du drapeau à insérer devant le nom d'un joueur WTT (rien pour la Pro A ou un pays inconnu).
+const flagHtml = c => {
+  const iso = c && c.circuit === 'WTT' && c.country && FLAG_ISO[c.country];
+  return iso ? `<span class="flag fi fi-${iso}" aria-hidden="true"></span>` : '';
+};
+// L'emblème du site : une petite raquette et une balle, dessinées en traits fins.
+// Logo SPIN (image détourée, intégrée à la page). "light" = version blanche pour les fonds sombres.
+const LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAABgH0lEQVR42u29ebzdZXXv/17r+e59MpAwhCQEkEkgcHKSiKmKoh7QVlFRnHbIhNhBW9va3712uu3t7SG9t956O9xWLFZbb7VABo6KA+BY5YhaRFIgwyEgopExCYQp09n7+zzr98fz7OmcfeYhIeT7eh0NZ9j7u5/vGj9rrc+Co9fR60V8ydEjOOzO3I4e0VEFeIGeY5dAr1BK3+1u/JV2g7U2MgHvUuitP5um16u9zlFlOaoAh+rMkqB37hJ6AHr8iIXx7EvbcCcXKR7MqOxXAGbOyznwtKd8UoUHT6jA2jCyWym5eA/zbHQKdvQ6qgCjOqOS0rlLuPjiwNqWwim0l44n41jKnIQWTsVlJ4OfL8aJYCeAzUFsFoE2oA1wCC7ZcQ+Sg+UgB4G9YHtAnzaRpxB2EewJXHiUII+x3+1hWt8z9HaXW0RQQufFjnnzjO7ucFQhjirAGK7GEKTbD7Dg044/04kstMA5JnYeyBmInAychIXjkQxUwfpFKmbxxK0xerFBHoXGn4nU/9Y8IM+BPIHYY4TwqAS5T5z2eh+2IvmOgUrRpZR6he6jHuKoAgx3FqWS0t5uTVZ+wWUzOPHYJVj4JcS9Uiy8HOxsxLUhDsSScBpYAILHxNekXAxMAiaGoGAZSIYqiNafggkN2gEECKHF03KgLv6tSPx/8+DLEOxhU70bX/kxIdxB28x7uedfdze9RmdnFkOmo97hqAJUhb77xhAlOV2LV58KXCiBX0HsIkReirppUUh9FEwLoSb9IpIkGIyAkSOimGU4VcTVj9uCB56H8Dze9iA8hegTBjsR2YOyjyB7obwPsjIWckQMM8FwQAEVBWYS9FgkP05M5iQP9BLgJNTNQSQQbC+W/xSnXzfsW2SVrWzqfnbg53/xKoO8OD9zl8SwoCG8WXrFGVTcr4ja2xB5JeIWRIH10bIbOSBIMtVGVfANkxhaiGSIgkoUp5BXgEcQ94BhWwl2H+QP4dhNbk8yd9eT9PTkE/rplpWOpVyYQ/AnYeEcXLEDcWdLqLwU7HngHkN+yIHwPX668eEWsmBHFeBI/aydnY6eBsSmY8V8TN4s6i6HcDGSnRCjjxwIZUzAgiCqMXxJr2Mx1gEUdYomC+/z/Yhuw/LNht6FySYO7HyAh779XAvBEuh0cDFwtW/yQJNxnX7VNGbmZ2H+QhGWIJxowmOY3oGEH7B1w86jHuDIFvy8ll2ev+IV4rL3QXg76l4Shd5D8DkqAUvBudXiFgECgkfIEOfQLP4NtgP4DzO+hZR/QPHAw2y6eX/T+y/7YAbApk/7pDjN15I1Mynvmw3FWUjheFx+IqLHgswAPQaz6ahkWHCIxGTDnEdCGdGD+LCPEPai4RngaXz5Wcz2otnz9HbvbXkqS9bMpJKfi+j5KjYjID+lUNnKsbuebjISRxXghR7fpzBnwWUz9ITj3mtiV4G9Hs0yLIcQUmgjmoTdatY4EBAzzEBdAc1SSMRPTOVWKuEbePsxD6x/sgmGbF9eABiAyCy7bAZ9s05znvMskzMthLNQPRPkJGAuZnOAmVRvpYoADfeYhOp9xdxEZB9mT4LuhLALs8dE2AH6UNBKL30Hd3D/V55veo320kkUZkyjsv8g049/ik2frhxVgCPB4i951zxseklMfxPVxRDAVwKGR9UlvHHgZZaDCOocImDhCcy+qcIXva/8e5NlbS8VWwr8ove/BCrnY+HliLtAJFwAdiqi09GsAd5MOagZEKoKaHUYdQSPUGiAkjR+U4SIVFFVjpiXiOww0a2E/F6wTSD3sK0pHwBKjhIc6QnykaUApZKrWfyOFfNVs1+zYB/AuTOxAD6vu3aTmNCKSFMCaOYRyXCFiPaEsMnUriOELzYJSXupyPTjrclSnvfOORRmLBLkDVh4PeLOAxagLiXSHoJZLHhRzzlFNQpv9V6soQAw6qux6GBYkxY5RISq3ks1yedxgu9F5A4j9ACbm3OCVFw7AkOjI0QBSi61AgTaS8doVvgtw30IkbMIHsznGJrCnCToVC2b1ORG1eEKkOf7DPkyIb+O3se/DcmbLPtggQNPS5OlX7byRMp6sQS7DOcuxMJCJIuhfkSQQnwvEYSoACJST6prhbAJehaNxQPV1gqSahPxHzGRr0K1FgB+joU7TOVbSP4d7t3482Yjk876qAIcDvdf0lq1tmPlapHsv6HaQcgheI8g9YpTkxCkUCN4TIu4IpA/hdk6s/AvbN2wuSmm78XX3qe9dAxO3wjZ5WL2JtSdAhoNuwUfawSNx5uEn1SItSrik2KTKs4fzXJ8z3jfY3hGjRZ/JEplBhJqnkJEEI1Jfqw+P23od/CVrxL6vsn2mx4/6gEOG6ufBHLR8leIFq5G9K2xSOXLyd27IR58GaSIK4D3uxH+zbBr2bLuIQC6upQbflTgwa/31WP6NUvJeI8E/x6QdsSBzwOQJ8ErIE6j4dV+J2wDgpTmGN5qtTRoyAksEGHXaslZBDFtLdyjDZ1igaOWM9RuzgzTeEOqGj2aQMh3mPBVxN/E8Y9/70gIiV6AClDt0+n2nPfOOVKY8YeYfBjRGfhyhWg7dRD3nxrPTHAFxcJew/6V3K7hvvU/AaCzK2Pv41KP7Tsz13HyZQH3qxDeiLqZSSgb2hEk5hfm94Hbg8ojhu4EnsHC01jYh9nzKBU8ZSQJtEgBszYcMzGZhbjZoMcLfh7BToEwD9FZqHN151BtkQiWFCMkj6EYgtQaiEbybC0l3Q3yMMDrVMNFjxaKuALmD34aX/4wvd2VfgqQPHLVRtHQEn549iK9wBSgM6vF44tXXS6if4XoeeTlHIvZJBISAqIy8EGaR7MsxeIbMq38ZWXzjVvjS3dm7F1YF/xTS9M5Vt+LZh8Sda9GEgQaPFh4BpGfYvZzCNsF95CI/cKL/pTdM3by+KcPtsT7R/Nczr60iDtuTqa8JDh3OmanmfgOyM5E9SyCX4BmCeLJ031ZBWpFu1EoQA0ykkF+K8cVMsx+ZqH8e2zbePOgRmnYR9iZHU6e44WiAKkHf22gY8V8Efe/Ef1VzCDkEa40DDWNYYPWSljJMjYgO/k9JuHP2bz+q7Wk7qHjlU2fzgGjvb1IWLpCCvLHZNPbMQPft4vg78O5H5m3H+H9VjQ8NmiRqZo7dF0t9PYK3bviOXcO8qs9QGlevOdhE8xlBZaeNQ/vFmDZUsFehYVX4dyZiM6KIFIOwRvga8hPv4y7+b+DDeoxMY8WHWZ3mhxcwebun9XDz5JraqpbsmYeVj4L07MxN0eVYjB7HuFxgn+AZ8PPeaT7QANid8gh1heAAnRpzXUuvqIkFD+G6pnkfZbcfewbDgSU2IMcxFLSGf/OFQuEfJ8hH6PS9vfc//+ep1Ry7Nol9PSEmrVevGqViP4Zmp2P73vcTG7B+Damm+i9/sGWeUjnLom99xM+qVWfMiv1SrxXqHnAxuvsS9uYMbedvPwKccXXY3knmp2KKPhKqmlYSsZN+iXJMiiUahbIig6f325le3cs+FW9cEMO9rIVvyI5a5DstRDOit6yocJiBsHvA7dVxN8cgv9cHVLu0kOJKB3mCpAOu710DK7toyLy4RgD+xyRbKArVwULBDEUD1ZAi4L5b5v5P2HrhrvqbvjiUDv4xavfIegfoXoavvIddbLOV8o/7GfhFUpx3PHQ9tanTrvlWo+x+1nS9tIJaNvrRcLbQd6AyBmxr8mDhT7EsoaQp7UCVMNFY4uFvjfR2/1Eg9BH+KpjxS+h2V+IcSmigs9BQogQa6gmSSAmmCoutXGH/AmDv+O5R65hR8/BJmU6qgD9UJ6FqxdKUT6DuovIyyEWSUUHt1oEzHKyQhvBP2WBLuY++qlYGe7nsjuu7BT8rwHzDd3I/n238NBNu5q8T+dt2qQsh7OnbHWv7aWTcPo6MXcloq9F9fjU9xQb8OJUmgwIe0wE0X3mfSf3bbg7GSNfg507Vvy+4P4CdTPw5ZDCLQHTFvlXFXoOsYtWq+HodwyuYssNjxwqJZDD8kECsai1+r3i5BpETsJX+lv91ghPdNsFCF+z4D/C1vXbG3KIKPgXrDpN+/z7gupsyG5m63U9zUnaC35gpAGNaRCqJcs7MHe5IMtBl0RrXElC2ZA4Gx6XOfPlP2Lbxr9OiWst7JGOVf8X1/ZfyPuA4PvBzYPkGY2FD7OYWBeLBP+gef9O7tuwja4uHWTk9MWiALV4UFi0skvUdWHegApQHFb4VVO3pPylbb6uK8b2Nasff2vZZTNc3zEXedhZL3ZVxwaPyL6Xgcpw9qVtbvqctwfkA1h4E5rFXAF8bA/JFMJd9lzhdew4oxwNR7L8i1f/qWj2l+TlCmKudZFxGOApzlBEryFZG2IPWGX/xanIJlP5DA4fBaj28Sx8xywpHvtpRFakQ5boUgct/kSYTgsZ2JMW/IfZtn4D/avE/UOrKlLD1XKklPVHVUOpXh0rOwX3uwjvQLSIr3jUifl8Db0b1sfnkpRnyRWXiRW+EnOwlsI/jBJYPSu2anWcMlpsI/ibbWv5nQO81otDAZJQLn73WWLTbkCzC/GVPrCswTVXq5baL1nLyYoFzN9lIVzJ1vXbRwCxKbW+hBfrVXLQMAravvK14vS3EFlNsAdM5eVsfumBei7Re5xo9kPELcR8DmTDmPnhLHn95yE+Qwv+SrbecH1TU+ORrwBdGazNaV/1MnG6EZFz8eU+YjOKxOejUi/YNJTtzYysTQn5Rqvs+x22f+mp2usdvUahCA21h6WrLnHGTL953c1gQml5nKnoWPN7ovoP+HIfQqEu24M13NUEfDAZC7VaoYnhMiX4rVbZdxH3f2XvBMLJh7MCJMvfvuIN4rKNCCfi8xwRl5qzLOLWUj3Kaqk+YAIuc1j+V7Zl3Z/Gwzp0cNoRpwiNSeyyy2ZI37E/AhaB93HIINiQ1eNmRRj+Mgu4TM0q72TLxi/XE+/JvfSQnfeyZQXo9m7JyreLK3wROBGf+4T0SL0lRSBIHDy3hE9jiirmw2/blnV/kgyFHBX+8VzdPgp/l0ZlwGrJsz/uIkQ6Ei9R+pnKCBrvRmFgJYCDkF0KEOHcyb8OkQJ0ZWzaVKFjxbuCZRsgHEvIQzOcVi3SiNTmxYPkIA7JDoiwhm3XfxKWFaj3Gh+9xn2tDTVD0hlbOKTiL4lyL74hMJnY6EFMwSPKhSz7YGGqgIlDoAAlB2vz2MyWrYMwgxB8w7BK3XqIRQYGifQMODJU95ra8rD5+g3xtTZVjgr/JF1VKywsaiCtaBjmmVANkFTlP53w5MlTFaJnU3qgnV0ZPWtz177iDQF3PYRpmA+D9+2LIDgCFZwWQHcalRL3brw9Via7D2Wy25oRuhZRVPW91ffbkzQd1lSFER4ulYrcp3MSrePkCqQFAzmGcjYP2NFUvHzhK0DJ0bM2p6P06iDZRswfE3t4hxpaqSZHroDxpPn8cu7b+KOmtugpFYguie0GjZXi9IC6BwuthzuWalPeYVp93tzXRqFteuorlMk1ymaIE0SnTdXHy6ZM+On2LFqzVITPY+FEzPLhXakFxCnwvFleisI/1TBnl9IFsUS/1uipYnclx5K2OeR2Is5OJrAA0WMRjgM7BtQlSpWAyAGM5zD/DD48QUGewNuTuMIeuq/f1/K8DhdGhrYDAZvtq5WYSZR/ibVOIOT+CFKALoW1nvbSaaLh86AnY1ZGKFKfzW0V7wVQQeSgBVazbeNth0T4WRtYS+qwnLZYxb/cTM5HOBuz09FwKmgRp61TKmnMtiSNIQdD2A3yMItX7hDPvUF1C5bfxbaNj0K3r4dQtUrsIVAGEzZffYCOB55DCkwye52hIgSrkMmzUxzHTubrGyz89WOkePDriL6GkPcBbXFIpWlwVppcIRoQZ2L5+8PW9TdEtGfTFJI1Vb3WFReLm/ZBfPl1qJyMFLQ2nhvnj0NtqDxyhbY62/qsrtCAbrnEI1ol3c2fh+weE/s+gduw8l30du+p51D92rin6AykY8U/49p+g7ycI5NlNFP4gz1s+3Yt5qFvP8sU9AVNsgfodCBeCqs+jRZeg+/rAykS8A0DK9QapKpVRROPK2SSlz8cetffkIoiUy/8i1e9ReCLCNOqowaEsq8Pp0NCr1yS71HEyMGwYOS10UmH6CxEXieir0PDn0DbQ3Ss+r6hN5HvvZ2eLz0Vx8cG63Oa6GOIOYyR/VDMfiP2Y9EwQjmB1t8koE6xfHM/4Z9UJZg8GLRUctCT07Hiz3GFFeR9ZUwyQnrgRixwVb+qVsDIydoys/LfhN71n2iYIZ0i2U/C37Hy1SJuA9BGfrASEQpAcJEF2hRCatEIY5gES+T+IhkiSYFCIOQ5vlwm5B6zs9DsfaJykxRn/UA6Vv0f2le9LL5Pdxzuj0WryfHk3amL1lW+S6g8hzZt/Zg44Y+Qd/xfb19P3s6N/kwPGwVIzUyLlr9HpHA1edlHbxMEDXUwrfH/gxrB4vB1Xr6eLev/KCJHUzlAne57SelMEd2AhdmxRqGFgUImUq+GSoMijEVAamioICEt0QDwOb6cR2UIC3GFPxTHj2TJlTfRsfKt8ZaqXqBrMp5lHGy8d+PPUXcTUoAgfmIFM/JBgireP0abfRGo1yAWvmNWQuD0BaIAXdE1n7/yHNHiP2LBEgWhIiKYWn1kIimDBEHM4woFCHdYvve3kwmaSpxcoN04e/VsrG0D4k6LxFpDDuHIwH6Y0SqAWfNXUrVY/NP0/g7zgbwvx0IR5J0i2S3Ssfp2lqx5TwyHqm0MEy0oXQBiefh7QmV/LFjVNuCMV7lSbmQ5momJfZK7NzwGJRffFijO/v9YvOa3U03CHe4KEAe4z760TZz8E6LzU5KodatpEgU+1AUniEekgLDTqFzF/V95nq6uKvA2QUo5zH13RdYJmW7XiGavjBxD4jgkl0jMh7ShbVuqymD4iidUAqoXCfJ5WVL4hlu6+k1RCdaGWCeZqLBobaBUUnrX3WPCNRSKWeI1aiXQo7X8iacpK2Ll7RQr10SZTKHXhaXpYmGliPxvOlaeF1ukJ1bBJ/YBd3Zm3Hqr55RXdokrvB9fHjjGKDWjmbo8zSNiaCaG/Rpb1t9OqeS49towYfe043OeZcsKFN9U5Nl785ahT8+1gfZV7xdX6ML35TTTiYwQUBty0HyoXKDpYPolmP0CxsQrKiKE4LFgaPZSM66U+YvPYf6Sbez66u664veM34P29sbc6KnCDwV7FZKdg/lKiyLmyD+3JU53QcHtN2M59278CV1dQs88pefaoMe/bDmiv4XQJsgyXnL6eh4/OU9AwOGmAF3Kjs95Fl/xRrHsU4QKg1hQafgCyHHFNvB/zZZ1H68p0YSENCXHjls9i1a/QsMJ77Ps4R+ze0el+UF1KVxrLLripeIK67F8RgO6I4xSA8ZoeWWYv5dB/iqSYAWfJ0VYKmKr9MTF2IyXb+LZf6jEJLl3IpRA2Lm5zPEv/Za44iVo4VRCnvdj1x4NLaNHNENcMPL3sW3915PhM7pK8OipsyjIvyIyl5BXcMUzpJxNY/cnvkGp5OjtnZDQeILcicV+mPPeOUes8I8JKx7iBi0hQcHjCm2EyvfsucLVlGpJ70SEPBEpWXLlleL0qyHID+nt2Rv7SxrurSt9AHH/E5X5aYndIQp9QuI9bMojhs+DBIcghEoZCydYVviYzM6/zZI1r4JuT9eE5AaBri5l+02PW1/l7Vj4FllbVvPiIwuHLBIXkOOKGSpPmfgr2LrhRujKYojzwYy1a4NO8/8VyTrw3oMUyCsedb/HouVvjr83MfnABMWJNdz846KFD5P35ZFuY9AQwhpSgucslF9Db3fvxJAkpXtZsmYmFv5OshkfpLL/L23ruj8bODBTgzzfKqJfxXuPWsNGCZ2CbtmG5Lf+fjY0WxtDxd+xKOcKGSHsMwlr2bL+b6kTBPjxG5eYZ8ji0/4M+AgisyIbnfmGRD6WvYNZ+ndAKMbFIALme4zKR9hy43/WeruWfbDApk9X6FjxKyKFL2O+mGoPUiM9MLvfXOFC7j3juYloJhy/FnV1KT3XBpauukRMP06o+AbhlyEUL+AKat7/F3o3fr0Wq0+E8LeXThMtdEvW9h7yA9stVK5idymHa/tRdPRaTNhn/CvoS+JK0uqZqDDlE3PSj6VZxhZOiSgh5Ii1iSu8SU5avIz5C+9gZ/ee8YdEPRaV4HOeXZtvY37HzWKWIXoy6mbjMkWcxqUfoqhzaBb/H/Zj/k4T+zO23P/H7Pr2o/F+bvXQlfH43+UsLi0TKX4eC8em5iOthXtmnqw4l9B3DLv+8daJCIVk3B6kq0u4+fFp0vf8D1G3lLwS0RNpqopKP6PncUVHyL9i51feXWMdGF+2G61Ix3t+SXT6BuClIGah8tts3fBPA0bs0uC1dpSWm07biC/HpE6MEYz6HW4eoJUniBN0mJEVM8weUfLf8JvXf2MAQdjYc6x6NXrZlafRV7kQyV6JcJaYzQNTTJ4z0R2Y34azO7h3/Z39vInFjoGePBUfPw+cjM9ztEUUYeJRCS7P35jft/H28XIJje8hV4Vo0ao/syz7n+R9FUQyLO3O1aYhlzr5fTX08eGVkZZ8vK45Cf/i5RcK2RdBF6QF0w+ZZq+K7vJqa27mimt/5KlTvoO61+LzULf+/YWzlUKEMDoBbRT0xtezFsWzcSmg1bbUV62nWY66DKiY2Z+wdd3fMmF7gQdjhq7G6P2/PwgH06KVK8S5f8TshFR/cYOkjzlSyJDwH3ZgzyU8OCsfjzLruD54d3egY+V5pvL75JU02CKRx0dNYttDv4drZmhBzcJHuW/9T2qtB+MKe3pyli6/SCh+FdMF+Hw/rpAZ9hnu/dwz8QE1CH+p5ECMJ095Hehr8Lm1bs2u4vGtZHGi8oNGzL/6NS7vI7U2i/pbZAQfsODEFf5GOlZdm1oNbPzJZHWE0oTOziyerSWFaKhSd3ZmtfyhkfJk8arjZfHqT4m6G7BwwtADUkTa+1CpIO7VzDjhN6HbUyrpIfAANZq8z6PZe5L1bwh9qizNtUV0kbfTZQ7v77JZlddzR3cf4+LnqSbfyy8UCl8BmYuvHES1CPKkmf8ltm18ZKClq/7dmk+KuN/C9w1Gu2gTBxYM8ACTEZL2Z2FI/13bHBMT5KzosPAVK+/9tUglc0jYNGLn7JJ3zxWb8U1EluIrldR20v+zWJMBRQKIQ3nCDlZewU/aH68r45R4gNTusGj1mxB3eWQT06xW3MKoN7jVPkJIP6qY8ifc0X0ASjJu4e9YsUQofjHixZUKKoorKsZNkYK7pAzgp+z2nH3pbAn+UsgZ3OKMp7+nlaVvDHsaX9tG+R6D/r60/m+pTyWIOPJyBfQdUjzmqyxefWqd639Kr3j/m2/aZQf2XwY8ghYKcetN/8/ScF6RHUTAKki2gLbCH8Zqde+YjMcYFWCt0dmZifLncXO69SviCPWmN7HaklotOMx/gS3rvj1Oq5MU8IqXpKRpQbIeGWZZ3HvHl+OvtvcTlOQuZ5z4GtSdgfc2eDw8ISFJCyVoDHuk4Wtcwj+a2yhEJZBXi8mtLCmdmUKJKVYCiSHYgzc9YuRXRaHuz/ARQtN/arWh0jJCJQjyARYtXzrWNonRK0A8JNPdJ1+BuIvwldDv4UnT/8W250i3beE5q1Q+2lowR+E6SyVhyZqZooV/Q9w5cflzWmuomUJ4EF+5vaVbrFJ9WOiM+3Jlil3/eBEmmYgkOaC4yPImi8WKt3BB6eyJLDCN/Or20JmxecN3LISro/eu1hMsDGFEFCOgboaI+7P4s95RQ9c66tPvvjFw+lXTTPX30xS/tT5jiV2fUVsDWSGD/N+4v3tLokYZI3RVilR9Ifw1ml2cmtYKqVgSkAxDvhWXW7R4mD23xYTNeNkLlE1Fxp8kp4ckUiSUK4ieL3nxKyy8/Ix65Xgqrx5PZ2dGe/4xQuUmsmJGsOret375UoPyCw5fCah7B4uueE0K5XQSFaCkIMasvvfi9AKCD4OiJ1VIMWgALWB+t2X6NykGH5vwl2oV51Wi7kPkByvNyasIEsBXftBo7fsJj7H0/ccicioh9Kf6OEIWhw8XQlV3JwuIFvCVMuj5Ujzmq5z/7tMjrj6lSmD09AS6u4OVw+/i/c/RrICMKNwLoEUR95HJzgGi4F5Ymi7oRxq2a8oQfyEIAZeJ+fAp7l63I0FWYzC9XdHyn7/yHDH5OD7EsKrJouEI4RnUbYqGpT+9Xlci5H7+WOCk5GFfBEI/aK1A6jBpuYK4Dslm3MR5qxfU5wum7ApQUu7f8JhR+R1EKrELQlPS2zLsS7xRlYDoZbSvfCV0h9F4sJF/wCpu/JxehroL4oqdYf5eMIQClj9O0GtjCDWm2F/gNo2Jt/4D6uaA97FS2GDZ1IGFnzPnsQfj3wxCquTaTsbs+Lo1fBHKf7Nl1egJyjniLpCCraO9dMzUe8WUD2y98VaCfQpXzGIvkcgQeU/cECquDZEPA8bayfAA1S5Ndb/VAJjIMN42oAUx5LNsv+Hx+uTSGOJ+enLds+A3ce4tKe4v1iuexMI/iqGb0zqfgZ6mCpWZOxlxLi6APsqq2BBBZvi+HC1cLFr8x/isSlOfD9Cl5vVqLL8Pl7nWyXATmKSEsonybpauWDQa7zXCDxeRn2zJytcK0pn2dQ1HamWoZph/CuxfUgg1ttCHbmNJ6Uwz10XI0wLOli0EgGyPtzzkp56Ttqva1PX8HD5S3jBt1loJ8nKOK7xPF63805pVnlL31Ctsv+4pze1P4hjtCPiILORINkO8vL8BEZogBUjC5E1+NW4nH4HZNPFoQSB8mS3rHkqWZPTWP/brB/GF/4lmc7GQpoj6uURJL6+Vh6I3beVha78840WT844yLqqjK33exF0dh++rC/KmMBQqlZy/b92XzfIbcQXXYuZgYCjkK4ZoibPWzGtY5zpeBUjJ58IrzgC5nFAxRHRYFRBz+Ny7IP8vfqN9bNZ/7drAolUXIXIFoWy1fqOaNauVnjXWTLIdI8i3ZrzoNyQNCo+aRecKiGUi7p9YsubMJFBTFw7FXFGQ8D+w8FRavTrEA3MCIUf0dGb6dyTUUMevANW4OdNVqJuDhQBpAqm1HYl7u7SAYbfn29b9MDZHjTr2r43ZifDHOJelMrkM/lHsAC48NbzCia/vFLAwCVw3L2AlkNi7Jbi4s0FfIj78K2d/uK3KEDE1t5KG8TdvfEDMPo7LYuGrRexTV1oNmCHGrzbsiRunAnR3B04tTRflihHChtVlyILZDYDRefEY3GdKmJesvAj0LXFJ9pBbCQWRvZTzvhE4+31ND/xFlweMVB1U8eU+skKnzHjqf9SEcsq8wI0BujSIXYPPf4a6fmF01VXV3QAh94guo1cuZATdrkN/mNT2wPFyEZItioWvIZPftNdLM0LlcbL8a4CMbc43ukAJ/FdUs1RxlkHfVgTM+vAuHy6XQcKeVMA+BFNfL7S8QJS8nGP631i06pKpbZcQo9QrbFn3tAX+CnUR8mxSACKpmoTqs/Ro1oZk7x1/ElxLGgtvB3WtXdAAB+BxmQBf5d7uR8dU+CqlVoklK16G6Ftj3jGS+FNznE/32KIGUPs8/mFCbpO+8OEFe1WH8wOIZemUnAgfZ+lVx9XRuanwAtXco/JZQuWuuBgxDiBHNkFNMHhNCRw+R4x3cvbq2cM1XOqw2Xh76RghvA2rEGn7hrT+gDjMm+VyIyDDLogY8jlkK5FsWvzAI/sDfJ8yKMST8oKDlUdBnmkgnjp6DZ6GWQotKmixA6v8YURpeqfOeJRKQm932fD/J4bYqdcsdiEnSa6yDJpg3qN6BkV/cXoBNwYFSH+kxU5wL40kTCpDnpbhUZdhshUp/ygp0eiT3+5uz+JVxwv+CkJexTiHK7oB0oZrS5h1V6vEKlmL6U9iPFKvBbzooc8hNrtXG8/E4cteTD7C4lXLJoOlbWgv0KUUH/wS3v8IV8hAklE0Sat0JdE2xjxUFVG5rCn0HUsSLJZfFg2l+BHtR9AM8N+gt3tvfexuVNquUaHtzag7DfM+MjEPJ6jBIrxJcegHXnI8eMNzWLg/tk7IKBX0SFKYYP3Yrfs//X6kV8EQN02wj9LZmSUbM0WeoFfYtKliIn+dkO+IVqlozEulAcESJXbqdLL08uOiApmMRgFqU1OIez0hEBmLh/us5vC5qYRIcd0zb/TC0h6TXxPeCQqCH17oLPGIykzUHTfkr9bmAeyHyfjJwDBuSJPwYuwdqvI4ZfiyR7I38dSCd8eu0alChbpje8Mz5a9j4U40y2hZWE3PNFLcnEM+84L4/atHowDpQxVnLQFdmAaVB0dMLO3C0kzAHvJPhDGGP6nwdU7pZEQvTuGPS4zSNpAxLbVDGEYgpA7fM2oWo9WVOkSD02/jfR+iyUuFoeoBjWOL9sIX5v5tJP2VWqvU7zU8lHrvr4Ahpn8eG+a6J3dzWOMzKPUKj3QfELF/iTD7YJ9Nqt5KBPmVKNK9o1CAFDOpK74edS5BTzJ0rkRAHSbyPXZ3763TE47SzQFMK7wmMkuHiABEDkzpF6823I9a7DxVkMLZQ8d9awOYsGXdVhPpIQ6SDaeoMjbi28NdCarCL61mift/Vqspg/ceV1gEhato3Cg/+blAACQ8t6+bkP8CVdfgBayhM76+rkpDJ52d2WBFsdY3nlqWzcJrR9e+Y2D+OzHUuG0M45bV09c3gvabNpNGS2VNz6mOAUMI7c2QZ6sw6OKq1f9c8+u9GPPhEYd00vQv8yZqv8/iVcdPrRcoKTu+/Iwh/5aMlzXLH1VCBiXSvJ7PnnkvjT8cmLRr6w+6NnDeO+cgcj4WaIKbWmLGWByqyJ9G/I8bQ41Roj+B9lKR4F8BtU0y0syiEJpDETPDqlhwQMxewbLLZgzZDBULc0LxuS/hK1uQzGGS9zN4dmQiRNXNNuO6HMEHXPFMtXAlYA0rjSbZCyQou2I34v3zMQE2jxEiNJoyyBgGeVSOx1g6mFHWwVAY3DELE8PaYC3DKW6OrgLJINgDbNn107H1/iTWZlc8E3VnRu2tDrzI4MwMUuPLdwRvqJ5J3/SlTblMazRI2XTzflP5K7Qx3mWo0OCI0YIhW6JH6g9CMFP3Gyx8xyx6eqbIC6yNE1/3r9tCCLfhCmnFptUFv7qJ08Ti7uHCawGYNxCUGXgAu6pztP5lqGsDG0kbg0XDwo9i6+zyMYQ/1WEV347I8SN838Z4NVoCdW1QeE0j4jMoqtDVpRyY8wUs78FlxVTpPlodHrEXqHjQxbTNfBvVkcYpQUSjrKjw2RgcoPUopWlKVmP/miwDtImRblAFqIYumVuWKm6DY71G7MOI2z4w9Paxu7baiy5GlKETbyNh1wOTNzPE5NKGUGdwpV0LPHhNn1n4A0LY31D5PFodHt7mhWrMLYEPxsJp+9ScW0pofbbvO1h4MA5e4dPgTF0DRAQ8EnwH55QWDARPBiqAVJeRSbCOqD1h+MmvyD25H8pb4vfGchDxb0QK52AwJkssooQcJLyGRVecP1ji04wIlRxbN9xlFv6QrJBhVI4K90hQJMBU8LlH3UUskgsna5HdIMmw494vP0Owr6AOpNYa0cwCaMFQne3aXHursLi1cGwvLsD8edgIIoLahnT9KUWeSII1BgWozXGeEd/XxsaNH6nXZ4C+a2RoVBr527b+Wiz/B7JiceS9R0c1ATWPaBEtXjEs+jYJybDBFwk+p770vR+dOgHNMNFzG5HGQRQg0oY48oWIzk5txoNXi0UVFXAOLPyUTd3Pjg3/Tzd9Vu8szJ8Wi7qNiXZKtgewKLd6JROCR0RWcfbq2TXEZ8irx0PJ2eZzPkIobyRrKxxVgmGsP4AGxVB8bmL+XZz3zjkjHUWcgGQ43sfeRzeBbUeyweQuYIL5cE5zjttKAZK1NMvORrK0wnLIXV91+ZWwbWQWd1AECKbricC8+hmHMXgSUUIe0GyRzsgvZ2SFGoMbA6w1e/L5XzNf/jxuWowrB2ckeDHmCQ0QdG1zS9xWKdmpZNPe2IQkTvq9lBw7eg4a7t8H7+sSwQKoLgST/mhVyxs1sTMHkpS2NreJoxER95PBoKaR4wrFBQjFRK1IJL4aIxxpAbPsdzn9qmktXWPLz4Lw+M37mfPYSsj/Gpc5xGnyBtZgAW14KzkW1ucXgPw3PYvq3udYhRfkrVN6OzWUL++J+6hb5atmKZR/CUvfeSz9KrvNf1BtXgssbHjGMvDBNgUvjpAHtfDzxthslLhWDL1CmAtOMUtjlYPuzh36KcVk2CPuFczK3zuKJQqhaiVs8/V/ZOZXAzvjNkQzjMRXGV6kCtD/WaSiWpQBEOnk3JUnJrhx8sOgntt8Ou67MNvdb2SyupFSYy3LTiG4E5oijn4KEDtATy1NR/WUFryZrd2hKJjtzUP+szEnwKXaCx6fjEoY4/FVYbA47WVeBP4HZ5WOjfOlI3lVsZp73bJunWGvsRBuQDJNfeiWXO0ISLWqHDyDKcgLVxMGhJ34gOjpTHO/1AptmaTbiCjfto0PY/xnbI1obGupiYNH5Fh828mNBrd1CDTXHQ92UotW4UFzIUR2sW/GrvF72NCWWqClifVtVPJf4/SQuGDZnSszCleDjKZcb7WlEVvWPcSW69ZoqLwZy7+JqsMVMzAXPYK1yJNeVIP2UrO3OBFvb5nat4/CbMq3m1Kzph4hid3Mamf0R4J0QCKau1kYJ0a3MUDS6+8gktpRFUN+wY7PHRxzcljNzCPNeT2MGbWVbAo74mBEXq4g7sMsvuLySJk4GpazNInU1aV+28Zv2pZ1l1rgEszfgLg9ZG0ZWog8RYbHrAJV4GAoJTgCFURSR4LY6+i8atoUNsjFq+J/kJbrJbkRq9nvuFYJRE/u/2faX5MI+RywaQ3bEYcCP2IIpC7i/+PllZfgGjhHJ0JIHCCYV5Hsn1hyxbmjZzlbG5rowrfdcJttuWGNhfy15it/APZdYC8uc2RtBcS5uCMXj5lPSFoVTbIjt8mOSEwmejZP9Z0bP2vXFChAanMW/xOQhyKBlvnm1BWJzdI6P/7JYElwDOfmxRdpMf848LlFzfL2ZNShcQ5Km07gtpaE1gga5wr0JKywkbNLc2uWfXS4c0quSo5SybFt431sXfe3tuX6N1qoXCDmP4gvfw6R/8TYj2YO1+bIig5NaFJsHfBAJYVPeV05LLzAFSAKnugsgnXEo+qdmhZpSo7e7j1YuC/ZzjDg1kQghHmDe4BS7Tuz0wI/a+3mmtyART2pPBs1a9fYPnAdOi0PnWyNJRxC4ihf7kX1ZTK9uDFOMo2pbB9zg+qQdmdnBhi93Q+GLev+2bauf7/lBzutfHCZ+fy9FvI/J8/Xked3YeFRJNuHZhlaLJIVM1whQ51LRZy4Gsgsr4dSLzClsLgDWlz28kMChxr3kuZgkvw2QNYGEubGf9eRyoHxsLk5qPTvNRt8aDrKWKQj7AR6xuNEbX89+ZaJtk8OX87JipcIxfW27LIr6O7eP/ZlfWsDPdQ3GpZKSjfE1UxsT19fqB3c0tIp+GwB5k/C/BmonCbISxBOx8IpGCeibgZV6lOrdpt7SzTuCRZGOXw7VjXJzWKq8x1TcSX4XmCbRchTa6t665s5QTiRfnsj6grQXYvD5yTHMMjqIJVomaQ+KGP6zPjCuPQm3j1tzhrh11EusFAZGrKTjLyS4wqXSd/sL9iSNVex+fpdtU3z47F99VZbgS6puf9ugBsD98qjwKMDsqlSybG9MBuYj9jZ6stnG5wHeh6qp2JyJlnmqos2CXkg7nbVtIaqDv2Oy3sONSM8YlRSouOyM5n/KzPY+a19g9zbBF/Roget9ErIyojGNn6pLVBJ+a3Mor00MxkpITI9DLiOGfntplRBwt6J+AAenpJgHsSNMQQaye9n5GVPVrxUgn3TFi2/im033ps8QZiAh2Ww1pqbwqSuGNVWkZ55Bu1G91oPPJ2+ttdNZmfGWSecwLTpJyPhZWLhIsxeiWbnom5anOHPY04hNoo1q8MpgIwn9EwRgZ3KycctYCcPTo3jSRZ9Jg/yPI8heib4xr3Mkmz2dMTNBPYOGgJJkBkjnpgLRAXQsL9fLD+2DxD8bhw5Iq4Bx514dy+J79IVloq2fVMWr/qvYcu6dbUkd3K2pkfF6Gk5ZB2Vg16pxbM9PZ6H2AXsAu4x+CynXzWNWeULCOH1Yvo2jFfjChmWE/txqsvvDmEWYCEg2oZNOwV4MH6utTbp7wvCHd0HbMma7YKeSQhWb6iskntpESmn3RDxvrIWUOS0hshjEPcVKdUiX2ewWvI63lZYyZ+C7CmQk0e0gqk52WUUI34pMa4EROeZ6g0sXvkGzP47WzfspKtL456ptWHKBKcqJD1NbqOuGCWg+3MHgf8A/sPgr+lY8XLxfgUqy8mKLyHkEEI0IAMZHWQc5zW6jyKqWq6cHBrh9cm+urqEtWsN7OGG+L8uw5bywEqWtUaBavdfK0bByDbBGF4mIGwAenc9h+jDievfJslSNHsCCwGfe5HCr4vo9+lY/a6I+1ex/6leHN10rxbvo4o8IVByCX0KbN1wl2274Q+s/PyFZvmfAo+StWUJ9/Z1gQ/1+e0h8yediB3EAVVwekITujjpUVAKLUN4tEHuB1boHW4YBSAbUdBhVodBs4mIGEygJ0fs4dhf1FKphuGyHPbn/X7XEosAQiiXQc4WkS9Kx+ov0LHy1TXhg6oiHGr0JcKwPdWEvUsplRz3f+UxNq/73xb8q7HwfxGpoIlF2azOoDx5RqX+JcQKbJDjgAH995MHhVbDcnm8aUB+AEqlw0yEtV5+ZC2sp9TiK68TsEQtDdJ7+0k9duvPBT+AFiW5uar1Go7rsj+yVQeNwTJCnhNyj7p3C3yPxWs2sHTVJTHb6U4tDiV3mChDDNGqniEW5x62zdd9xNTeAOFHuGKGVTldRSJ1CFY/r0bhbTrbUVwNZ96AYBvMPDRAbHiy4SMM+1laeYB8iL9Nh1Ur66dl2EkBxuPuUvJnkvfWXndwIZPWX8NMiw3vwCPG7ss5kInoFWL6LVm8+jssXvV+znvXgqgIVWWoFsMOuUJYTRE6OzM2r/++zSxfgvlPkxULtR4uMU2Gq8U5Vs9tHEl0I32mhGlTegI1AEb2EEKOievn7dMZ5NYMCQ4UAh+biEYS14tFHaoUx+3uei4O0AMm9xPCAZDpEVFo2RM0FJ33KJGjqiezqlOQ2OlpIW4dNEWLlwhcQnHGwyxa+e+qeouv7Psu29c+1YzqlFxMVqvQ7lobcS41UYrQk3qd7ug+YPCbLF59n6j+LWaS+E+19fFMwMpYaxwWqirSxYyvOjrCqzqH4vJn8W37EWanefVGuQhUdFgFODgq7FgEgk6fMCxXswex8BgiL02EuIz8wYzlIVbLrjU5tTrNZGTbxVeixVd9Ca74/mD+/eKmP26Lr+zB5z9A2URb3sum7mdbIGEpcd0lzJtnU6McVTrwqx1b1v69LF71jIn7Z7y35Bx1KOsxfpDBQKoz1bdNdQz0DGL7MZndYMOrD9TTJuUhFcC87Bdnw5xHjX4ltkQrx05MMtWlbFn7NB0repHiSyGfiIcyJki54d9SqyiaN0LwYIq6BSKygqywAvN9lIu/oGNlr6D/Gbz9GKn8hDx7hlmznmXTpytDGEGBktbx/4tDUo5xKoYYkLNsWSFsWvdZ7Vg127LiP+DzSut1UxNUPzCJwmbSN7XPrbr8pLwfXDkaZgKCq3dG+IBoufH3B3oAJ88PL3PV5DH9s5rx98wb50OrDjdoj4i8PT5Eo5nJmIYwx0IzY3PL8KffJsHhPMSAPw80skMLEYI07wm+moi3oXoOWjjHkMtFPVjhOZzupG/vEyxa+TjIQ6L2cEAfAXsUDuzkuT1PsqPnYER2arFgi3BqHBXqTZtyOjuz0LPu43SsOk9c8UP4vhyRbGKsv9TrCzVKQkMI5UPT8z1zHxb6GniULYZCDrCDMHtfaw9QPWyxZ4c4aqlbF2uUu9lNrzHuK3wfX6nUezlskAGT/s9NZBj8X0bmAfr/h7Q4ByPtFoi/F71DA6WXzAZmo+6c6m3FMQ0Dy3Os7VlmnbKTxat/YfBzyB8hcB8iv2C//wkP9QunOjuz5B1GW5wzeno8pZLjbvlvTM8vQrMlcXjE3DhbH/rnUFKfItSnD4n8b76vzKJz+uorDaw+Ymu2l+Kde4fOAYLtHmIc0QboggHOxTbT9vFS46XuwWnuPvZzP6IdmM8Z34bySZi+asWnL40T1AlOzA3fmCTXBMQhOgeROYi2R/CkQOJ43ccMeZxFK7eZuh/i/Q9xso2edU8n75A6T0fVrpFyjxues47VfyrCl8ct94OfTeTjDLK7GZ2Zqtj1rABWadkbKPI8mzZVaOhwqAtWd00BnoqjbTLUMHcdPosRSpy0Wbt2/BXhUslx5w3PYeH7SEYcbhhshHAyFlb0Z6IY8r0ZGqYVRSSrfxH3WUnaYGI+4CuBvJKT9+WESoB8JqJnkxUuF3EfE5XbBf2+LF59DYtWXVSHPLt0dEM93dELbD37a1i4BS24erV4/IdW77dBsRCC45EmdGbKdKA7IFWqewu1gmrEOnancEeHqgPsjBtTRkBNmBJrETsFGP1CvKE+ipNb0ny7G3q2dsIt2AiEf8LeJykEWfxKPVbmo1L4sk/QZTvqfldEeli85hYWr35jDIUSt+lIr/Z2g7XBsL9LO7R0Yj9PLSncT26/aEpOp+zqksgnFU+yHswIiO4cgBk1nE7KovuexjiAjWSHrsVY2NuptJeOHXmcPZShSmHQTv0ulj+AZu4IGBfsHzc2Vlxb+WpFzMUcSDQqRDnHvIjIWwX5hiy58jqWvu+UmmUfEVCyNib0W9ffDuH7aCbJ2E2QkCaaHPTn7C/sPDTH2yuRFj3Jd3VmRcBMHq3lqgMVoAoj2V5UnqpXyhurhdKvUpjiPZiTkZ1d08Bx+7GSY+f1+wz5cgPlnQ2WqU5I3DrehRFj8jJDGYwmBrYUShHZmEOuiK6REH7AolWXxJBohEoQqWGCwboE5vmx8RC3fHIhFZW3R5YQm4JhmCbpN5YdrwjFph6BWm9leHgID5CuA3ueRuSx9Nc2RDKcFAaPZi5gL22EMsd1lWr5yFcIvhzv8yhlf60mIQJ5XwXsdHH6Fc5b8Ssj9gTV/Q9mt+PzZ1AyhInysIYqlvtNUdkunvpO2mf3TYdUmK0j6Ip5CLajKd/tpwA1slFC/iiqrQfjm5UgVD80KtEDdE5A9191sfGi/D8gbMJl2m/S/8W6xaVeoRQygi9j4RjJdAOLl798ZNvbq2HQuQ9g4QEkkwmyLZbuKYf8zilGgOrXMeU2hEJCzjWRYjmQvQR7pCncH+ABqkuk0S0N3ksGfw4GEgwLGCxpsjDjvpYr3d3egl0PctQBtAReKOB9BXEnCIV/4ezVs+u52ZAuVmFtMNW7Y0QbhtuTPML43wnBfgHc05TPTVXyC1BmOmihui6yHk7aw+x3u/sn5s0KUNVYtZ8N3YNTpR9saDMXdyZLfmVmzcKM+6om5fkXCfnjiWwqHJX6fpNeIo6Ql9HCBUy3D8XzH2ZHWzXEFPeTFDmPfxeCiUXY2v6D3u49Y9wTMRHw4SxgWoORIOaR7OAX657pL/PNB5Uw2xD4CaES+ygGIDADrIRi3rBwLpVZJ09QIkyNt6e3+wnEbsBl0sz3eNQF1Jr1MCVUTIzf4uxfnTssLWE1Bq5UHk5sbhM0UB8wlS9NWC44xiAIC9NTo2aklBGNG0xjnakpMe/3wZNryA88ADyZAJ9+mXx/r5AGLcTNIpv2smhhJujDd3dXm7g/ic+fTbyPjYjQUYWIxbUMCwF1Z1A88MuMdG+v6u7UuenSLMDoqVTMAoEyokrwP6Oi300Pb2q9dVXm1I5FtS0ZSwFxqU1pa8sjaPli27/0NKIPJA6m4WnALcQ5UJNX98+yx3nFudwt6x7CWI8rJhLaxp8fVYJkCqLF0+y1I09A83Iy3mOFK+uDJi4TCF9h+3VPJUh2ap9LbRbFzU/TbqHW7RAqps5vb4xyBlOANPJHMGRbLOq16rGXJubRyBQdEPMXxthvwrVfrHLgHwh+D4hL6GxiALOja02rviAEQTifyMo2gjaHrFhvGhsDkVbcZRiADJ/n5mRdf5Rlyq5qJ7LYKU0dMqoCPJkfCNv7J8CtPUAVxgz+rvQbI2mJUIIH1XNp/+lZDLuedJS5ACXlgS9ut2D/iito7GGpFZNkbLvEjjTxj1V5sfxU2kuFhqR5iL8JxzXMX4/pTRHAFTLDvse9+aaIQK2derCiq73a83NKbc2uiSGKibubB7t3tyrMDRTSeTVNugcL+2Oi1ZQIW0u6CQs54uageSRGHdOyvCERIcHzt3VEKLJBHaFU42NNisFkOk8fyEaEApmclB7veODP6rThv0K3PyTFL4C1V1e5jk5pRskUJPw4fu6B6Ji2SDxD8gDbMb+jmSrdGhgXGsv5DWOgoq9tckkT5QVKJWX7DY+byP9CM42hWZXHRqeQDW1Kdn/ZwD1jNlxRkrReVjh++tDnUc3R1J2dlKZa1BzdOaiBZA7vH0L0FkDSWtpDofzGsmUFMX922lEiiDnMByr8YFAcoOVhRvhxL8iPo4UYDv4iLcsLiMjFnH1p24Tvi+1O/Dy+/C+Eyo9xhUJDO68dQQ1zLRRtOCWogmUC6NNMf2iYccSIron5pXE1wVhCIJU0CyKm3MiWdU+nRYSHwCMn2L1y1qmEcFbab0cszIUnCOHeJuM+LApUk2m7bYi54H6cPRhWMYKdT/H4pU03NmGfswt6u8tm4Y+ACnWaFpuYcx+JEk12m/TYfQaxc/wxNm3Kmz1Df2tJYPHqUxHpIOSG2ljmKuIKquAPUsm7Jxj9G9PlcrcQ52ZGeFZSZ6rdy/0bHhusMNdaAaoFMcl/SPB7U9+41cONGoeM1LsiDDwVtJApaVHahOYBxHbeSAB1mwX/SVxbIW5/qX2U8Q6S97vf6pb6xq/G92j6/jgs/YD3sVEIfrXr3cf5pFrBp3UsHusDQsW/AtF5BItU6/V2iJF+Fp/6iO5k5k+3RAXqPjReuLrgXWQh4oibdyJjiUiqSwxSm9LBkRcTPD9DuCf2jdN6C7c0oGgKmMc0u5TTO6eleHBiLWUsjikqVxMqD6DFLAnA4bw4YjxKOchwTgqJqqxvUYjB/I+AwTmaYq+WSebeBiJxx6GN1lDFQXNVhPA1Nm2qJMU6NIBEyjcNe1kKTGIDXPB9oVL+TqNRH3kI1Hmxo7e7TPDfGdq6CgQJcU7eBO9zsGVMW9DB5CxKC5RKwpZ1T6vxYSStwDyiawGDhVxVJSCg4rDwJAW9vUHQWzystUb7VSdh4e34nLQjwob2Ti3DnwxfKYfMf22I95uiBLjbs+yyGah21PMhFczu4Th66bcVZmQKkD6QOb6EVcqJDqQ1VbriIpKgilhAXUEKrjSU6xl/QlxyftsN37SQX4Mraj0UGhD7jkMxGkK9OtokA38+HhSqMaxs9b0BTBgNQilCUCNYQDIwvsbd63bEeLcFFp+SVJXKGlxxXtxFVkXSqhyr0sgZ2hDqNeV8IdKMSC/uuN4UNRwiA1RNgGeeCizEfKjF/xa+wR3dB4byTjok9AjC5g2bIxqUDYEXS+y9VtPID5wD9m4Wrzo+Zt42CaFJd5yHDfn/wOd3RiJYGtYUNSV940RiqkJ5uHiDJuVOXbPBm4ZPx2+3MjomtLcby0rHmvIBzBua1siOjFygrgQmsfVFuJtNn64css7PRgNr2TLEzSJYGTEl+D6TwleH807DWK5OR9zS9oUEsQ3FuhwPUiUjBI+6s/GkxqxJKY6knQLdew3/AcyeQ8eyXHvY95jCBztSMCat8DExME9WKGD+y2xe/4P4TFslo8uVtWsDfdmvI4VzCd73S/qtPv9hDQzcjUleMy2OYVviv287dFtp6mwmF6f7DYhrQ9jE1oN3DxX+jEABLq4uIb6F4J9Jm0ds+KdYJRzmyqiBPZMUH1apPjZsFst/J6ISEmpbFcetDNUZ6Kmy/qN4PyMkdsoMs2dN5OqUc7UI+1J/1vmrThdxf4BVrB8jhDW/b+0+WnxZiEfrDbP7oxWed6jyrxj/n1qaLthrCF6qkakRumNleujkfATjc13K5o0PGHwnDdqEIS1yvC0lVBDhzYVFa5Yyob1BLfKBzs4sbN1wvRE+StbmIPgaJXgduuz/NdjHCC2+pugBj/j9IgZv5nFFZ+Rr2bJuS4Q+W8T+ESY0nPwV6hYQLPR79iNcRRVC6joVzPoQv6fJCk95+JP4fWazGJGzCKGCSBvBP0N5ZMn5CISy2mctnx1FtVwwy9FCMRf/gYhLT+KARJX6b/P1/x1f/hzZtELEgqsu3vrF9DaSOERGEZNMdQwUsW7XViTkN/Puhf8AJdd6BLEzo6cn146VvyqqK8jLjetDxxYWmglImbwtVZzbD40HqEK96l4XdyxzEOccWA/3d98f5XvteBWgNl30HSzci1Yb0WzovbQiLvLr60qWXnFGfDhdkxUrWnr4auGeD+Lzb5AVC5j1pQbAxiVxDB0ejZQZbjLhzmE4Ts3y2AriN1vIPhAZ+VoR6JYc9OQsLC023N8Rcqvx5IxdRaWWK2Th0AIDqc4k6FvS43QEzEz+JX3+Ye9PRyRcnZ2OzdfvE/y6VBQbDhWJAhdCjrgTxOuH4vcmdUwuxr+9vWVrC2sI/i600Fbnqa9Vsl9IxTJr4Vk9rpCB/dRy/156P/cEXV0ySNzv6VgxX4rF6xCOS23k4x1/lDhjHqZBPnPSoO7h4c8Y1r1s5dmIvCqSKbvpiP2Yvj3fGulcysgOo+c2DxAqfdfhK7sTK7IN48ot5QIBk/ez+F2nphuaRMQg5Syb1j9pvvweYCtaLILkzXuH5TBXAmu9oMGsQlZ0YNtN+97Bfet/QqnkEuNbP+FYG1j4a7MQ3YDoUkJerkI3E+CpPOIKmJx4yI6oM8qRVsLliDsGkYA6kdz+lQe/3peU0iZGAZDYW7L9pscNbsAVZIhkOMWJNV7GHJfNg7bfiTdUmmThS3yZvd2/MDn4DmAbUigClboSVAs/LZNjG13SPGkKUD/JiLzkZG0FzG63vvyN3NPdm+J+PzDsWRs4vXOaFPpuELKLycsH486sIK0XEI40PKvCr/hUtzvvkKE/PWs9y5YVTNw7IiuJFgl+R5DKjQkcGVHCOnJr3J2GUjT/DCF/fghiVavCsWlLh+IrQcx9gIVXnBG9QNck48YJHt3c/TNz/m0mthkttIH5QbzVSBLiKRL8Aa0HIbYdFzOzyuescPDtsbux1Ub7zgy6Pee9c47MOuUm1L2dUDmISIaaxtkOY3yolgAhDppr9vIkbFNsIFLb9f5zOlB5BaGS4wpiYv9Gb/ee1AhoE6sAMbwQNt+4FeMLaCFOgbVuj2igyxbBgkfdHClkfzDpiFAjPErJcfe6HfTlbwH7QbKgFQYuzJBDjP70s8pCWmlaRsShmbdgv8/mde9nU/eztfh+gPD35Fyw5mwpHHMrml1KKJcTT6Y2r30yxjhGmoh7VdNW+tey5F3ziPDg1J1XmmgT51aAmwYqhHwPHPwsIKOhZNex2Sn5e4LfD65xwZw1oy0icS1nUFRc5L6XX2PRmqUjo/CbIE9AyXH/hsdsur0Vn381KcGhmFoaOQRqWISRXRFjtwX/HrZe93fR6vefua1us+/JWbribZLL9xB5ZVz1KoUWOc/4rbWYJhqWk9QX3xyFsqRTdk7d3YHzrpwDthyrGFnmMH8dW774UJX1bpIUYG2gq0vZdv29GDfiMkeoCpNZ61VCmlp1zVCZLhL+Iv5oqpCDpGx33vCcPf/ocgv5Z8jasqSw6aCqBahD0c/S+L4CQT1GTlZsQ8IdppXXsW39V2vhTdP62mrTW7dn6ao/Fsu+ALYAnyesf1RjlaMVw4AIJtlqKLm0HWjyn2m1sptVLkezMzCMEJ60g3ZNfP/RhWOjL4j0XCzQY8xrf0DgfYgW4xKyVk1V/fZ3mTfEncv88+9l1433RcvVOwVC1xMr0c9+NmfXe76i85f0gXsDiiNYJaHbMgEQodXh1tEkl417A4CsWISwzvazgu0bHquFN82CkLHjc55zV54op7zsUyLZRwh5BpaEv6mOMYhuyzgW44lgHsSdzonyHT7/iR1T8jx37DDozJh/7McFOzXOh+f/wP0bPp/ef1RtN2N44All2bbxPsM+hRvxAovqYavgPsqy0rE1tocpudamQdEuDZuv+yuzyipMnkaLhX5COw7kR8auRIaPR1PM8Plf2ObrV/PgDc/Vwpumcyw5enpylqy4QNr024iuIe/zCeWaKlaG2HclUkBl7YiXdIwv+HeAufYFvyzw6tilXXncLP84Y5xIG6PF606Ca3+Dzx9GnEsEScOdmRJyj2btUnb/LQpl51TSaFh8zxsdWzfcaCG/COw2smlZTDpDJY0GWn1EcArCIjOPqkPdcxYqa2zbuq7UQi7NyW6Xxv73bq8dq5cL7luoLqVSrqTdY1OZsEciBJ970ewN3Ff4QLzXzmzSFK6rPa58VPkQZuAyMXMfpbf7ibEO5I/V5Ueakq0bdprw56hTRsphLqJx95X7MEtWvCpat9IUc8ks93R2ZWzbeJ8d2H0poe/jqBM0K2BSwdRaM8MPudqoEcZM+UX/Wd8WMbhZjis6kIcs5G9h6/ob6OzMGuoUzfj+spsd7as/ZiIbMZtDXvFoNdkd1Jv2m+Ue9zYcaUqIQyWIyP+ifXU79OR0TQbAUYrt3ItWvBrkTXEYKL+DZ/o+Q1eXjpWKXcZ3CCWFXSIdJ38TzS4hVDxxVGho62GhghaKhHCX7S28jh1nlCdmO/pYXGqysB1XvlXwf4dmC/HlAORITbAaLZ8MnQNU+YrMEnujNZgbbYr3TQKuzUH+Xcv73k9v9y9axvvV773inXOkb9Y/g76LvC9PIu9GEctPQshpRiDHZQUs3GEz9ryZO7/+XDKuE9gG36V0gXz+J5/H6bsI4aBZ/stsu/EHg07ATUoS3HT1CuzwzG+/X3Dvoz6YPoyQiBJ8Ttb2Egq5Y/c1345J3Y4pnivttVpMvWv9AxzXsUEyE9BXoFkb5vO4Pqhx6zIyAhy/NRBgVp1fjq/pCkrI/9n8I++n99bdUSFv9c1GJgl/+8pXSpj2ZURfjy8fTKOoWmtPHrlgD7dMfHSG0VLLi4UKrnC6VKadza4TboId1baX8Ru1UsnRe23gyfkXi7i/AHWIfZKtGz5d+9kYr/GGHkZXl3LjtQ8zr2OOuMJrCHlovWO4wQIJgogQfC7qXs3cjh/w45sfmjpUqJUilBxPbdzHzi3fYu7i7wp2Fi57aaTXDiENRQ2x2K5fYclotv7xzwUsR10BcQfE/B/Y1nV/xu4d5WjFmh5kEp4dgSWrrhRxG4BT8ZU+kEKssSDplmQUgjvI74SGNvFRJBO1VXIoWAVXWMKJM05l93u+CheTlnuPVwGEnnkq8wvXotlCgn/IVK9i57376d2WUL5DowDQ0xPd07Q9P5Iib0d1PjVqLloUYGo0i9XTy8S5VzO3vZtdN+7lkFGbNHiD3Rt3cP4JN7DvmAdF5Fy0MB9LFW1JyXxrCLQOdNXahhudgeW4QhvGIxb61ti2jTckpe/3EBOc114qykkv/5iI/jWENoKvpKV2Elk4xKqkuKNYGt5vVWv/+oAwehhXqsqtBB8km7ZM5u6ey65P3BIVezxKUHL0XBtcxwXvNJU/iYQs+W+zdf2ddKH0jI+Id4KSz3nKsxv3M2/JT0RkZYPXk37uNYURDZZGLEez+WLhDHZtvbEuEIfq6o01gx2f8+zespnjX3EdWeVxgXNxhRNj8hh8rbFOGpYyS4NAkP7bqv+2HFeYZmb/genl9K7/cQz7bm3R0nCrZ2npFJHCjWhhTcxJakvfGvF9i28gAcSnEV5rDskGGKKGooAwyOzD6FniqqOw0bN7suKrZP7i49l5zdfGoQQCJVh47DFo8V/I2k7B/OfZuj7CrtdeO+6Q2U2c0HRm7PrqgzK//Thc20X4Sl4vjpn0exBSI9VCHCEEsmIHJ563j903/iAKwY5DyPXZE013qeT43g0H2bnlTuafdh1h2iOiMh/RU9BMwST1FuXJCLu6ANUKULErMCsWCeGzHHxqDfd/4QnozNgxSLK7ZMUFwrQvoe5V5H2VhtdNqmYB8ITEf4NkqDrEKaqKOEFcvafJ8LUmu9ra6FpKI82KMC5wRGohbvAeV3gNczvmsuuaW8f0uim+15Ne/odk09aQl3ea2Ep2bXma3pKMJ/SZCBSoxWt1Ccs2TZPysd8DWYbleVpRkyrFLd+yynDgI5d7eDtb1n2tdbfjIbkS2pXupb10DJr9sghXgr4W3Lzo1HLizKxavS3EQLMMxIv4Pw6b1/3tAPSphu8DrA10rFgjoteCziJUKrGZUKrG3EWBT/oQlz/3IfI0PuxHwnOg5URUPBPNZoOdgGbToj/IiWtMCZgoGrTBY0106GmYebK2DF/5pG1d9ztJRhgZYtOlsNZYvPpcQb+HyFyz8mq2bFhPqVUb+KFXAGrQ16LlS0Wy24BZkbQJrdPvDXLYZoY6AXZbX3g9D6zffhgpAckjaNPBt5fOxgq/LJm8DQuvQtxcxCXZT8XlYL1m5T9i64Zbag91MGRk8ZX/XQh/TvDRaqu0ISLxNRV8DhZ249xm8+FeJNyNys8xeQwt7KGyfz+9eJYdr1T2FzE7HvGnEEK7SOF1WLgEdWcQgJBXEJMUVunkQKRJCVxbhoXP2HkHf7PG8j0cRFoV8vYVG6Rt1hVW3vcptq37rYmWiUlIONMNLlp1pTj9N0JextBEqTL0+xoeV3CE8J/W1vcGNnU/Fyufaw8n6vPkEaDpQXSsmO+QZWZcYGJnEuw4ce6e0PfcP/HAzU+m8Ma3hBvPX3WaZO4aXOHt+HIDMONzXPZTQtguxo+DyJ2Qb2brhl1DwIuDT0ItfMcsVzzm0oD8OvDm2HyXV1K9YzIuS4NTFbLCNAv5Bp6u/BqPdB8YGruPMuQWLX9PKBzzefKDP7K2ypvZ1P78RNeLJgdx6ezK6Fmby6IVf0tW/Ai+XAYpjsDKxPg2KzqC/5Kd8EgpEp92H6bL8LqUzts0DWfbsEah1fl3djrZveBqVF+PcZ8Jz4I8gfhf0Fd5APWPsv1LT7V8zc5dwrx5Fvvf1xrN8Fr195TOXcLFF4eG0Ull8erLBPsLtLCUvC8Mjm6NQ/gJVoeCQ07W1kbIv2AH9qzmwa/3DaIE0Tssedc8sZl3gswwDr6OLd33j6fgNbUKUA0XHjpeObj3JnHubeTlajLHENNkxPjUPFlbgbxyjW1b93uDWM/D7ZKasFW345SojubZkGFjVxcD53ob9axLue02jRw347KA1TAu3tNZv3yszJjfhcp/Tczo1RpOf2hURy701oD6NdUVDKOPrDidkH/JZlZWcUdLT6CcflVRZlc+h7Ytt/zZd7Dti19tXSE/fBWA2gc7710LpDDz3xE7nzzPEXE16HCoQzSp4ApFCZU/CVvX/1WKCY/gtagN/VDVHV51y26T837JKy1e/V5B/gkLczBfaW6vMBt539BgexISwhQsRzCytoL58tcI+Zr6Vvk0a7J2beD89yySwowfWKh8jK0b/vdk5oIy+Q+127N41TJBvw3h2JQUuyHCoeg6g3hEAi5rs1D5PbZuuIbOSPLE0WsCn39nbLdedMVrRAtfwMJJWJ4n5o/0PGS8CkANtjKRyGfalhH8d21m33u5o3vPACHvWHkeW9ffT7MreaEpQAO2vXj1e0W0O41GSn18smZpQoO7JG0gj70zzrlY/dvwTy+QcOgFdi0rwKYK5y2/UArFWzB/fOxbqlazx9E5GguG1dBKGr5fISsW8PkdVgnvGXzQf3KvKWhD3hGgK2PXNVuZ1/6suOJbsBAGksBK/3+kJq84uiguezsnLNrFkzffeegLZUfa9XiAZQWe/PYvOGHhNnHZ8mSprV59HpeZHcjFFDe45LjsNFG9hBMXfp3d3c/E4leqxk9EH9GhVwCAnhArxbf8kLkdJi57AyF4pKlztM4qbRaFP/5cQQwzkyx7u85Z9JTtvvmOQ98ycSQqQWfGk7fez9xFz4tmb4m9TzK+1VMyKNWjIeIwn6PuFBH3ZhacfyvfufFp6Mpg7ZR4gikcRNkRybVu23CbzG0/hqzttVheATQNnwQkUFu2US2YRUVQxAQzw2Vv07mLnrddG384VVbixXPtCHR2Zvz4lh/KvMWn4IqvqHX3Vo1SLdZvNXA/Kk9Rp2IPvoK4k8T0Tcxf+O/sunb3VHUGT+0kVm9vhPS6P/FNmbdoPq5wIcFXqPeQMHARHA1NWmZYMLRwqcxdNINdn/hWDTo7mhNMkA7siC3ud++5TbLwJjQ7heDz5kJmv87XsTfRJU+ARE+gJwmFS5lzznd48vM7WbaswOOPhyNHASC1T5ccuzbcIicteglS/KXoCUTrFkYaWnz75wkiqXnudcxffCZzFt7K7t68Hjsevcb/jC4W9lxzkBMX3ymqy4HpDS3X/Q35CIaghvUEhmjMCUTnSlZ8B/M6vsc933wkhkM9k6YEh6j33mqCLYtWf5Is+yB5uYyZ1sKd4VmcPa7o8PnXLTz9q/Te+sRkFUtelFcVcm5fcZVkxc/iK75ewGykV9SJqB5bbaDIJBKCoTvN8ivYur5nIpvfDr0HAGBt+v8uYfc1X5V5i2fjCq/FfOxvFx2BRbHUK1NYKDrtlzlu4Q956tYnjibHExgKlUqOnhvvlhPbTyMrLiPklTTD0ZTljl3oae1RQsgRZotk72Tu+Xdz240PTlaY6w7tKdfCoa8zfxGi2RvSlu/qhBGD78clrWLKy4g7VVSXu/mLttuuG7dTneziaEg07pyNLmXWztskk0tRPQWzChJ3siYvPZ7Qh3rruEidXFDieKXITBH3Nua038KTW3cn0MOOIAWAaK27lJ2fuI25HXtFs7eAxf1XMgzDRBwJdGAVjFlGtlxPWiK2c/P3odcfVYKJuOYpT3cfYP7iu0R0BWbTaoiPjKd5rnEUMxk6Ic4+mMT6QwgVXHEWYvvZteWbME8n+nm6w+OQe4h1gpt/wLz2h0WKv4zINMzygdsMU6wYtGFHrihCDia4whtk3uJXMW/RXezauPtoSDRuA2V0dmbcefOjzOt4XrRwGeYrWK1OM54QiAF5hFi9cCZREQS/g11bvwiLJlwB9DA5ZasRZG3d8P+MvsuBn5MVMszSdpcGrNkaqsZWG7LPwDTy5cibReT7LFr166m0Hh/i0WusyF0OnRlb1v0jobIeV2yL1XwbrlFvhAtHQqiHuxoHdKqD/yoY7Jqsj6aH10nHlads2fjvJn1vMAu3RyZnfNr/G7eUmwwcKjExEEvL+TwwR1z2L7L4yk/RsWJ+fIglNzW07EekFnhALM8+DH47hUIx7QAaCc9QqxSgH9I3gL06RKYVE0y/Nlmfyh1257xjRyTf3dm9h1knf0GKbfORwjLwikmZoThwqiN+IgrmCcFw2StE5O2c2PFzdm+8H3qMzq6MHT1He4lGe5VKju+t38eJ598j4lZGr9vyWQw/XhkXgFhExBs3V9ZmBwzXViDkn2Tbuk/UwrEjXgFqH7RL2fOZg+zc8hXmLXpMRC/G6QwsHEQSN04jE5uaNM8ZJDcaco/oPFFZIfM6TuLE8zZx17XP1R7o0eLZaFChyP6x+9YdzGs/KNr25ni+aYN88x7m2lB0U+Rjic+oRpJWg71TLpC6gl2bM1/+v2xb/1/iIH3PCLzKmKGow/aS2kxwx4olotknEH0deaWcOkrjtLiYNCtE7bOlJDnx47iCg/ALMf4ybLn+M0BCitrtMJs7PsyfSUkpgdxX+CIuewd5ObVKVItZakiQwbOC9HNLQIZY6gIwD5ohahb4I7Zd/zcM5JZ6MXiAptgzcQ7d8jhzFt4gphkiF6I6DcyjuObCTBVKqObGYhFWQwi+gtkJqHu7zFvyehacv4OdN/4svkfJxQ2WPUc9wvCxkNB7rTG3/ftilFA9DguxWS6kGeAhF3JXw55qwyORIE2yAuKeNfFr2LruM4kvdlJJk19AS6MbR/hWvV7Qv0PcMkIZjDJY1sS6iDZuxLUG3Qixq7TQBuQI3VYOf8v2dZuA2Ky3Fo56hBE+j/bSpeKKt2AhxIRVmvMAbeUJEtZvqREOq0TuovCIiV/Flo23T1Vbi3vhHHiVu7MzY9fNP+P4X1qP5kGQV+GyNiz3NaLYOiUh/eJSqQ3iWPAQHM4tEeX9Mm/JOYX5ix8ON37isbpHWKRHawjVq0spzdNYHa4+j5Jjd/dPOGlxm0ihk+DL9fHJGver1GcCGr6qrI5YmawwHfixhfI72HbjPdHyT01Pl7wwjU9Dc9R5K18tBf1L1F1C8GC+jOFqMwZN/EvVww8Ni7ItIJrhioIvHzSR9Xj7J3rX39nv/Y7ggfxhBJ/bdBBrHFkm7pxRkFn5l1B5M77SF5dypz0J9fysHzOgGUaOKxYxf7OZ/w22btg51WOR8gJ+Mg2UhZ0ZHaf+uoj9KZKdRqiAhb4k8JHevFEBtOoerDE584hkSFEg34/J10zsMzz36HfZ0XOwFh719sqLQBmEzk7XxHd03rsW0Db7w+LLi+2ZfHkkt4rQDRA4f9Xp4vgB2AKMHLO0Uzg0znlYPS+zQKFYIA+fsmn3fZhNmyqHYiZYjgwLleL18961gGz674rIb6HuBPKKx6yMmIule4nTZ2rN65xq5E0W8wmhiCu4hMj9h4RwXRD7YrRQjV5hMmlLDoHQl0pKNzQJ4ZIVFwjuQ+AuRdhmuf8Y227oafrMVY/csfpdkfggj20pVl2sXSU3RSN7tQhaECN8lM3X//cmtG/qregRBM1VH9zSK84Qr7+H6lXgTsD3GSZ9gEucNxYTZpNawpxMEw2r1AHBFQoRzs6fALnFvP88WXY7m6/fV3v3zq6Mnt7DmMFuuHPrJ/QLV5xMgUvFFd5P4FWY/cgCH6X3+q83yE2/zxmTVlm08hO4wu+Qlw/EQlk1D0AAj0oRtGIh/yO2bfj7YflSjyrAOBTh/JXnSMZvgq5G3En4ikEopyQsSxBp/SSq2HT1UagppBYMUYdzqW0lbAO5xcy+gtN7mpShKgylGmXhYYQmdSmltKC8/4DJuZedSPGY1wm6HNXL0OwYfPiGBf9XbLvhtrqBWK6D0jzSJZz+89ky238X9GX4vgMpAY770pybDvKkWf5Btm64KYU8h9RoHGkK0PC5Ouv7dc9dcybF8OsCV6HZqbGptJITapVkrSuBCVZbA1pFjtI8Mj7u5lKHKAQfELmb4HtU6fGS3cHm6/s1bplQWh5fvxtS0W2ITZMT9fm7JO5wI1E0tlDGl5XmurztomD5W1B3Gdm0k8nLmNkX8ZW/576Nt48SGk75wHsW4WbcJE7PoTH9Mn+nBX0/266773CZ3jtSFaAhP+it79o9613zdOaM9xqsAXk14qjVEazaRxQ7sOrn05i8WZXtOPWqAOKKSBa59y3sMtwmzP8A8XdTtvt4oPtnQ3qrzl3xGdRIbqvX1db68XQ1fLNXajSKu6qcpN3V8G3gdcGq0yn7xSCvQNwFgr2abNqJCJD3/ZwQPmc+rGP7xgdScO8GhEcjzcnaSyeJa/sQ3i9GOCi420P+3PXc/5XnD6fR1SNcAQZRhNM7pzFzwWvI3AoJ9pboFYhC7EPkr4y5QkPnqFlq3uq3DM9C3CSJQyVDC1VrB8ZOQngIlS1ibA1mW3H6c/K+Z5n+0PMR+ZiEZ7qsNJtQOI6D/jSywvkSQgcSXoa4M0BegiumfQMH+gjhu6Z8DpNvsGXd002h0pjncIdicZ54huejCjBqpKPhwZ73rgVkbW8Uce/EuATNTqhtfLEQUjhkzQFLwzxCtaZQ3YBjJOhQFBUX1yZHbq9Yp7BnEH0cs92YfwTJfi7kTwST3WS6h8BzqH+espQphgo58V5DRfFOkWKRaTadnJmIHYu52Yo/3rCTgJeAnorT+ZgtwMLcGmlDdXGHrxwAudvwN+P5OvdtuLueunRmiYE6TMhZd3a6UTJlH1WAQ4p+XLDqdC37t5pkb0bkFcDJVBsdQwBCBSNPCXRM7tSGWlQdC21WpQ2X6j6vBmZIaWiFN9ICvviFlBHz6XeEWLlvi41nKg108w0ZRQNHVeoKB3sa4z/F7DvB69eZ/8jmOslwzdq/KAt9L1YFaGGpbvM0dtWdUzqFLFsqmbwurj/KzgNbgGZJIfJE/GrJ4mvyCDV+R2rJc2hq/02bHIWaYqSumTRnrg28SA1bZaWBaLaWj6R3rCpCdT1T2IuFhxG9y4zbIPyQrY892BR31+sY4cX98I9eLUKkFoLRfuVpiF+C8krQl4v5RZidiitkTVT6kcuXuB1F0jbHpB9WbQtoHKU1a3YYEhUkViFS8UgiR6qgMaTRem4evGH2JKoPmLANyzfhwz1kz2xj87ea4dmJDXGOKsCLInEeDEJsLx2DuXPUuUXgX2LGuag7BWMBYgswjo3hThVI0hYBhg18HGJ1B5IiKMwbxn5UdwOP4u0JlPsFezCIPojI/Wy+/skB6E8poThHVsX6qAIcmivh+bFVYPB4+fTLj2PatONw4TjUzcVkDs4dj9nxIG1gMzGmiViBQIaYYhJirK9lEw4A+xDZgw9Po+FZhJ1UynsQ9zywh97ucsv3LpVchEPHvUrpqAIcvUZydl1CqVcaMPgpSiRbLsg7KuxHFeBwOc9qsaqhUAWpEjwS+W71N1NSQT56Hb2OXkevo9fR60Vy/f83Xc+RxzoWTAAAAABJRU5ErkJggg==";
+document.documentElement.style.setProperty('--logo', `url(${LOGO})`);
+const MARK = (size, light) => `<span class="mark${light ? ' light' : ''}" style="width:${size}px;height:${size}px" aria-hidden="true"></span>`;
+const $app = document.getElementById('app');
+let sb = null;
 
-            for (const r of rencontres) {
-              const p = params(r.lien);
-              const ext = p.get('renc_id');
-              const date = r.datereelle || r.dateprevue;
-              if (!ext || !date) { s.ignores++; continue; }
-              // Date provisoire suspecte (placeholder type 1er janvier, ou partagée
-              // par plusieurs journées différentes) : on attend que la FFTT publie
-              // une vraie date plutôt que d'importer une collision.
-              if (!r.datereelle && badDates.has(date)) {
-                s.dates_suspectes++;
-                console.warn(`Date provisoire suspecte ignorée : ${r.equa} vs ${r.equb} (${date}, rencontre ${ext})`);
-                continue;
-              }
-              const tour = /tour n°\s*(\d+)/i.exec(r.libelle || '');
+const S = {
+  session: null, pseudo: '', isAdmin: false,
+  tab: 'matches', circuit: 'ALL', view: 'upcoming',
+  matches: [], competitors: {}, myPreds: {},
+  board: null, boardScope: 'ALL',
+  friends: {}, openFriends: {},
+  authMode: 'login', adminCircuit: 'WTT', bootError: '',
+  _freshMatches: true, // vrai à l'ouverture : la toute première liste a le droit d'entrer en scène
+  proJournee: null, // journée Pro A sélectionnée ; null = pas encore choisie (auto-sélection au prochain rendu)
+  rankView: 'WTT', // circuit affiché dans l'onglet "Classements" (joueurs/équipes, pas les amis)
+  openCompetitor: null, // id du joueur/équipe dont la fiche détail est ouverte (null = fermée)
+};
 
-              const old = ex.get(ext);
-              const wn = old && old.wins_needed ? old.wins_needed : div.winsNeeded;
-              let status = 'scheduled', sa = null, sb = null;
-              const a = parseInt(r.scorea, 10), b = parseInt(r.scoreb, 10);
-              if (!Number.isNaN(a) && !Number.isNaN(b)) {
-                if (Math.max(a, b) === wn && Math.min(a, b) < wn) { status = 'finished'; sa = a; sb = b; }
-                else if (Math.max(a, b) < wn && a + b > 0) { status = 'live'; sa = a; sb = b; }
-                else if (Math.max(a, b) >= wn) {
-                  s.inattendus++;
-                  console.warn(`ATTENTION : score inattendu ${r.scorea}-${r.scoreb} pour ${r.equa} contre ${r.equb} (rencontre ${ext}) : ignoré`);
-                }
-              }
-              // On ne fait jamais reculer un match terminé ou annulé.
-              if (old && (old.status === 'finished' || old.status === 'cancelled') && status !== 'finished') {
-                status = old.status; sa = old.score_a; sb = old.score_b;
-              }
+/* ---------- Petits outils ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-              rows.push({
-                circuit: div.circuit,
-                competition: div.competition,
-                round: tour ? `Journée ${tour[1]}` : null,
-                side_a: cleanName(r.equa),
-                side_b: cleanName(r.equb),
-                competitor_a_id: idByExt.get(p.get('equip_id1')) ?? null,
-                competitor_b_id: idByExt.get(p.get('equip_id2')) ?? null,
-                starts_at: parisToISO(date, r.heurereelle || '19:30'),
-                wins_needed: wn,
-                status, score_a: sa, score_b: sb,
-                source: 'fftt', external_id: ext,
-              });
-              s.total++;
-              if (!old) s.nouveaux++;
-              if (status === 'finished') s.termines++;
-              if (status === 'live') s.direct++;
-            }
+// Thème visuel de toute l'appli, basé sur les vraies couleurs officielles des
+// affiches de chaque compétition (violet pour WTT Champions, noir/or pour WTT
+// Grand Smash, bleu/rouge pour la Pro A...). WTT_CONTENDER est une estimation
+// raisonnable (pas de visuel officiel vérifié) ; les autres viennent d'affiches
+// réelles. Chaque thème a une couleur principale (--accent, pour les boutons,
+// surlignages, fond) et une couleur secondaire (--accent2, pour la tranche des
+// cartes, le "en direct", les dégradés).
+// Chaque thème recolore aussi le fond, les cartes et le texte : les affiches
+// WTT (Champions, Smash) sont sombres, donc leur thème ici l'est aussi. Pro A
+// (affiche sur fond clair) et le thème par défaut gardent une base claire.
+const THEME = {
+  ALL: {
+    accent: '#6B1C2A', accentRgb: '107,28,42', accentDeep: '#4E121C', accent2: '#B8532F', accent2Rgb: '184,83,47',
+    paper: '#EAE0C8', paperDeep: '#DECBA0', card: '#FBF4E4', cardTop: '#FFFCF4',
+    ink: '#2E1B12', inkSoft: '#7A6349', lineSoft: 'rgba(46,27,18,.14)', paperGlow: 'rgba(255,252,240,.55)',
+  },
+  PRO_A: {
+    accent: '#1E4FD1', accentRgb: '30,79,209', accentDeep: '#102E82', accent2: '#D81E2C', accent2Rgb: '216,30,44',
+    paper: '#E7ECF8', paperDeep: '#D3DCF2', card: '#F6F8FD', cardTop: '#FFFFFF',
+    ink: '#132040', inkSoft: '#4A5578', lineSoft: 'rgba(16,30,70,.14)', paperGlow: 'rgba(255,255,255,.6)',
+  },
+  WTT_DEFAULT: {
+    accent: '#3E6FB0', accentRgb: '62,111,176', accentDeep: '#1C3F6E', accent2: '#B8532F', accent2Rgb: '184,83,47',
+    paper: '#0B1A2E', paperDeep: '#071325', card: '#132540', cardTop: '#1B3356',
+    ink: '#F1E9D8', inkSoft: '#A9B8D1', lineSoft: 'rgba(241,233,216,.14)', paperGlow: 'rgba(62,111,176,.22)',
+  },
+  WTT_SMASH: {
+    accent: '#C79A2E', accentRgb: '199,154,46', accentDeep: '#8A6A1C', accent2: '#E4C66A', accent2Rgb: '228,198,106',
+    paper: '#0A0A08', paperDeep: '#050504', card: '#161310', cardTop: '#211C15',
+    ink: '#F3E9CE', inkSoft: '#B9A876', lineSoft: 'rgba(243,233,206,.16)', paperGlow: 'rgba(199,154,46,.22)',
+  },
+  WTT_CHAMPIONS: {
+    accent: '#9A63E8', accentRgb: '154,99,232', accentDeep: '#5B2FA8', accent2: '#5B2FA8', accent2Rgb: '91,47,168',
+    paper: '#0B0712', paperDeep: '#06040B', card: '#171023', cardTop: '#211832',
+    ink: '#EDE6F7', inkSoft: '#B2A3D1', lineSoft: 'rgba(237,230,247,.16)', paperGlow: 'rgba(154,99,232,.22)',
+  },
+  WTT_CONTENDER: {
+    accent: '#2BB4C7', accentRgb: '43,180,199', accentDeep: '#0F6C79', accent2: '#0F6C79', accent2Rgb: '15,108,121',
+    paper: '#071A1D', paperDeep: '#041012', card: '#0F2529', cardTop: '#163338',
+    ink: '#E2F3F2', inkSoft: '#9CC2C2', lineSoft: 'rgba(226,243,242,.16)', paperGlow: 'rgba(43,180,199,.2)',
+  },
+};
+const TIER_KEY = {
+  'WTT Grand Smash': 'WTT_SMASH',
+  'WTT Champions': 'WTT_CHAMPIONS',
+  'WTT Star Contender': 'WTT_CONTENDER',
+  'WTT Finals': 'WTT_DEFAULT',
+};
+// Thème d'un match précis (pour colorer sa carte selon SON tournoi).
+function themeKeyFor(m) {
+  if (!m) return 'ALL';
+  if (m.circuit === 'PRO_A') return 'PRO_A';
+  if (m.circuit === 'WTT') return TIER_KEY[m.tier] || 'WTT_DEFAULT';
+  return 'ALL';
+}
+function themeVarsCss(key) {
+  const t = THEME[key] || THEME.ALL;
+  return `--accent:${t.accent};--accent-rgb:${t.accentRgb};--accent-deep:${t.accentDeep};` +
+    `--accent2:${t.accent2};--accent2-rgb:${t.accent2Rgb};--paper:${t.paper};--paper-deep:${t.paperDeep};` +
+    `--card:${t.card};--card-top:${t.cardTop};--ink:${t.ink};--ink-soft:${t.inkSoft};` +
+    `--line-soft:${t.lineSoft};--paper-glow:${t.paperGlow}`;
+}
+function applyThemeVars(style, key) {
+  const t = THEME[key] || THEME.ALL;
+  style.setProperty('--accent', t.accent);
+  style.setProperty('--accent-rgb', t.accentRgb);
+  style.setProperty('--accent-deep', t.accentDeep);
+  style.setProperty('--accent2', t.accent2);
+  style.setProperty('--accent2-rgb', t.accent2Rgb);
+  style.setProperty('--paper', t.paper);
+  style.setProperty('--paper-deep', t.paperDeep);
+  style.setProperty('--card', t.card);
+  style.setProperty('--card-top', t.cardTop);
+  style.setProperty('--ink', t.ink);
+  style.setProperty('--ink-soft', t.inkSoft);
+  style.setProperty('--line-soft', t.lineSoft);
+  style.setProperty('--paper-glow', t.paperGlow);
+}
+// Thème de toute l'appli : basé sur le circuit choisi, et pour le WTT, sur le
+// tournoi le plus pertinent du moment (celui en direct, sinon le plus proche).
+function currentThemeKey() {
+  if (S.tab !== 'matches') return 'ALL';
+  if (S.circuit === 'PRO_A') return 'PRO_A';
+  if (S.circuit !== 'WTT') return 'ALL';
+  const wtt = S.matches.filter(m => m.circuit === 'WTT');
+  if (!wtt.length) return 'WTT_DEFAULT';
+  const live = wtt.find(m => m.status === 'live');
+  const next = wtt.filter(m => m.status === 'scheduled').sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at))[0];
+  const pick = live || next || wtt[0];
+  return TIER_KEY[pick.tier] || 'WTT_DEFAULT';
+}
+const fmtWhen = iso => new Date(iso).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const fmtDay = iso => new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+const isLocked = m => m.status !== 'scheduled' || new Date(m.starts_at) <= new Date();
 
-            for (let i = 0; i < rows.length; i += 100) {
-              await db('POST', 'matches?on_conflict=source,external_id', rows.slice(i, i + 100), 'resolution=merge-duplicates,return=minimal');
-            }
-            return s;
-          }
+function toast(msg, isErr) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (isErr ? ' err' : '');
+  el.setAttribute('role', 'status');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('leaving');
+    setTimeout(() => el.remove(), 200);
+  }, isErr ? 4000 : 2000);
+}
 
-          async function syncProA() {
-            const erreurs = [];
-            for (const div of DIVISIONS) {
-              try {
-                const rencontres = await getJson(`${FFTT}?division=${div.code}`);
-                if (!Array.isArray(rencontres) || rencontres.length === 0) throw new Error('calendrier vide ou format inattendu');
-                let classement = [];
-                try {
-                  const c = await getJson(`${FFTT}?division=${div.code}&classement=1`);
-                  if (Array.isArray(c)) classement = c;
-                } catch (e) { console.warn('Classement non lu :', e.message); }
-                const ids = await syncCompetitors(div, rencontres, classement);
-                const s = await syncMatches(div, rencontres, ids);
-                console.log(`${div.competition} : ${s.total} rencontres lues, ${s.nouveaux} nouvelles, ${s.termines} terminées, ${s.direct} en cours` +
-                  (s.ignores ? `, ${s.ignores} ignorées` : '') + (s.inattendus ? `, ${s.inattendus} scores inattendus` : ''));
-              } catch (e) {
-                erreurs.push(`${div.competition} : ${e.message}`);
-              }
-            }
-            if (erreurs.length) throw new Error(erreurs.join(' ; '));
-          }
+/* ---------- Curseurs qui glissent (navigation du bas, filtres) ----------
+   L'ensemble de la page est reconstruit à chaque rendu, donc chaque curseur
+   est un nouvel élément à chaque fois : pour qu'il ait l'air de glisser
+   plutôt que de sauter, on le repositionne d'abord sans transition sur sa
+   dernière position connue, puis on l'anime vers la nouvelle (technique FLIP). */
+const S_THUMBS = {};
+function moveThumb(key, thumb, target) {
+  if (!thumb || !target) { if (thumb) thumb.style.opacity = 0; return; }
+  const c = thumb.parentElement.getBoundingClientRect(), r = target.getBoundingClientRect();
+  const pos = { left: r.left - c.left, width: r.width };
+  const prev = S_THUMBS[key];
+  thumb.style.transition = 'none';
+  thumb.style.left = (prev ? prev.left : pos.left) + 'px';
+  thumb.style.width = (prev ? prev.width : pos.width) + 'px';
+  thumb.style.opacity = prev ? 1 : 0;
+  void thumb.offsetWidth;
+  thumb.style.transition = '';
+  thumb.style.left = pos.left + 'px';
+  thumb.style.width = pos.width + 'px';
+  thumb.style.opacity = 1;
+  S_THUMBS[key] = pos;
+}
+function updateThumbs() {
+  const nav = $app.querySelector('.nav');
+  if (nav) moveThumb('nav', nav.querySelector('.navthumb'), nav.querySelector('button[aria-current="page"]'));
+  $app.querySelectorAll('.seg[data-seg]').forEach(seg => {
+    moveThumb('seg:' + seg.dataset.seg, seg.querySelector('.segthumb'), seg.querySelector('button[aria-pressed="true"]'));
+  });
+}
 
-          /* =============================== WTT =============================== */
+function friendlyError(e) {
+  const msg = (e && e.message) || String(e);
+  if (/Invalid login credentials/i.test(msg)) return 'Email ou mot de passe incorrect.';
+  if (/Database error saving new user|invitation/i.test(msg)) return "Inscription refusée : vérifie le code d'invitation, et choisis un pseudo de 2 à 20 caractères qui n'est pas déjà pris.";
+  if (/already (been )?registered/i.test(msg)) return 'Cet email a déjà un compte. Connecte-toi.';
+  if (/at least \d+ characters/i.test(msg)) return 'Le mot de passe doit faire au moins 6 caractères.';
+  if (/Email not confirmed/i.test(msg)) return "Ton email n'est pas encore confirmé. Vérifie ta boîte mail.";
+  if (/Score impossible/i.test(msg)) return msg;
+  if (/row-level security/i.test(msg)) return "Action refusée : le match a peut-être déjà commencé, ou tu n'as pas les droits.";
+  if (/duplicate key/i.test(msg)) return 'Cet élément existe déjà.';
+  return msg;
+}
 
-          const ROUND_FR = { '8FNL': '8e de finale', 'QFNL': 'quart de finale', 'SFNL': 'demi-finale', 'FNL-': 'finale' };
-          const roundFr = r => {
-            if (ROUND_FR[r]) return ROUND_FR[r];
-            const m = /^R(\d+)/.exec(r || '');            // R32- = 32 joueurs restants = 16e de finale
-            return m ? `${Number(m[1]) / 2}e de finale` : String(r || '');
-          };
-          const SUBEVENT_FR = { "Men's Singles": 'Simple messieurs', "Women's Singles": 'Simple dames' };
-          const STATUS_RANK = { 'Start List': 0, 'Scheduled': 1, 'Official': 2 };
+/* ---------- Prédictions statistiques ---------- */
+/* Estimation simple : classement + forme récente + face-à-face.
+   Ce n'est pas une certitude, juste une tendance. */
+function binom(n, k) { let r = 1; for (let i = 1; i <= k; i++) r = r * (n - k + i) / i; return r; }
+function winProb(q, n) { let s = 0; for (let k = 0; k < n; k++) s += binom(n - 1 + k, k) * Math.pow(q, n) * Math.pow(1 - q, k); return s; }
+function setProbFromMatchProb(p, n) {
+  let lo = 0.001, hi = 0.999;
+  for (let i = 0; i < 50; i++) { const mid = (lo + hi) / 2; if (winProb(mid, n) < p) lo = mid; else hi = mid; }
+  return (lo + hi) / 2;
+}
+function bestScore(q, n) {
+  let best = null;
+  for (let k = 0; k < n; k++) {
+    const pa = binom(n - 1 + k, k) * Math.pow(q, n) * Math.pow(1 - q, k);
+    const pb = binom(n - 1 + k, k) * Math.pow(1 - q, n) * Math.pow(q, k);
+    if (!best || pa > best.p) best = { p: pa, a: n, b: k };
+    if (pb > best.p) best = { p: pb, a: k, b: n };
+  }
+  return best;
+}
+function recentForm(id) {
+  const games = S.matches
+    .filter(m => m.status === 'finished' && (m.competitor_a_id === id || m.competitor_b_id === id))
+    .sort((x, y) => new Date(y.starts_at) - new Date(x.starts_at)).slice(0, 5);
+  if (games.length < 2) return null;
+  const wins = games.filter(m => (m.competitor_a_id === id) === (m.score_a > m.score_b)).length;
+  return wins / games.length;
+}
+function headToHead(a, b) {
+  let wa = 0, wb = 0;
+  for (const m of S.matches) {
+    if (m.status !== 'finished') continue;
+    if (m.competitor_a_id === a && m.competitor_b_id === b) { if (m.score_a > m.score_b) wa++; else wb++; }
+    else if (m.competitor_a_id === b && m.competitor_b_id === a) { if (m.score_a > m.score_b) wb++; else wa++; }
+  }
+  return { wa, wb };
+}
+function trend(m) {
+  const a = S.competitors[m.competitor_a_id], b = S.competitors[m.competitor_b_id];
+  if (!a || !b || !a.ranking || !b.ranking) return null;
+  let z = 0.45 * (Math.log(b.ranking) - Math.log(a.ranking));
+  const fa = recentForm(a.id), fb = recentForm(b.id);
+  if (fa !== null && fb !== null) z += 1.2 * (fa - fb);
+  const h = headToHead(a.id, b.id);
+  if (h.wa + h.wb > 0) z += 0.5 * (h.wa - h.wb) / (h.wa + h.wb);
+  const pA = 1 / (1 + Math.exp(-z));
+  const q = setProbFromMatchProb(pA, m.wins_needed);
+  return { pA, score: bestScore(q, m.wins_needed) };
+}
+// Bonus "outsider" (WTT uniquement) : un pronostic gagnant sur le joueur le moins bien classé
+// au tirage au sort rapporte un supplément, d'autant plus grand que l'écart est important.
+// Basé sur la tête de série figée à la création du match : elle ne bouge jamais après coup,
+// même si le classement du joueur change ensuite (pour son tournoi suivant, par exemple).
+function outsiderBonus(m, bonVainqueur) {
+  if (!bonVainqueur || m.circuit !== 'WTT' || m.seed_a == null || m.seed_b == null) return 0;
+  const aGagne = m.score_a > m.score_b;
+  const outsiderGagne = aGagne ? m.seed_a > m.seed_b : m.seed_b > m.seed_a;
+  if (!outsiderGagne) return 0;
+  return Math.min(Math.floor(Math.abs(m.seed_a - m.seed_b) / 4), 5);
+}
+function pointsDetail(m, p) {
+  if (m.status !== 'finished' || !p) return null;
+  const exact = p.pred_a === m.score_a && p.pred_b === m.score_b;
+  const bonVainqueur = Math.sign(p.pred_a - p.pred_b) === Math.sign(m.score_a - m.score_b);
+  const base = exact ? 3 : (bonVainqueur ? 1 : 0);
+  const bonus = outsiderBonus(m, bonVainqueur);
+  return { total: base + bonus, base, bonus, exact };
+}
+function points(m, p) {
+  const d = pointsDetail(m, p);
+  return d ? d.total : null;
+}
 
-          // Fuseau horaire des pays hôtes (utilisé tant qu'aucun résultat ne permet de le déduire).
-          const TZ_BY_COUNTRY = {
-            'Kazakhstan': 'Asia/Almaty', 'China': 'Asia/Shanghai', 'Hong Kong, China': 'Asia/Hong_Kong', 'Chinese Taipei': 'Asia/Taipei',
-            'Japan': 'Asia/Tokyo', 'Korea': 'Asia/Seoul', 'South Korea': 'Asia/Seoul', 'Thailand': 'Asia/Bangkok', 'Singapore': 'Asia/Singapore',
-            'Qatar': 'Asia/Qatar', 'Oman': 'Asia/Muscat', 'Saudi Arabia': 'Asia/Riyadh', 'India': 'Asia/Kolkata', 'Uzbekistan': 'Asia/Tashkent',
-            'Kuwait': 'Asia/Kuwait', 'Egypt': 'Africa/Cairo', 'Nigeria': 'Africa/Lagos', 'Morocco': 'Africa/Casablanca',
-            'Türkiye': 'Europe/Istanbul', 'Turkey': 'Europe/Istanbul', 'Bulgaria': 'Europe/Sofia', 'Romania': 'Europe/Bucharest', 'Greece': 'Europe/Athens',
-            'Portugal': 'Europe/Lisbon', 'England': 'Europe/London', 'United Kingdom': 'Europe/London', 'Great Britain': 'Europe/London',
-            'France': 'Europe/Paris', 'Germany': 'Europe/Paris', 'Slovenia': 'Europe/Paris', 'Croatia': 'Europe/Paris', 'Sweden': 'Europe/Paris',
-            'Czech Republic': 'Europe/Paris', 'Czechia': 'Europe/Paris', 'Austria': 'Europe/Paris', 'Poland': 'Europe/Paris', 'Hungary': 'Europe/Paris',
-            'Slovakia': 'Europe/Paris', 'Denmark': 'Europe/Paris', 'Belgium': 'Europe/Paris', 'Netherlands': 'Europe/Paris', 'Italy': 'Europe/Paris',
-            'Spain': 'Europe/Paris', 'Norway': 'Europe/Paris', 'Switzerland': 'Europe/Paris', 'North Macedonia': 'Europe/Paris', 'Serbia': 'Europe/Paris',
-            'Kosovo': 'Europe/Paris', 'Luxembourg': 'Europe/Paris', 'Brazil': 'America/Sao_Paulo', 'Argentina': 'America/Argentina/Buenos_Aires',
-            'Chile': 'America/Santiago', 'Peru': 'America/Lima', 'Paraguay': 'America/Asuncion',
-          };
+/* ---------- Chargement des données ---------- */
+async function reloadMatches() {
+  const since = new Date(Date.now() - 90 * 864e5).toISOString();
+  const r = await sb.from('matches').select('*').gte('starts_at', since).order('starts_at', { ascending: true }).limit(500);
+  if (r.error) throw r.error;
+  S.matches = r.data || [];
+}
+async function reloadCompetitors() {
+  const r = await sb.from('competitors').select('*').limit(2000);
+  if (r.error) throw r.error;
+  S.competitors = {};
+  (r.data || []).forEach(c => { S.competitors[c.id] = c; });
+}
+async function loadAll() {
+  const uid = S.session.user.id;
+  const [p, preds, adm] = await Promise.all([
+    sb.from('profiles').select('pseudo').eq('id', uid).maybeSingle(),
+    sb.from('predictions').select('*').eq('user_id', uid).limit(3000),
+    sb.rpc('is_admin')
+  ]);
+  await Promise.all([reloadMatches(), reloadCompetitors()]);
+  S.pseudo = (p.data && p.data.pseudo) || '';
+  S.myPreds = {};
+  (preds.data || []).forEach(x => { S.myPreds[x.match_id] = x; });
+  S.isAdmin = adm.data === true;
+  loadBoard().then(render); // chargé à part : n'empêche pas la connexion s'il échoue
+}
+async function loadBoard() {
+  const q = S.boardScope === 'ALL'
+    ? sb.from('leaderboard').select('*')
+    : sb.from('leaderboard_by_circuit').select('*').eq('circuit', S.boardScope);
+  const r = await q.order('total_points', { ascending: false }).order('exact_scores', { ascending: false });
+  if (r.error) { toast(friendlyError(r.error), true); S.board = []; return; }
+  S.board = r.data || [];
+}
 
-          const qNow = () => new Date().toISOString().slice(0, 16);
-          const shortEventName = n => String(n || '').replace(/\s+presented\s+by\b.*$/i, '').replace(/\s+-\s+.*$/, '').trim();
-          const parseUS = s => { const m = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})$/.exec(s || ''); return m ? Date.UTC(+m[3], +m[1] - 1, +m[2], +m[4], +m[5], +m[6]) : NaN; };
+/* ---------- Session ---------- */
+async function handleSession(session) {
+  if (!session) {
+    S.session = null; S.pseudo = ''; S.isAdmin = false; S.matches = []; S.myPreds = {}; S.board = null;
+    render(); return;
+  }
+  if (S.session && S.session.user.id === session.user.id) { S.session = session; return; }
+  S.session = session;
+  $app.innerHTML = '<div class="loading">Chargement…</div>';
+  try { await loadAll(); S.bootError = ''; }
+  catch (e) { S.bootError = friendlyError(e); }
+  render();
+}
 
-          function localToUTC(localISO, zone) {
-            const [d, t = '00:00'] = localISO.split('T');
-            const [y, m, dd] = d.split('-').map(Number);
-            const [hh, mm] = t.split(':').map(Number);
-            if (zone.offsetMs != null) return new Date(Date.UTC(y, m - 1, dd, hh, mm) - zone.offsetMs).toISOString();
-            return zonedToISO(y, m, dd, hh, mm, zone.tz);
-          }
+/* ---------- Affichage ---------- */
+function render() {
+  if (!S.session) { applyThemeVars(document.documentElement.style, 'ALL'); $app.innerHTML = authView(); return; }
+  const themeKey = currentThemeKey();
+  document.documentElement.dataset.theme = themeKey;
+  applyThemeVars(document.documentElement.style, themeKey);
+  const themeColorMeta = document.querySelector && document.querySelector('meta[name="theme-color"]');
+  if (themeColorMeta) themeColorMeta.setAttribute('content', THEME[themeKey].paper);
+  const todo = S.matches.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
+  const tabs = [['matches', 'Matchs'], ['board', 'Amis'], ['rankings', 'Classements']];
+  if (S.isAdmin) tabs.push(['admin', 'Admin']);
+  $app.innerHTML = `
+    <div class="shell">
+      <nav class="nav" aria-label="Navigation principale">
+        <div class="navbrand">${MARK(40)}${esc(APP_NAME)}</div>
+        <span class="navthumb" aria-hidden="true"></span>
+        ${tabs.map(([k, label]) => `<button data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${label}${k === 'matches' && todo ? `<span class="badge" title="Matchs sans prono">${todo}</span>` : ''}</button>`).join('')}
+        <div class="navfoot"><span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
+      </nav>
+      <div class="content">
+        <header class="top">
+          <div class="brand">${MARK(34)}${esc(APP_NAME)}</div>
+          <div class="me"><span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
+        </header>
+        <main>${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
+      </div>
+    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}`;
+  requestAnimationFrame(updateThumbs);
+}
+function keepRender() { const y = window.scrollY; render(); window.scrollTo(0, y); }
+// Change d'écran avec un fondu enchaîné natif quand le navigateur le sait faire
+// (tout le monde sauf les très vieux Firefox/Safari) ; sinon, bascule sans effet.
+function navigate(fn) {
+  if (document.startViewTransition) document.startViewTransition(fn);
+  else fn();
+}
+// Une rangée de filtres avec un curseur qui glisse jusqu'à l'onglet actif.
+const SEG_LABELS = { view: 'Période', circuit: 'Circuit', boardscope: 'Classement', rankview: 'Circuit' };
+function segRow(items, cur, act) {
+  return `<div class="seg" data-seg="${act}" role="group" aria-label="${SEG_LABELS[act] || ''}"><span class="segthumb" aria-hidden="true"></span>
+    ${items.map(([k, l]) => `<button data-act="${act}" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div>`;
+}
 
-          // Décalage horaire du tournoi : déduit des résultats déjà publiés, sinon table des pays.
-          async function eventZone(ev) {
-            try {
-              const r = await getJson(`${WTT_STATIC}/${ev.EventId}/${ev.EventId}_take_10_official_results.json?q=${qNow()}`, { referer: WTT_REF, tries: 1 });
-              for (const x of r) {
-                const m = x && x.match_card && x.match_card.matchDateTime;
-                if (m) {
-                  const off = parseUS(m.startDateLocal) - parseUS(m.startDateUTC);
-                  if (Number.isFinite(off) && off % 900000 === 0 && Math.abs(off) <= 14 * 3600e3) return { offsetMs: off };
-                }
-              }
-            } catch {}
-            const tz = TZ_BY_COUNTRY[ev.Country];
-            return tz ? { tz } : null;
-          }
+function tabView() {
+  if (S.tab === 'board') return boardView();
+  if (S.tab === 'rankings') return rankingsView();
+  if (S.tab === 'admin' && S.isAdmin) return adminView();
+  return matchesView();
+}
 
-          async function wttEvents() {
-            const now = Date.now();
-            const year = new Date(now).getUTCFullYear();
-            const rows = [];
-            for (const y of [year, year + 1]) {
-              try {
-                const j = await getJson(`${WTT_STATIC}/general/${y}_eventcalendar.json?q=${qNow()}`, { referer: WTT_REF });
-                rows.push(...(Array.isArray(j) ? j.flatMap(x => x.rows || []) : (j.rows || [])));
-              } catch (e) { if (y === year) throw e; }
-            }
-            const seen = new Set();
-            return rows.filter(r =>
-              WTT_CONFIG.eventTypes.includes(r.EventType) && !/youth/i.test(r.EventName) &&
-              Date.parse(r.StartDateTime) <= now + WTT_CONFIG.daysAhead * 864e5 &&
-              Date.parse(r.EndDateTime) >= now - WTT_CONFIG.daysAfter * 864e5 &&
-              !seen.has(r.EventId) && seen.add(r.EventId));
-          }
+/* --- Connexion --- */
+function authView() {
+  const su = S.authMode === 'signup';
+  return `
+  <div class="authshell">
+    <div class="authbrand"><div class="authbrand-in">
+      <h1>${MARK(74, true)}${esc(APP_NAME)}</h1>
+      <p>Les pronostics de tennis de table entre amis : WTT et Pro A. Vainqueur, score exact, et un bonus quand tu devines juste sur l'outsider.</p>
+    </div></div>
+    <div class="authform-col">
+      <div class="auth">
+        <form id="authform" class="panel">
+          ${su ? `<label for="pseudo">Pseudo</label><input id="pseudo" required minlength="2" maxlength="20" autocomplete="nickname">` : ''}
+          <label for="email">Email</label><input id="email" type="email" required autocomplete="email">
+          <label for="pw">Mot de passe</label><input id="pw" type="password" required minlength="6" autocomplete="${su ? 'new-password' : 'current-password'}">
+          ${su ? `<label for="code">Code d'invitation</label><input id="code" required autocomplete="off" autocapitalize="characters">` : ''}
+          <button class="btn" type="submit">${su ? 'Créer mon compte' : 'Me connecter'}</button>
+          <div id="autherr" class="ferr" role="alert"></div>
+        </form>
+        <p class="switch">${su ? 'Déjà un compte ?' : 'Pas encore de compte ?'} <button class="linkbtn" data-act="authmode">${su ? 'Me connecter' : 'Créer un compte'}</button></p>
+      </div>
+    </div>
+  </div>`;
+}
+async function submitAuth(f) {
+  const err = f.querySelector('#autherr'); err.className = 'ferr'; err.textContent = '';
+  const btn = f.querySelector('button[type=submit]'); btn.disabled = true;
+  const email = f.querySelector('#email').value.trim(), password = f.querySelector('#pw').value;
+  try {
+    if (S.authMode === 'signup') {
+      const pseudo = f.querySelector('#pseudo').value.trim();
+      const code = f.querySelector('#code').value.trim().toUpperCase();
+      const { data, error } = await sb.auth.signUp({ email, password, options: { data: { pseudo, invite_code: code } } });
+      if (error) throw error;
+      if (!data.session) { err.className = 'ferr fok'; err.textContent = 'Compte créé. Confirme ton email (regarde ta boîte mail) puis connecte-toi.'; }
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    }
+  } catch (e) { err.textContent = friendlyError(e); }
+  btn.disabled = false;
+}
 
-          function wttPlayer(c) {
-            const a = c && c.Composition && c.Composition.Athlete && c.Composition.Athlete[0] && c.Composition.Athlete[0].Description;
-            const name = a && a.GivenName && a.FamilyName ? `${a.GivenName} ${a.FamilyName}` : ((c.Description && c.Description.TeamName) || '');
-            const seed = Number(c.Seed);
-            return { ext: String(c.Code), name: name.trim(), country: c.Organization || null, seed: Number.isFinite(seed) && seed > 0 ? seed : null };
-          }
+/* --- Matchs --- */
+function matchesView() {
+  // "fresh" : la liste vient d'être ouverte ou filtrée (pas juste un prono posé
+  // ailleurs sur la même liste) -> les cartes ont le droit de rejouer leur entrée.
+  const fresh = S._freshMatches; S._freshMatches = false;
+  const list = S.matches.filter(m => S.circuit === 'ALL' || m.circuit === S.circuit);
+  const up = list.filter(m => m.status === 'scheduled' || m.status === 'live').sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+  const doneAll = list.filter(m => m.status === 'finished' || m.status === 'cancelled');
+  const done = doneAll.slice().sort((a, b) => new Date(b.starts_at) - new Date(a.starts_at)).slice(0, 60);
+  let shown = S.view === 'upcoming' ? up : done;
 
-          async function wttCompetitorId(cache, p) {
-            const key = p.name.toLowerCase();
-            const sameName = cache.byName.get(key);
-            // Un joueur créé à la main est reconnu par son nom ; un autre joueur WTT de même nom est une autre personne.
-            const found = cache.byExt.get(p.ext) || (sameName && sameName.source !== 'wtt' ? sameName : null);
-            if (found && found.source === 'wtt' && found.name === p.name && (found.country || null) === p.country && (!p.seed || found.ranking === p.seed)) return found.id; // rien à changer
-            const fields = { name: p.name, kind: 'player', circuit: 'WTT', country: p.country, source: 'wtt', external_id: p.ext };
-            if (p.seed) fields.ranking = p.seed;
-            const write = async f => {
-              if (found) { await db('PATCH', `competitors?id=eq.${found.id}`, f, 'return=minimal'); return found.id; }
-              const rows = await db('POST', 'competitors', f, 'return=representation');
-              return rows[0].id;
-            };
-            let id;
-            try { id = await write(fields); }
-            catch (e) { id = await write({ ...fields, name: `${p.name} (${p.country || '?'})` }); } // deux joueurs de même nom
-            const rec = { id, name: fields.name, source: 'wtt', external_id: p.ext, country: p.country, ranking: p.seed || (found && found.ranking) || null };
-            cache.byExt.set(p.ext, rec); cache.byName.set(key, rec);
-            return id;
-          }
+  // Pro A : un onglet "journée" plutôt qu'un défilement infini. On choisit
+  // automatiquement la journée la plus pertinente (la prochaine à venir,
+  // sinon la dernière) tant que l'utilisateur n'a pas cliqué lui-même.
+  let journeeRow = '';
+  if (S.circuit === 'PRO_A') {
+    const journeeOf = m => { const mm = /^Journée (\d+)$/.exec(m.round || ''); return mm ? +mm[1] : null; };
+    const nums = [...new Set(list.map(journeeOf).filter(n => n !== null))].sort((a, b) => a - b);
+    if (nums.length) {
+      if (S.proJournee === null || !nums.includes(S.proJournee)) {
+        const nextUp = up.map(journeeOf).find(n => n !== null);
+        S.proJournee = nextUp ?? nums[nums.length - 1];
+      }
+      journeeRow = `<div class="journeerow" role="group" aria-label="Journée">
+        ${nums.map(n => `<button class="jchip" data-act="journee" data-v="${n}" aria-pressed="${S.proJournee === n}">Journée ${n}</button>`).join('')}
+      </div>`;
+      shown = shown.filter(m => journeeOf(m) === S.proJournee);
+    }
+  }
+  let body = '';
+  if (!shown.length) {
+    body = `<div class="empty">${S.view === 'upcoming'
+      ? (S.isAdmin ? "Aucun match à venir. Ajoute le premier dans l'onglet Admin." : (S.circuit === 'PRO_A' ? "Aucun match à venir pour cette journée." : "Aucun match à venir pour le moment. Ils apparaissent ici dès qu'ils sont ajoutés."))
+      : (S.circuit === 'PRO_A' ? "Aucun match terminé pour cette journée." : "Aucun match terminé pour l'instant.")}</div>`;
+  } else {
+    let lastDay = '';
+    let i = 0;
+    for (const m of shown) {
+      const d = fmtDay(m.starts_at);
+      if (d !== lastDay) {
+        if (lastDay) body += '</div>';
+        body += `<h2 class="day">${esc(d)}</h2><div class="matchgrid">`;
+        lastDay = d;
+      }
+      body += matchCard(m, fresh, i++);
+    }
+    body += '</div>';
+  }
+  const cnt = n => `<span class="cnt">${n}</span>`;
+  return heroBand(up) + `<div class="filters">`
+    + segRow([['upcoming', `À venir ${cnt(up.length)}`], ['done', `Terminés ${cnt(doneAll.length)}`]], S.view, 'view')
+    + segRow([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit')
+    + `</div>` + journeeRow + body;
+}
+// Bandeau d'accueil de l'onglet Matchs : salutation, ce qu'il reste à faire,
+// ta position au classement, et un signal si un match est en direct.
+function heroBand(upcoming) {
+  const todo = upcoming.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
+  const mine = S.board && S.board.find(r => r.user_id === S.session.user.id);
+  const live = S.matches.find(m => m.status === 'live');
+  return `<div class="hero">
+    <div class="herotop">
+      <div>
+        <div class="herogreet">Salut ${esc(S.pseudo)}</div>
+        <div class="herosub">${todo ? `Il te reste ${todo} prono${todo > 1 ? 's' : ''} à faire avant le coup d'envoi.` : "Tous tes pronos sont à jour, bien joué."}</div>
+      </div>
+      ${live ? `<span class="livechip"><span class="livedot" aria-hidden="true"></span>${esc(live.side_a)} ${live.score_a ?? 0}–${live.score_b ?? 0} ${esc(live.side_b)}</span>` : ''}
+    </div>
+    <div class="herostats">
+      <div class="herostat"><b>${todo}</b><span>${todo > 1 ? 'pronos à faire' : 'prono à faire'}</span></div>
+      <div class="herostat"><b>${mine ? mine.total_points : '—'}</b><span>${mine ? `point${mine.total_points > 1 ? 's' : ''}, ${ordinalRank(S.board, mine)}` : 'pas encore de points'}</span></div>
+    </div>
+  </div>`;
+}
+function ordinalRank(board, mine) {
+  let rank = 1, prev = null;
+  for (let i = 0; i < board.length; i++) {
+    const k = board[i].total_points + '/' + board[i].exact_scores;
+    if (k !== prev) { rank = i + 1; prev = k; }
+    if (board[i].user_id === mine.user_id) return rank + (rank === 1 ? 'er' : 'e');
+  }
+  return '';
+}
 
-          // Résultat d'un match terminé : nombre de manches gagnées par chaque joueur.
-          async function wttResult(eventId, code, idA, idB, wn) {
-            const doc = code.padEnd(42, '-');
-            let mc;
-            try { mc = await getJson(`${WTT_CACHED}/matchdata/${eventId}/${doc}.json?q=${qNow()}`, { referer: WTT_REF, tries: 2 }); }
-            catch (e) { console.warn(`WTT : résultat introuvable pour ${code} (${e.message})`); return null; }
-            const card = mc.match_card || mc;
-            if (String(card.resultStatus || '').toUpperCase() !== 'OFFICIAL') return null;
-            const comps = card.competitiors || [];
-            const ca = comps.find(c => String(c.competitiorId) === String(idA));
-            const cb = comps.find(c => String(c.competitiorId) === String(idB));
-            if (!ca || !cb) { console.warn(`WTT : joueurs non reconnus dans le résultat de ${code}`); return null; }
-            if (ca.irm || cb.irm) { console.warn(`WTT : abandon ou forfait sur ${code} (${ca.irm || cb.irm}) : à régler à la main dans l'onglet Admin`); return null; }
-            const A = String(ca.scores || '').split(',').map(Number), B = String(cb.scores || '').split(',').map(Number);
-            let wa = 0, wb = 0;
-            for (let i = 0; i < Math.max(A.length, B.length); i++) {
-              if (!(A[i] || B[i])) continue;
-              if (A[i] > B[i]) wa++; else if (B[i] > A[i]) wb++;
-            }
-            if (Math.max(wa, wb) !== wn || Math.min(wa, wb) >= wn) {
-              console.warn(`ATTENTION : résultat ${wa}-${wb} inattendu pour ${code} (${wn} victoires attendues) : ignoré`);
-              return null;
-            }
-            return [wa, wb];
-          }
+function chips(m, side, mine, disabled) {
+  const n = m.wins_needed, out = [];
+  for (let k = 0; k < n; k++) {
+    const a = side === 'A' ? n : k, b = side === 'A' ? k : n;
+    const sel = !!mine && mine.pred_a === a && mine.pred_b === b;
+    const who = side === 'A' ? m.side_a : m.side_b;
+    out.push(`<button class="chip" data-act="pick" data-id="${m.id}" data-a="${a}" data-b="${b}" aria-pressed="${sel}" aria-label="${esc(who)} gagne ${a} à ${b}" ${disabled ? 'disabled' : ''}>${a}–${b}</button>`);
+  }
+  return `<div class="chips">${out.join('')}</div>`;
+}
 
-          async function syncWttEvent(ev, cache) {
-            const id = ev.EventId, label = shortEventName(ev.EventName);
-            let schedule;
-            try { schedule = await getJson(`${WTT_CACHED}/websitecacheddata/${id}/schedule/schedule.json?q=${qNow()}`, { referer: WTT_REF, tries: 2 }); }
-            catch (e) { console.log(`WTT ${label} : programme pas encore disponible (${e.message})`); return; }
-            const zone = await eventZone(ev);
-            if (!zone) { console.warn(`WTT ${label} : fuseau horaire inconnu pour "${ev.Country}" : ajoute ce pays à TZ_BY_COUNTRY`); return; }
+function matchCard(m, fresh, i) {
+  const locked = isLocked(m), mine = S.myPreds[m.id];
+  const fin = m.status === 'finished', canc = m.status === 'cancelled';
+  const winA = fin && m.score_a > m.score_b, winB = fin && m.score_b > m.score_a;
+  const ca = S.competitors[m.competitor_a_id], cb = S.competitors[m.competitor_b_id];
+  const flag = flagHtml;
+  const rk = c => {
+    if (!c || !c.ranking) return '';
+    return c.circuit === 'WTT' ? `<strong>#${c.ranking}</strong>` : `Classement ${c.ranking}`;
+  };
+  // Nom cliquable vers la fiche détail quand on a une fiche joueur/équipe liée
+  // (un match ajouté à la main par l'admin sans lien n'a pas de fiche : texte simple).
+  const nameBtn = (c, label) => c
+    ? `<button class="namebtn" data-act="competitor" data-id="${c.id}">${esc(label)}</button>`
+    : esc(label);
+  let pill = '';
+  if (fin) pill = '<span class="pill">Terminé</span>';
+  else if (canc) pill = '<span class="pill">Annulé</span>';
+  else if (m.status === 'live') pill = '<span class="pill live">En direct</span>';
+  else if (locked) pill = '<span class="pill">Commencé</span>';
 
-            // Chaque match apparaît en plusieurs versions : on garde la plus avancée.
-            const units = [];
-            for (const el of Array.isArray(schedule) ? schedule : []) {
-              const u = el && el.Competition && el.Competition.Unit;
-              if (Array.isArray(u)) units.push(...u); else if (u) units.push(u);
-            }
-            // Le WTT met parfois un nom générique ("Qualifier 7", "Alternate 2", "Lucky
-            // Loser 1"...) à la place d'un adversaire tant que le vrai joueur qualifié
-            // n'est pas encore officiellement connu de leur système. Si on l'acceptait
-            // comme un nom réel, les amis verraient ce nom générique comme si c'était
-            // un vrai joueur. On attend donc d'avoir un vrai nom : le match apparaîtra
-            // (ou se corrigera) automatiquement dès que le WTT le publie, à la prochaine
-            // synchronisation.
-            const isPlaceholder = name => /^(qualifier|alternate|lucky\s*loser)\b/i.test(String(name || '').trim());
-            const isPlayer = x => x && x.Competitor && x.Competitor.Code && x.Competitor.Code !== 'TBD' && x.Competitor.Description && x.Competitor.Description.TeamName &&
-              !isPlaceholder(x.Competitor.Description.TeamName);
-            const knownPair = u => { const st = (u.StartList && u.StartList.Start) || []; return st.length === 2 && st.every(isPlayer); };
-            const better = (a, b) => { for (let k = 0; k < 3; k++) { if (a[k] !== b[k]) return a[k] > b[k]; } return true; };
-            const best = new Map();
-            units.forEach((u, i) => {
-              // On préfère la version où les deux joueurs sont connus, puis le statut le plus avancé, puis la plus récente.
-              const score = [knownPair(u) ? 1 : 0, STATUS_RANK[u.ScheduleStatus] ?? 1, i];
-              const cur = best.get(u.Code);
-              if (!cur || better(score, cur.score)) best.set(u.Code, { u, score, i });
-            });
+  const showChips = !fin && !canc;
+  const t = (!locked && !canc) ? trend(m) : null;
+  const trendHtml = t ? `
+    <div class="trend">
+      <div class="trendrow"><span>${Math.round(t.pA * 100)} %</span>
+        <div class="bar" role="img" aria-label="Chances de victoire : ${esc(m.side_a)} ${Math.round(t.pA * 100)} %, ${esc(m.side_b)} ${100 - Math.round(t.pA * 100)} %"><i style="--w:${Math.round(t.pA * 100)}%;width:${Math.round(t.pA * 100)}%"></i></div>
+        <span>${100 - Math.round(t.pA * 100)} %</span></div>
+      <p class="tnote">Tendance statistique : score le plus probable ${t.score.a}–${t.score.b}.
+        <button class="linkbtn" data-act="pick" data-id="${m.id}" data-a="${t.score.a}" data-b="${t.score.b}">Suivre la tendance</button></p>
+    </div>` : '';
 
-            const existing = await db('GET', `matches?source=eq.wtt&circuit=eq.WTT&external_id=like.${id}:*&select=external_id,status,score_a,score_b,wins_needed,seed_a,seed_b&limit=5000`);
-            const ex = new Map(existing.map(m => [String(m.external_id), m]));
-            const winsDefault = WTT_CONFIG.winsByType[ev.EventType] ?? WTT_CONFIG.winsDefault;
-            const s = { suivis: 0, nouveaux: 0, termines: 0, dejaJoues: 0, enAttente: 0 };
-            const rows = [];
+  let foot;
+  if (canc) foot = `<div class="mfoot"><span>Match annulé : aucun point en jeu.</span></div>`;
+  else if (!locked) foot = `<div class="mfoot"><span>${mine ? `Prono enregistré : ${mine.pred_a}–${mine.pred_b}. Modifiable jusqu'au début du match.` : 'Touche un score pour faire ton prono.'}</span></div>`;
+  else {
+    const pt = points(m, mine);
+    const det = mine ? pointsDetail(m, mine) : null;
+    foot = `<div class="mfoot"><span>${mine ? `Ton prono : ${mine.pred_a}–${mine.pred_b}` : `Tu n'as pas fait de prono.`}</span>
+      ${pt !== null ? `<span class="pts ${pt === 0 ? 'p0' : (det.exact ? 'p3' : 'p1')}">${pt > 0 ? '+' : ''}${pt} pt${pt > 1 ? 's' : ''}${det.bonus ? ` (dont bonus outsider +${det.bonus})` : ''}</span>` : ''}
+      <button class="linkbtn" data-act="friends" data-id="${m.id}">${S.openFriends[m.id] ? 'Masquer' : 'Voir'} les pronos des amis</button></div>`;
+  }
 
-            for (const { u } of [...best.values()].sort((x, y) => x.i - y.i)) {
-              if (!WTT_CONFIG.subEvents.includes(u.SubEvent)) continue;
-              if (WTT_CONFIG.rounds && !WTT_CONFIG.rounds.includes(u.Round)) continue;
-              if (u.Draw && u.Draw !== 'MAIN') continue; // on saute les qualifications
-              if (/cancel/i.test(u.ScheduleStatus || '')) continue;
-              if (!knownPair(u)) { s.enAttente++; continue; }
-              const starts = u.StartList.Start.slice().sort((x, y) => (x.StartOrder || 0) - (y.StartOrder || 0));
-              const code = u.Code.replace(/-+$/, ''), ext = `${id}:${code}`;
-              const old = ex.get(ext);
-              const official = u.ScheduleStatus === 'Official';
-              if (official && !old) { s.dejaJoues++; continue; } // match déjà joué avant qu'on le suive : personne n'a pu pronostiquer
+  let friends = '';
+  if (S.openFriends[m.id]) {
+    const rows = (S.friends[m.id] || []).map(r => ({ ...r, pt: points(m, r) }))
+      .sort((x, y) => (y.pt ?? -1) - (x.pt ?? -1));
+    friends = rows.length
+      ? `<ul class="friends">${rows.map(r => `<li><span>${esc(r.profiles && r.profiles.pseudo)}${r.user_id === S.session.user.id ? ' (toi)' : ''}</span><span>${r.pred_a}–${r.pred_b}${r.pt !== null ? ` : ${r.pt} pt${r.pt > 1 ? 's' : ''}` : ''}</span></li>`).join('')}</ul>`
+      : `<p class="hint" style="padding:0 14px 12px">Personne n'a fait de prono sur ce match.</p>`;
+  }
 
-              const pa = wttPlayer(starts[0].Competitor), pb = wttPlayer(starts[1].Competitor);
-              const wn = old && old.wins_needed ? old.wins_needed : winsDefault;
-              // Tête de série figée une fois pour toutes à la création du match, pour un bonus "outsider"
-              // stable même si le classement du joueur change ensuite (par exemple à son tournoi suivant).
-              const seedA = old && old.seed_a !== undefined ? old.seed_a : (pa.seed ?? null);
-              const seedB = old && old.seed_b !== undefined ? old.seed_b : (pb.seed ?? null);
-              let status = 'scheduled', sa = null, sb = null;
-              if (old && (old.status === 'finished' || old.status === 'cancelled')) { status = old.status; sa = old.score_a; sb = old.score_b; }
-              else if (official) {
-                const res = await wttResult(id, code, pa.ext, pb.ext, wn);
-                if (res) { status = 'finished'; [sa, sb] = res; }
-              }
-              rows.push({
-                circuit: 'WTT', competition: label,
-                round: `${SUBEVENT_FR[u.SubEvent] || u.SubEvent}, ${roundFr(u.Round)}`,
-                side_a: pa.name, side_b: pb.name,
-                competitor_a_id: await wttCompetitorId(cache, pa), competitor_b_id: await wttCompetitorId(cache, pb),
-                starts_at: localToUTC(u.StartDate, zone), wins_needed: wn,
-                status, score_a: sa, score_b: sb, seed_a: seedA, seed_b: seedB,
-                tier: ev.EventType, // Grand Smash / Champions / Star Contender / Finals : sert à adapter les couleurs du site au tournoi
-                source: 'wtt', external_id: ext,
-              });
-              s.suivis++;
-              if (!old) s.nouveaux++;
-              if (status === 'finished') s.termines++;
-            }
-            for (let i = 0; i < rows.length; i += 100) {
-              await db('POST', 'matches?on_conflict=source,external_id', rows.slice(i, i + 100), 'resolution=merge-duplicates,return=minimal');
-            }
-            console.log(`WTT ${label} : ${s.suivis} matchs suivis, ${s.nouveaux} nouveaux, ${s.termines} terminés` +
-              (s.dejaJoues ? `, ${s.dejaJoues} déjà joués ignorés` : '') + (s.enAttente ? `, ${s.enAttente} en attente d'adversaires` : ''));
-          }
+  const cardTheme = themeKeyFor(m);
+  const cardStyle = `${themeVarsCss(cardTheme)}${fresh ? `;animation-delay:${Math.min(i, 8) * 45}ms` : ''}`;
+  const compDot = m.circuit === 'WTT' ? `<span class="compdot" style="background:${THEME[cardTheme].accent}" aria-hidden="true"></span>` : '';
+  return `
+  <article class="match${fresh ? ' enter' : ''}" data-card="${m.id}" style="${cardStyle}">
+    <div class="mhead">
+      <div><div class="comp">${compDot}${esc(m.competition)}</div>${m.round ? `<div class="rnd">${esc(m.round)}</div>` : ''}</div>
+      <div><div class="when"><time datetime="${esc(m.starts_at)}">${esc(fmtWhen(m.starts_at))}</time></div><div class="when">${pill}</div></div>
+    </div>
+    <div class="court${fin ? ' done' : ''}">
+      <div class="side">
+        <div class="name${winB ? ' lose' : ''}">${flag(ca)}${nameBtn(ca, m.side_a)}${winA ? '<span class="win-badge" aria-hidden="true">✓</span>' : ''}</div><div class="rk">${rk(ca)}</div>
+        ${showChips ? chips(m, 'A', mine, locked) : ''}
+      </div>
+      <div class="side">
+        <div class="name${winA ? ' lose' : ''}">${flag(cb)}${nameBtn(cb, m.side_b)}${winB ? '<span class="win-badge" aria-hidden="true">✓</span>' : ''}</div><div class="rk">${rk(cb)}</div>
+        ${showChips ? chips(m, 'B', mine, locked) : ''}
+      </div>
+      ${fin ? `<div class="netscore" aria-label="Résultat ${m.score_a} à ${m.score_b}">${m.score_a}–${m.score_b}</div>` : ''}
+    </div>
+    ${trendHtml}${foot}${friends}
+  </article>`;
+}
 
-          async function syncWTT() {
-            const events = await wttEvents();
-            if (!events.length) { console.log('WTT : aucun tournoi à suivre en ce moment.'); return; }
-            const existing = await db('GET', 'competitors?circuit=eq.WTT&select=id,name,source,external_id,country,ranking&limit=5000');
-            const cache = {
-              byExt: new Map(existing.filter(c => c.source === 'wtt').map(c => [String(c.external_id), c])),
-              byName: new Map(existing.map(c => [c.name.toLowerCase(), c])),
-            };
-            const erreurs = [];
-            for (const ev of events) {
-              try { await syncWttEvent(ev, cache); }
-              catch (e) { erreurs.push(`${shortEventName(ev.EventName)} : ${e.message}`); }
-            }
-            if (erreurs.length) throw new Error(erreurs.join(' ; '));
-          }
+async function pick(id, a, b) {
+  const m = S.matches.find(x => x.id === id);
+  if (!m || isLocked(m)) { toast('Trop tard : le match a commencé.', true); keepRender(); return; }
+  const { data, error } = await sb.from('predictions')
+    .upsert({ user_id: S.session.user.id, match_id: id, pred_a: a, pred_b: b }, { onConflict: 'user_id,match_id' })
+    .select().single();
+  if (error) { toast(friendlyError(error), true); return; }
+  S.myPreds[id] = data;
+  toast(`Prono enregistré : ${a}–${b}`);
+  keepRender();
+}
+async function toggleFriends(id) {
+  if (S.openFriends[id]) { S.openFriends[id] = false; keepRender(); return; }
+  const { data, error } = await sb.from('predictions').select('user_id,pred_a,pred_b,profiles(pseudo)').eq('match_id', id);
+  if (error) { toast(friendlyError(error), true); return; }
+  S.friends[id] = data || []; S.openFriends[id] = true; keepRender();
+}
 
-          async function main() {
-            let erreurs = 0;
-            for (const [nom, fn] of [['Pro A', syncProA], ['WTT', syncWTT]]) {
-              try { await fn(); }
-              catch (e) { erreurs++; console.error(`ERREUR ${nom} : ${e.message}`); }
-            }
-            if (erreurs) process.exit(1);
-          }
+/* --- Classement --- */
+function boardView() {
+  const seg = segRow([['ALL', 'Général'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.boardScope, 'boardscope');
+  if (S.board === null) return seg + '<div class="loading">Chargement…</div>';
+  if (!S.board.length) return seg + `<div class="empty">Pas encore de points. Le classement se remplit dès que les premiers matchs sont terminés.</div>${rules()}`;
+  let prev = null, rank = 0;
+  const rows = S.board.map((r, i) => {
+    const key = r.total_points + '/' + r.exact_scores;
+    if (key !== prev) { rank = i + 1; prev = key; }
+    const me = r.user_id === S.session.user.id;
+    return `<li class="${me ? 'me' : ''}"><div class="rank">${rank}</div>
+      <div><div class="lbname">${esc(r.pseudo)}${me ? ' (toi)' : ''}</div>
+      <div class="lbsub">${r.exact_scores} score${r.exact_scores > 1 ? 's' : ''} exact${r.exact_scores > 1 ? 's' : ''}, ${r.good_winners} bon${r.good_winners > 1 ? 's' : ''} vainqueur${r.good_winners > 1 ? 's' : ''} sur ${r.matches_played} match${r.matches_played > 1 ? 's' : ''}</div></div>
+      <div class="lbpts">${r.total_points}<small>pts</small></div></li>`;
+  }).join('');
+  return seg + `<ol class="lb">${rows}</ol>` + rules();
+}
+const rules = () => `<p class="rules">Barème : 1 point pour le bon vainqueur, 3 points pour le score exact. En WTT, un pronostic gagnant sur l'outsider (moins bien classé au tirage au sort) rapporte un bonus, d'autant plus grand que l'écart de tête de série est important (jusqu'à +5 points). En cas d'égalité au classement, le plus de scores exacts passe devant.</p>`;
 
-          main();
-          EOF
+/* --- Classements WTT (mondial) et Pro A (championnat) : à distinguer du
+   classement des amis (points de pronostics) affiché dans l'onglet "Amis". --- */
+function rankingsView() {
+  const scope = S.rankView;
+  const seg = segRow([['WTT', 'WTT'], ['PRO_A', 'Pro A']], scope, 'rankview');
+  const list = Object.values(S.competitors)
+    .filter(c => c.circuit === scope && c.ranking != null)
+    .sort((a, b) => a.ranking - b.ranking || a.name.localeCompare(b.name));
+  if (!list.length) {
+    return seg + `<div class="empty">${scope === 'WTT'
+      ? "Aucun classement mondial pour l'instant. Il se remplit au fil des tournois suivis."
+      : "Aucun classement Pro A pour l'instant. Il se remplit dès que la saison commence."}</div>`;
+  }
+  const rows = list.map(c => `
+    <li class="lbrow" data-act="competitor" data-id="${c.id}" role="button" tabindex="0" aria-label="Voir le détail de ${esc(c.name)}">
+      <div class="rank">${c.ranking}</div>
+      <div><div class="lbname">${flagHtml(c)}${esc(c.name)}</div>
+      ${scope === 'WTT' && c.country ? `<div class="lbsub">${esc(c.country)}</div>` : ''}</div>
+      ${c.ranking_points ? `<div class="lbpts">${c.ranking_points}<small>pts</small></div>` : '<div></div>'}
+    </li>`).join('');
+  const note = scope === 'WTT'
+    ? `<p class="rules">Classement mondial simple, limité aux joueurs déjà croisés dans les tournois suivis par le site (pas la totalité du circuit).</p>`
+    : `<p class="rules">Classement Pro A messieurs, mis à jour par le robot de synchronisation.</p>`;
+  return seg + `<ol class="lb">${rows}</ol>` + note;
+}
 
-      - name: Synchroniser les matchs
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: node robot/synchro.mjs
+/* --- Fiche détail d'un joueur ou d'une équipe (clic sur son nom, où qu'il
+   apparaisse : carte de match, classement...). --- */
+function competitorModal(id) {
+  const c = S.competitors[id];
+  if (!c) return '';
+  const mine = S.matches.filter(m => m.competitor_a_id === id || m.competitor_b_id === id);
+  const upcoming = mine.filter(m => m.status === 'scheduled' || m.status === 'live')
+    .sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+  const recent = mine.filter(m => m.status === 'finished' || m.status === 'cancelled')
+    .sort((a, b) => new Date(b.starts_at) - new Date(a.starts_at)).slice(0, 8);
+  const oppOf = m => m.competitor_a_id === id
+    ? { name: m.side_b, id: m.competitor_b_id }
+    : { name: m.side_a, id: m.competitor_a_id };
+  const oppHtml = m => {
+    const o = oppOf(m);
+    return o.id ? `<button class="namebtn" data-act="competitor" data-id="${o.id}">${esc(o.name)}</button>` : esc(o.name);
+  };
+  const resultTag = m => {
+    if (m.status === 'cancelled') return `<span class="cmres">Annulé</span>`;
+    if (m.status !== 'finished') return '';
+    const won = (m.competitor_a_id === id && m.score_a > m.score_b) || (m.competitor_b_id === id && m.score_b > m.score_a);
+    return `<span class="cmres ${won ? 'win' : 'loss'}">${won ? 'V' : 'D'} ${m.score_a}–${m.score_b}</span>`;
+  };
+  // Chaque match = une mini-ligne à deux niveaux (adversaire bien visible au-dessus,
+  // date + résultat en dessous) plutôt qu'une phrase à lire d'un bloc.
+  const matchRow = m => `<li class="cmrow">
+    <div class="cmopp">${oppHtml(m)}</div>
+    <div class="cmmeta"><span class="cmdate">${esc(fmtDay(m.starts_at))}</span>${resultTag(m)}</div>
+  </li>`;
+  const roster = c.circuit === 'PRO_A' ? (c.roster || []) : [];
+  const nothing = !upcoming.length && !recent.length && !roster.length;
+
+  const rosterSec = roster.length ? `
+    <section class="modalsec sec-roster">
+      <h3><span class="secdot" aria-hidden="true"></span>Effectif</h3>
+      <ul class="roster">${roster.map(p => `<li>${esc(p)}</li>`).join('')}</ul>
+    </section>` : '';
+  const upcomingSec = upcoming.length ? `
+    <section class="modalsec sec-upcoming">
+      <h3><span class="secdot" aria-hidden="true"></span>À venir</h3>
+      <ul class="cmlist">${upcoming.slice(0, 5).map(matchRow).join('')}</ul>
+    </section>` : '';
+  const recentSec = recent.length ? `
+    <section class="modalsec sec-recent">
+      <h3><span class="secdot" aria-hidden="true"></span>Derniers résultats</h3>
+      <ul class="cmlist">${recent.map(matchRow).join('')}</ul>
+    </section>` : '';
+
+  return `
+  <div class="modalbackdrop" data-act="closecompetitor">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="${esc(c.name)}" data-act="stop">
+      <button class="modalclose" data-act="closecompetitor" aria-label="Fermer">&times;</button>
+      <div class="modalhead">
+        <div class="modalname">${flagHtml(c)}${esc(c.name)}</div>
+        <div class="modalsub">${c.circuit === 'WTT' ? 'Simple messieurs/dames, circuit WTT' : 'Équipe de Pro A'}</div>
+        <div class="modalstats">
+          <div class="statbox"><b>${c.ranking ?? '—'}</b><span>${c.circuit === 'WTT' ? 'classement mondial' : 'classement Pro A'}</span></div>
+          ${c.ranking_points ? `<div class="statbox"><b>${c.ranking_points}</b><span>points</span></div>` : ''}
+          ${roster.length ? `<div class="statbox"><b>${roster.length}</b><span>joueur${roster.length > 1 ? 's' : ''}</span></div>` : ''}
+        </div>
+      </div>
+      <div class="modalbody">
+        ${rosterSec}${upcomingSec}${recentSec}
+        ${nothing ? `<p class="sec-empty">Aucune information suivie pour le moment.</p>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* --- Administration --- */
+function adminView() {
+  const comps = [...new Set(S.matches.map(m => m.competition))];
+  const names = Object.values(S.competitors).map(c => c.name);
+  const pending = S.matches.filter(m => m.status === 'scheduled' || m.status === 'live').sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at)).slice(0, 40);
+  const finished = S.matches.filter(m => m.status === 'finished').sort((a, b) => new Date(b.starts_at) - new Date(a.starts_at)).slice(0, 10);
+  const compList = Object.values(S.competitors).filter(c => c.circuit === S.adminCircuit)
+    .sort((a, b) => (a.ranking ?? 1e9) - (b.ranking ?? 1e9) || a.name.localeCompare(b.name)).slice(0, 300);
+
+  const resultRow = m => `
+    <div class="adm-item">
+      <div class="adm-title">${esc(m.side_a)} contre ${esc(m.side_b)}</div>
+      <div class="hint">${esc(m.competition)}, ${esc(fmtWhen(m.starts_at))}, ${m.wins_needed} victoires pour gagner</div>
+      <div class="adm-actions">
+        <input class="scorein" id="ra-${m.id}" type="number" min="0" max="5" inputmode="numeric" value="${m.score_a ?? ''}" aria-label="Score de ${esc(m.side_a)}">
+        <span class="vs">–</span>
+        <input class="scorein" id="rb-${m.id}" type="number" min="0" max="5" inputmode="numeric" value="${m.score_b ?? ''}" aria-label="Score de ${esc(m.side_b)}">
+        <button class="btn small" data-act="adm-result" data-id="${m.id}">Enregistrer le résultat</button>
+        ${m.status !== 'finished' ? `<button class="btn small sec" data-act="adm-cancel" data-id="${m.id}">Annuler le match</button>` : ''}
+        <button class="linkbtn" data-act="adm-delete" data-id="${m.id}">Supprimer</button>
+      </div>
+    </div>`;
+
+  return `
+  <section class="panel">
+    <h2>Ajouter un match</h2>
+    <form id="addmatch">
+      <label for="am-circuit">Circuit</label>
+      <select id="am-circuit"><option value="WTT">WTT</option><option value="PRO_A">Pro A</option></select>
+      <label for="am-comp">Compétition</label>
+      <input id="am-comp" required list="dl-comps" placeholder="Ex : WTT Contender Lima, ou Pro A journée 3">
+      <label for="am-round">Tour (facultatif)</label>
+      <input id="am-round" placeholder="Ex : Quart de finale">
+      <div class="row2">
+        <div><label for="am-a">Joueur ou équipe A</label><input id="am-a" required list="dl-names" autocomplete="off"></div>
+        <div><label for="am-b">Joueur ou équipe B</label><input id="am-b" required list="dl-names" autocomplete="off"></div>
+      </div>
+      <label for="am-start">Début du match</label>
+      <input id="am-start" type="datetime-local" required>
+      <label for="am-wins">Format</label>
+      <select id="am-wins">
+        <option value="3" selected>3 victoires pour gagner (au meilleur des 5)</option>
+        <option value="4">4 victoires pour gagner (au meilleur des 7)</option>
+        <option value="2">2 victoires pour gagner (au meilleur des 3)</option>
+        <option value="5">5 victoires pour gagner (au meilleur des 9)</option>
+      </select>
+      <button class="btn" type="submit">Ajouter le match</button>
+    </form>
+    <datalist id="dl-comps">${comps.map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+    <datalist id="dl-names">${names.map(n => `<option value="${esc(n)}">`).join('')}</datalist>
+  </section>
+
+  <section class="panel">
+    <h2>Résultats à saisir</h2>
+    <p class="hint">Le vainqueur a toujours le nombre de victoires du format (par exemple 3–1).</p>
+    ${pending.length ? pending.map(resultRow).join('') : '<p class="hint">Aucun match en attente de résultat.</p>'}
+  </section>
+
+  <section class="panel">
+    <h2>Corriger un résultat</h2>
+    ${finished.length ? finished.map(resultRow).join('') : '<p class="hint">Aucun résultat saisi pour l\'instant.</p>'}
+  </section>
+
+  <section class="panel">
+    <h2>Classements des joueurs et équipes</h2>
+    <p class="hint">Sert à calculer les tendances statistiques. Un petit numéro = un meilleur classement.</p>
+    <label for="adm-circuit">Circuit</label>
+    <select id="adm-circuit"><option value="WTT" ${S.adminCircuit === 'WTT' ? 'selected' : ''}>WTT</option><option value="PRO_A" ${S.adminCircuit === 'PRO_A' ? 'selected' : ''}>Pro A</option></select>
+    ${compList.length ? compList.map(c => `
+      <div class="adm-item">
+        <div class="adm-title">${esc(c.name)}</div>
+        <div class="adm-actions">
+          <input class="scorein" style="width:90px" id="rk-${c.id}" type="number" min="1" inputmode="numeric" placeholder="Rang" value="${c.ranking ?? ''}" aria-label="Classement de ${esc(c.name)}">
+          <button class="btn small sec" data-act="adm-rank" data-id="${c.id}">Enregistrer</button>
+        </div>
+        ${S.adminCircuit === 'PRO_A' ? `
+        <label for="ro-${c.id}" class="hint" style="display:block;margin-top:10px">Joueurs de l'équipe (un par ligne)</label>
+        <textarea id="ro-${c.id}" rows="3" style="width:100%;margin-top:4px" placeholder="Un nom par ligne">${esc((c.roster || []).join('\n'))}</textarea>
+        <button class="btn small sec" style="margin-top:6px" data-act="adm-roster" data-id="${c.id}">Enregistrer les joueurs</button>` : ''}
+      </div>`).join('') : '<p class="hint">Aucun joueur ou équipe pour ce circuit : ils sont créés automatiquement quand tu ajoutes un match.</p>'}
+  </section>`;
+}
+
+async function ensureCompetitor(name, circuit) {
+  name = name.trim();
+  const found = Object.values(S.competitors).find(c => c.circuit === circuit && c.name.toLowerCase() === name.toLowerCase());
+  if (found) return found.id;
+  const { data, error } = await sb.from('competitors')
+    .insert({ name, circuit, kind: circuit === 'PRO_A' ? 'team' : 'player', source: 'manual' }).select().single();
+  if (error) throw error;
+  S.competitors[data.id] = data;
+  return data.id;
+}
+async function addMatch(f) {
+  const v = id => f.querySelector('#' + id).value.trim();
+  const circuit = v('am-circuit'), a = v('am-a'), b = v('am-b');
+  if (a.toLowerCase() === b.toLowerCase()) { toast('Choisis deux adversaires différents.', true); return; }
+  try {
+    const [ida, idb] = [await ensureCompetitor(a, circuit), await ensureCompetitor(b, circuit)];
+    const { error } = await sb.from('matches').insert({
+      circuit, competition: v('am-comp'), round: v('am-round') || null,
+      side_a: a, side_b: b, competitor_a_id: ida, competitor_b_id: idb,
+      starts_at: new Date(f.querySelector('#am-start').value).toISOString(),
+      wins_needed: parseInt(v('am-wins'), 10), source: 'manual'
+    });
+    if (error) throw error;
+    await reloadMatches();
+    toast('Match ajouté.'); keepRender();
+  } catch (e) { toast(friendlyError(e), true); }
+}
+async function saveResult(id) {
+  const m = S.matches.find(x => x.id === id);
+  const a = parseInt(document.getElementById('ra-' + id).value, 10), b = parseInt(document.getElementById('rb-' + id).value, 10);
+  if (Number.isNaN(a) || Number.isNaN(b)) { toast('Saisis les deux scores.', true); return; }
+  if (Math.max(a, b) !== m.wins_needed || Math.min(a, b) >= m.wins_needed) { toast(`Score impossible : le vainqueur doit avoir ${m.wins_needed} victoires.`, true); return; }
+  const { error } = await sb.from('matches').update({ status: 'finished', score_a: a, score_b: b }).eq('id', id);
+  if (error) { toast(friendlyError(error), true); return; }
+  await reloadMatches(); toast('Résultat enregistré.'); keepRender();
+}
+async function cancelMatch(id) {
+  if (!confirm('Annuler ce match ? Les pronos ne rapporteront aucun point.')) return;
+  const { error } = await sb.from('matches').update({ status: 'cancelled', score_a: null, score_b: null }).eq('id', id);
+  if (error) { toast(friendlyError(error), true); return; }
+  await reloadMatches(); toast('Match annulé.'); keepRender();
+}
+async function deleteMatch(id) {
+  if (!confirm('Supprimer ce match et tous les pronos associés ? Cette action est définitive.')) return;
+  const { error } = await sb.from('matches').delete().eq('id', id);
+  if (error) { toast(friendlyError(error), true); return; }
+  await reloadMatches(); toast('Match supprimé.'); keepRender();
+}
+async function saveRank(id) {
+  const raw = document.getElementById('rk-' + id).value.trim();
+  const ranking = raw === '' ? null : parseInt(raw, 10);
+  const { error } = await sb.from('competitors').update({ ranking }).eq('id', id);
+  if (error) { toast(friendlyError(error), true); return; }
+  S.competitors[id].ranking = ranking; toast('Classement enregistré.');
+}
+async function saveRoster(id) {
+  const raw = document.getElementById('ro-' + id).value;
+  const roster = raw.split('\n').map(s => s.trim()).filter(Boolean);
+  const { error } = await sb.from('competitors').update({ roster: roster.length ? roster : null }).eq('id', id);
+  if (error) { toast(friendlyError(error), true); return; }
+  S.competitors[id].roster = roster.length ? roster : null; toast('Joueurs enregistrés.'); keepRender();
+}
+
+/* ---------- Événements ---------- */
+$app.addEventListener('click', async e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (act === 'authmode') { S.authMode = S.authMode === 'login' ? 'signup' : 'login'; render(); }
+  else if (act === 'logout') { await sb.auth.signOut(); }
+  else if (act === 'tab') {
+    S.tab = el.dataset.tab;
+    if (S.tab === 'matches') S._freshMatches = true;
+    if (S.tab === 'board') { S.board = null; navigate(render); await loadBoard(); }
+    navigate(render); window.scrollTo(0, 0);
+  }
+  else if (act === 'view') { S.view = v; S._freshMatches = true; navigate(render); }
+  else if (act === 'circuit') { S.circuit = v; S._freshMatches = true; S.proJournee = null; navigate(render); }
+  else if (act === 'journee') { S.proJournee = +v; S._freshMatches = true; navigate(render); }
+  else if (act === 'boardscope') { S.boardScope = v; S.board = null; navigate(render); await loadBoard(); navigate(render); }
+  else if (act === 'rankview') { S.rankView = v; navigate(render); }
+  else if (act === 'competitor') { S.openCompetitor = id; keepRender(); }
+  else if (act === 'closecompetitor') { S.openCompetitor = null; keepRender(); }
+  else if (act === 'stop') { /* clic à l'intérieur de la fiche détail : ne pas la fermer */ }
+  else if (act === 'pick') pick(id, Number(el.dataset.a), Number(el.dataset.b));
+  else if (act === 'friends') toggleFriends(id);
+  else if (act === 'adm-result') saveResult(id);
+  else if (act === 'adm-cancel') cancelMatch(id);
+  else if (act === 'adm-delete') deleteMatch(id);
+  else if (act === 'adm-rank') saveRank(id);
+  else if (act === 'adm-roster') saveRoster(id);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && S.openCompetitor) { S.openCompetitor = null; keepRender(); }
+});
+$app.addEventListener('submit', e => {
+  e.preventDefault();
+  if (e.target.id === 'authform') submitAuth(e.target);
+  else if (e.target.id === 'addmatch') addMatch(e.target);
+});
+$app.addEventListener('change', e => {
+  if (e.target.id === 'adm-circuit') { S.adminCircuit = e.target.value; keepRender(); }
+});
+
+/* ---------- Démarrage ---------- */
+// Petites balles flottantes en fond, créées une seule fois pour de bon (en dehors
+// de #app, qui lui se redessine sans arrêt) : elles ne redémarrent jamais leur course.
+// Grands anneaux en fond de scène, créés une seule fois pour de bon (en dehors
+// de #app, qui lui se redessine sans arrêt) : ils tournent chacun à leur rythme,
+// sans jamais repartir de zéro, et reprennent la couleur d'accent du moment.
+function spawnRings() {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const box = document.createElement('div');
+  box.id = 'rings';
+  box.setAttribute('aria-hidden', 'true');
+  const specs = [
+    { size: 480, pos: 'top:-170px;left:-150px', dur: 160, width: 2 },
+    { size: 300, pos: 'bottom:-110px;right:-90px', dur: 115, width: 2, gold: true },
+    { size: 190, pos: 'top:58%;right:5%', dur: 85, width: 1.5 },
+    { size: 130, pos: 'bottom:10%;left:5%', dur: 95, width: 1.5, gold: true },
+    { size: 74, pos: 'top:14%;left:60%', dur: 60, width: 1.5 },
+  ];
+  for (const s of specs) {
+    const r = document.createElement('span');
+    r.className = 'ring' + (s.gold ? ' gold' : '');
+    r.style.cssText = `width:${s.size}px;height:${s.size}px;${s.pos};border-width:${s.width}px;animation-duration:${s.dur}s;animation-delay:-${Math.round(Math.random() * s.dur)}s`;
+    box.appendChild(r);
+  }
+  document.body.appendChild(box);
+}
+
+// Sert à rendre le site installable sur mobile (icône sur l'écran d'accueil,
+// ouverture en plein écran). N'empêche pas le site de marcher si ça échoue
+// (navigateur trop ancien, page ouverte en local) : on l'enregistre sans bloquer.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+async function boot() {
+  spawnRings();
+  if (!window.supabase) {
+    $app.innerHTML = '<div class="auth"><h1>Oups</h1><p class="lead">Impossible de charger le service de connexion. Vérifie ta connexion internet et recharge la page.</p></div>';
+    return;
+  }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  sb.auth.onAuthStateChange((event, session) => { setTimeout(() => handleSession(session), 0); });
+  const { data } = await sb.auth.getSession();
+  handleSession(data.session);
+}
+boot();
+</script>
+</body>
+</html>
