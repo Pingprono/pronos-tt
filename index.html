@@ -35,15 +35,15 @@
   --navy-rgb:1,44,89;
   --navy-deep:#001A38;
   --terracotta-deep:#7E3A1B;
-  /* Accent de circuit : bordeaux par défaut ("Tous"), recoloré en bleu (WTT) ou
-     terracotta (Pro A) via l'attribut data-circuit posé sur <html> ; teinte le fond,
-     le bandeau d'accueil et les balles flottantes dans toute l'appli. */
-  --accent:var(--bordeaux); --accent-rgb:var(--bordeaux-rgb); --accent-deep:var(--bordeaux-deep);
-  /* Couleur d'accent de toute l'interface : change avec <html data-circuit="...">,
-     posé par le JS selon le filtre WTT / Pro A / Tous. Par défaut : bordeaux. */
+  /* Couleur d'accent de toute l'interface : changée en JS (voir THEME dans le
+     script) selon le tournoi actuellement affiché — couleurs officielles WTT
+     (violet WTT Champions, or/noir WTT Grand Smash, bleu/rouge Pro A...).
+     Par défaut : bordeaux. --accent2 est la teinte secondaire du thème. */
   --accent:var(--bordeaux);
   --accent-rgb:var(--bordeaux-rgb);
   --accent-deep:var(--bordeaux-deep);
+  --accent2:var(--terracotta);
+  --accent2-rgb:var(--terracotta-rgb);
   --good:#4B6B3E;
   --bad:#A23327;
   --line-soft:rgba(46,27,18,.14);
@@ -55,8 +55,6 @@
   --f-display:'Fraunces','Iowan Old Style',Georgia,serif;
   --f-body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
 }
-html[data-circuit="WTT"]{--accent:var(--navy);--accent-rgb:1,44,89;--accent-deep:#001B33}
-html[data-circuit="PRO_A"]{--accent:var(--terracotta);--accent-rgb:var(--terracotta-rgb);--accent-deep:var(--terracotta-deep)}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{
@@ -203,7 +201,7 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 /* Un match = une vraie carte, avec relief et une tranche de couleur */
 .match{position:relative;background:linear-gradient(180deg,var(--card-top),var(--card));border-radius:16px;box-shadow:var(--shadow-card);overflow:hidden;height:fit-content}
 .match.enter{animation:cardIn .38s var(--ease-out) backwards}
-.match::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--spine-a,var(--accent)),var(--spine-b,var(--terracotta)))}
+.match::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--accent),var(--accent2))}
 .match:active{box-shadow:var(--shadow-card-active);transform:translateY(1px)}
 .mhead{display:flex;justify-content:space-between;gap:10px;padding:16px 18px 0 20px}
 .comp{font-weight:600;font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:6px}
@@ -211,7 +209,7 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 .rnd{color:var(--ink-soft);font-size:12.5px;font-style:italic;margin-top:1px}
 .when{font-size:12.5px;color:var(--ink-soft);text-align:right;white-space:nowrap}
 .pill{display:inline-block;font:italic 600 12px/1 var(--f-display);color:var(--accent);margin-top:6px;padding:3px 9px;border-radius:999px;background:rgba(var(--accent-rgb),.1)}
-.pill.live{color:#fff;background:var(--terracotta);animation:pulseLive 1.6s ease-in-out infinite}
+.pill.live{color:#fff;background:var(--accent2);animation:pulseLive 1.6s ease-in-out infinite}
 .court{display:grid;grid-template-columns:1fr 1fr;position:relative;margin-top:8px;padding:0 20px}
 .court::before{content:"";position:absolute;left:50%;top:2px;bottom:2px;width:1px;margin-left:-.5px;background:var(--line-soft);pointer-events:none}
 .side{padding:10px 10px 14px;text-align:center;min-width:0}
@@ -234,7 +232,7 @@ button:active, .btn:active, .chip:not(:disabled):active{transform:scale(.94)}
 .trend{padding:6px 20px 4px}
 .trendrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font:600 15px/1 var(--f-body);color:var(--ink-soft)}
 .bar{height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden}
-.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--terracotta),var(--accent));animation:barfill .9s .1s var(--ease-out) forwards}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));animation:barfill .9s .1s var(--ease-out) forwards}
 .tnote{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;text-align:center;font-style:italic}
 .tnote .linkbtn{font-style:normal}
 .mfoot{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:12px 20px;margin-top:8px;background:rgba(46,27,18,.03);font-size:13.5px;color:var(--ink-soft)}
@@ -378,7 +376,7 @@ textarea{resize:vertical}
 @keyframes popIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
 @keyframes chipPop{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
 @keyframes barfill{from{width:0}to{width:var(--w)}}
-@keyframes pulseLive{0%,100%{box-shadow:0 0 0 0 rgba(var(--terracotta-rgb),.5)}50%{box-shadow:0 0 0 5px rgba(var(--terracotta-rgb),0)}}
+@keyframes pulseLive{0%,100%{box-shadow:0 0 0 0 rgba(var(--accent2-rgb),.5)}50%{box-shadow:0 0 0 5px rgba(var(--accent2-rgb),0)}}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,10px) scale(.95)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
 @keyframes toastOut{to{opacity:0;transform:translate(-50%,10px) scale(.95)}}
 @keyframes loadBounce{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-8px) rotate(12deg)}}
@@ -445,15 +443,58 @@ const S = {
 /* ---------- Petits outils ---------- */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-// Couleur propre à chaque tournoi WTT (le WTT ne fournit pas de charte
-// graphique par tournoi) : une teinte stable est calculée à partir du nom du
-// tournoi, pour que chaque tournoi garde toujours la même couleur et que
-// plusieurs tournois en cours en même temps restent visuellement distincts.
-function tourHue(name) {
-  let h = 0;
-  const s = String(name || '');
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-  return h % 360;
+// Thème visuel de toute l'appli, basé sur les vraies couleurs officielles des
+// affiches de chaque compétition (violet pour WTT Champions, noir/or pour WTT
+// Grand Smash, bleu/rouge pour la Pro A...). WTT_CONTENDER est une estimation
+// raisonnable (pas de visuel officiel vérifié) ; les autres viennent d'affiches
+// réelles. Chaque thème a une couleur principale (--accent, pour les boutons,
+// surlignages, fond) et une couleur secondaire (--accent2, pour la tranche des
+// cartes, le "en direct", les dégradés).
+const THEME = {
+  ALL:           { accent: '#6B1C2A', accentRgb: '107,28,42',  accentDeep: '#4E121C', accent2: '#B8532F', accent2Rgb: '184,83,47' },
+  PRO_A:         { accent: '#1E4FD1', accentRgb: '30,79,209',  accentDeep: '#102E82', accent2: '#D81E2C', accent2Rgb: '216,30,44' },
+  WTT_DEFAULT:   { accent: '#012C59', accentRgb: '1,44,89',    accentDeep: '#001B33', accent2: '#B8532F', accent2Rgb: '184,83,47' },
+  WTT_SMASH:     { accent: '#C79A2E', accentRgb: '199,154,46', accentDeep: '#7A5A12', accent2: '#15120A', accent2Rgb: '21,18,10' },
+  WTT_CHAMPIONS: { accent: '#7A3FD1', accentRgb: '122,63,209', accentDeep: '#4B1F8A', accent2: '#15120A', accent2Rgb: '21,18,10' },
+  WTT_CONTENDER: { accent: '#1693A5', accentRgb: '22,147,165', accentDeep: '#0B5560', accent2: '#0B5560', accent2Rgb: '11,85,96' },
+};
+const TIER_KEY = {
+  'WTT Grand Smash': 'WTT_SMASH',
+  'WTT Champions': 'WTT_CHAMPIONS',
+  'WTT Star Contender': 'WTT_CONTENDER',
+  'WTT Finals': 'WTT_DEFAULT',
+};
+// Thème d'un match précis (pour colorer sa carte selon SON tournoi).
+function themeKeyFor(m) {
+  if (!m) return 'ALL';
+  if (m.circuit === 'PRO_A') return 'PRO_A';
+  if (m.circuit === 'WTT') return TIER_KEY[m.tier] || 'WTT_DEFAULT';
+  return 'ALL';
+}
+function themeVarsCss(key) {
+  const t = THEME[key] || THEME.ALL;
+  return `--accent:${t.accent};--accent-rgb:${t.accentRgb};--accent-deep:${t.accentDeep};--accent2:${t.accent2};--accent2-rgb:${t.accent2Rgb}`;
+}
+function applyThemeVars(style, key) {
+  const t = THEME[key] || THEME.ALL;
+  style.setProperty('--accent', t.accent);
+  style.setProperty('--accent-rgb', t.accentRgb);
+  style.setProperty('--accent-deep', t.accentDeep);
+  style.setProperty('--accent2', t.accent2);
+  style.setProperty('--accent2-rgb', t.accent2Rgb);
+}
+// Thème de toute l'appli : basé sur le circuit choisi, et pour le WTT, sur le
+// tournoi le plus pertinent du moment (celui en direct, sinon le plus proche).
+function currentThemeKey() {
+  if (S.tab !== 'matches') return 'ALL';
+  if (S.circuit === 'PRO_A') return 'PRO_A';
+  if (S.circuit !== 'WTT') return 'ALL';
+  const wtt = S.matches.filter(m => m.circuit === 'WTT');
+  if (!wtt.length) return 'WTT_DEFAULT';
+  const live = wtt.find(m => m.status === 'live');
+  const next = wtt.filter(m => m.status === 'scheduled').sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at))[0];
+  const pick = live || next || wtt[0];
+  return TIER_KEY[pick.tier] || 'WTT_DEFAULT';
 }
 const fmtWhen = iso => new Date(iso).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const fmtDay = iso => new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -639,8 +680,10 @@ async function handleSession(session) {
 
 /* ---------- Affichage ---------- */
 function render() {
-  if (!S.session) { document.documentElement.dataset.circuit = 'ALL'; $app.innerHTML = authView(); return; }
-  document.documentElement.dataset.circuit = S.tab === 'matches' ? S.circuit : 'ALL';
+  if (!S.session) { applyThemeVars(document.documentElement.style, 'ALL'); $app.innerHTML = authView(); return; }
+  const themeKey = currentThemeKey();
+  document.documentElement.dataset.theme = themeKey;
+  applyThemeVars(document.documentElement.style, themeKey);
   const todo = S.matches.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
   const tabs = [['matches', 'Matchs'], ['board', 'Amis'], ['rankings', 'Classements']];
   if (S.isAdmin) tabs.push(['admin', 'Admin']);
@@ -873,12 +916,9 @@ function matchCard(m, fresh, i) {
       : `<p class="hint" style="padding:0 14px 12px">Personne n'a fait de prono sur ce match.</p>`;
   }
 
-  const hue = m.circuit === 'WTT' ? tourHue(m.competition) : null;
-  const spine = m.circuit === 'WTT'
-    ? `--spine-a:hsl(${hue} 56% 30%);--spine-b:hsl(${(hue + 32) % 360} 62% 58%)`
-    : '--spine-a:var(--terracotta);--spine-b:var(--gold)';
-  const cardStyle = `${spine}${fresh ? `;animation-delay:${Math.min(i, 8) * 45}ms` : ''}`;
-  const compDot = m.circuit === 'WTT' ? `<span class="compdot" style="background:hsl(${hue} 60% 45%)" aria-hidden="true"></span>` : '';
+  const cardTheme = themeKeyFor(m);
+  const cardStyle = `${themeVarsCss(cardTheme)}${fresh ? `;animation-delay:${Math.min(i, 8) * 45}ms` : ''}`;
+  const compDot = m.circuit === 'WTT' ? `<span class="compdot" style="background:${THEME[cardTheme].accent}" aria-hidden="true"></span>` : '';
   return `
   <article class="match${fresh ? ' enter' : ''}" data-card="${m.id}" style="${cardStyle}">
     <div class="mhead">
