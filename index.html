@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#EAE0C8">
+<meta name="theme-color" content="#121418">
 <title>SPIN</title>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -14,213 +14,274 @@
 <meta name="apple-mobile-web-app-title" content="SPIN">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css">
 <style>
+/* =============================================================================
+   SPIN — refonte n°2.
+   Principe : s'inspirer de la vraie famille des apps de score en direct
+   (SofaScore / Flashscore pour les listes de matchs denses groupées par
+   compétition et le traitement du "live" ; appli ESPN / barre d'onglets à
+   icônes pour la navigation mobile ; grille de pick'em type DraftKings pour
+   le choix du score) plutôt que d'habiller la maquette d'avant avec d'autres
+   couleurs. Pensé "copains" : dense et jouable, pas un produit de diffusion
+   pro, pas de pub, pas de cotes d'argent réel.
+   ========================================================================== */
 :root{
-  /* Couleurs de base (circuit "Tous" / neutre) : identiques à l'ancienne
-     maquette, conservées à l'identique à la demande — seule leur mise en
-     oeuvre change. --accent et --accent2 sont réécrits en JS (voir THEME)
-     selon le tournoi affiché ; tout le CSS ci-dessous ne lit QUE ces
-     variables, jamais une couleur fixe, pour s'adapter automatiquement. */
-  --paper:#EAE0C8;
-  --paper-deep:#DECBA0;
-  --card:#FBF4E4;
-  --card-top:#FFFCF4;
-  --ink:#2E1B12;
-  --ink-soft:#7A6349;
-  --accent:#6B1C2A;
-  --accent-rgb:107,28,42;
-  --accent-deep:#4E121C;
-  --accent2:#B8532F;
-  --accent2-rgb:184,83,47;
-  --paper-glow:rgba(255,252,240,.55);
-  --line-soft:rgba(46,27,18,.14);
-  --good:#4B6B3E;
-  --good-rgb:75,107,62;
-  --bad:#A23327;
-  --bad-rgb:162,51,39;
-  --radius:9px;
-  --radius-lg:13px;
+  --paper:#121418;
+  --paper-deep:#0A0B0D;
+  --card:#1B1E24;
+  --card-top:#242832;
+  --ink:#F3F1EC;
+  --ink-soft:#9A9CA6;
+  --accent:#D9472B;
+  --accent-rgb:217,71,43;
+  --accent-deep:#A8341F;
+  --accent2:#3E6FB0;
+  --accent2-rgb:62,111,176;
+  --paper-glow:rgba(255,255,255,.04);
+  --line-soft:rgba(255,255,255,.1);
+  --good:#4FAE6B;
+  --good-rgb:79,174,107;
+  --bad:#E24B3C;
+  --bad-rgb:226,75,60;
+  --live:#E2392B;
+  --live-rgb:226,57,43;
+  --radius:10px;
+  --radius-lg:16px;
   --ease:cubic-bezier(.2,.65,.2,1);
   --ease-spring:cubic-bezier(.3,1.4,.4,1);
   --f-display:'Space Grotesk',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
   --f-body:'Work Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{
-  margin:0;min-height:100vh;color:var(--ink);font:400 16px/1.5 var(--f-body);
+  margin:0;min-height:100vh;color:var(--ink);font:400 15.5px/1.48 var(--f-body);
   background:var(--paper);font-variant-numeric:tabular-nums;
   transition:background-color .3s var(--ease);
 }
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
 
-/* Le logo est peint en aplat : un pochoir CSS (mask) rempli avec la couleur
-   d'accent du moment, pour qu'il change de teinte avec le reste de l'appli. */
+/* Le logo peint en aplat avec la couleur d'accent du moment. */
 .mark{flex:none;display:inline-block;background-color:var(--accent);
   -webkit-mask-image:var(--logo);mask-image:var(--logo);
   -webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;
   transition:background-color .3s var(--ease)}
 .mark.light{background-color:#F8EFE2}
 
-/* Ossature : colonne de navigation à gauche sur grand écran, barre basse sur mobile. */
-.shell{max-width:1200px;margin:0 auto;min-height:100vh}
-.content{padding:0 16px 104px;min-width:0}
-@media (min-width:900px){
-  .shell{display:grid;grid-template-columns:232px minmax(0,1fr);align-items:start}
-  .content{padding:40px 48px 64px;border-left:1px solid var(--line-soft)}
+/* -----------------------------------------------------------------------
+   Ossature : rail d'icônes fixe sur mobile (type appli de scores native),
+   rail élargi avec libellés sur grand écran. Le contenu défile derrière
+   une barre supérieure collante (ticker live + identité), comme les apps
+   de scores qui gardent toujours un direct visible en haut de l'écran.
+   ----------------------------------------------------------------------- */
+.shell{max-width:1180px;margin:0 auto;min-height:100vh;position:relative}
+.content{padding:0 14px 96px;min-width:0}
+@media (min-width:860px){
+  .shell{display:grid;grid-template-columns:76px minmax(0,1fr)}
+  .content{padding:0 36px 48px;border-left:1px solid var(--line-soft)}
+}
+@media (min-width:1180px){
+  .shell{grid-template-columns:230px minmax(0,1fr)}
 }
 
 @media (prefers-reduced-motion:no-preference){
-  button,.chip,.btn,input,select,.seg button,.jchip,.linkbtn,.lbrow{transition:background-color .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease),box-shadow .2s var(--ease)}
+  button,.scorebtn,.btn,input,select,.pillbtn,.linkbtn,.lbrow,.trow{transition:background-color .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease),box-shadow .2s var(--ease),transform .15s var(--ease)}
 }
-.chip:not(:disabled):active,.jchip:active{transform:scale(.96)}
+.scorebtn:not(:disabled):active,.pillbtn:active{transform:scale(.94)}
 
-/* En-tête mobile (masqué sur grand écran : la barre latérale prend le relais) */
-.top{display:flex;align-items:center;justify-content:space-between;padding:18px 16px 12px}
-@media (min-width:900px){ .top{display:none} }
-.brand{font:700 21px/1 var(--f-display);display:flex;align-items:center;gap:9px;color:var(--ink)}
-.me{display:flex;align-items:center;gap:10px;color:var(--ink-soft);font-size:13px}
+/* --- Rail de navigation : icônes d'abord, texte en complément. --- */
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line-soft);
+  padding:4px 4px calc(4px + env(safe-area-inset-bottom));display:flex;justify-content:space-around;z-index:20}
+.navbrand,.navfoot{display:none}
+.navitem{flex:1;max-width:90px;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:7px 2px 6px;color:var(--ink-soft);position:relative}
+.navitem svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.navitem span{font:600 10.5px/1 var(--f-body);letter-spacing:.01em}
+.navitem[aria-current="page"]{color:var(--accent)}
+.navitem[aria-current="page"] svg{stroke-width:2.1}
+.navdot{position:absolute;top:2px;right:16px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--live);
+  color:#fff;font:700 10px/15px var(--f-body);text-align:center}
+@media (min-width:860px){
+  .nav{position:sticky;top:0;left:auto;right:auto;bottom:auto;height:100vh;flex-direction:column;justify-content:flex-start;
+    align-items:stretch;width:76px;padding:20px 8px;border-top:0;border-right:1px solid var(--line-soft);background:var(--card);gap:4px}
+  .navbrand{display:flex;justify-content:center;margin:0 0 22px}
+  .navitem{flex:none;max-width:none;padding:11px 4px;border-radius:12px}
+  .navitem[aria-current="page"]{background:rgba(var(--accent-rgb),.14)}
+  .navdot{top:4px;right:14px}
+  .navfoot{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:auto;padding-top:14px;border-top:1px solid var(--line-soft)}
+  .navfoot .linkbtn{font-size:10px;padding:2px}
+  .navfoot .avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;
+    justify-content:center;font:700 13px/1 var(--f-display)}
+}
+@media (min-width:1180px){
+  .nav{width:230px;align-items:stretch;padding:24px 14px}
+  .navbrand{justify-content:flex-start;gap:10px;font:700 19px/1 var(--f-display);padding:0 8px}
+  .navitem{flex-direction:row;justify-content:flex-start;gap:12px;padding:12px 12px}
+  .navitem span{font-size:14.5px}
+  .navdot{position:static;margin-left:auto}
+  .navfoot{flex-direction:row;justify-content:space-between;padding:14px 10px 0}
+}
+
+/* --- Barre supérieure collante : identité + ticker de matchs en direct.
+   Toujours visible en haut de l'onglet Matchs, comme le bandeau de scores
+   que gardent SofaScore/ESPN même quand on scrolle la liste. --- */
+.topbar{position:sticky;top:0;z-index:10;background:var(--paper);padding-top:env(safe-area-inset-top)}
+.topbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16px;background:linear-gradient(var(--paper),transparent);pointer-events:none}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;padding:14px 2px 10px}
+.brand{font:700 20px/1 var(--f-display);display:flex;align-items:center;gap:8px;color:var(--ink)}
+.me{display:flex;align-items:center;gap:9px;color:var(--ink-soft);font-size:12.5px}
 .linkbtn{background:none;border:0;padding:4px 2px;color:var(--accent);font-size:inherit;font-weight:600}
 .linkbtn:hover{color:var(--accent-deep)}
+@media (min-width:860px){ .topbar-row{display:none} }
 
-/* Bandeau "Matchs" : la carte de pointage perso — à quel point on en est,
-   combien de pronos restent à jouer, le score en direct s'il y en a un.
-   Une seule couleur pleine (celle du tournoi du moment), pas de dégradé
-   animé : le relief vient des chiffres, pas du fond. */
-.hero{border-radius:var(--radius-lg);padding:22px 22px 20px;margin:2px 0 24px;color:#fff;background:var(--accent)}
-.herotop{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
-.herogreet{font:600 21px/1.25 var(--f-display)}
-.herosub{font-size:13.5px;opacity:.85;margin-top:4px;max-width:44ch;line-height:1.45}
-.livechip{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,.4);border-radius:var(--radius);padding:6px 11px;font:600 12.5px/1 var(--f-body);white-space:nowrap}
-.livedot{width:6px;height:6px;border-radius:50%;background:#fff;flex:none}
-@media (prefers-reduced-motion:no-preference){ .livedot{animation:blink 1.4s step-end infinite} }
-.herostats{display:flex;gap:30px;margin-top:20px;flex-wrap:wrap}
-.herostat b{display:block;font:700 32px/1 var(--f-display)}
-.herostat span{font-size:12px;opacity:.78}
+.ticker{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 2px 10px;margin:0}
+.ticker::-webkit-scrollbar{display:none}
+.tickeritem{flex:0 0 auto;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid rgba(var(--live-rgb),.35);
+  border-radius:999px;padding:6px 13px 6px 10px;font:600 12.5px/1 var(--f-body);white-space:nowrap}
+.tickerdot{width:7px;height:7px;border-radius:50%;background:var(--live);flex:none}
+@media (prefers-reduced-motion:no-preference){ .tickerdot{animation:blink 1.3s step-end infinite} }
+.tickerscore{font:700 13.5px/1 var(--f-mono);color:var(--ink)}
+.tickervs{color:var(--ink-soft);font-weight:500}
 
-/* Navigation : barre fixe en bas sur mobile, vraie barre latérale sur grand écran.
-   L'onglet actif se marque par un repère graphique (trait), jamais par un
-   fond animé qui glisse d'un bouton à l'autre. */
-.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line-soft);padding:6px 6px calc(6px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:2px;z-index:5}
-.nav button{flex:1;max-width:200px;background:none;border:0;border-top:2px solid transparent;padding:10px 6px 8px;font:600 13.5px/1 var(--f-body);color:var(--ink-soft)}
-.nav button[aria-current="page"]{color:var(--accent);border-top-color:var(--accent)}
-.navbrand,.navfoot{display:none}
-.badge{background:var(--accent2);color:#fff;border-radius:5px;padding:1px 6px;font-size:11.5px;margin-left:5px;font-weight:700;display:inline-block}
-@media (min-width:900px){
-  .nav{position:sticky;top:0;left:auto;right:auto;bottom:auto;height:100vh;flex-direction:column;justify-content:flex-start;align-items:stretch;width:232px;padding:28px 18px;border-top:0;background:var(--card);gap:1px}
-  .nav button{flex:none;max-width:none;display:flex;align-items:center;gap:10px;text-align:left;justify-content:flex-start;padding:11px 12px;font-size:15px;border-top:0;border-left:3px solid transparent;border-radius:0 6px 6px 0}
-  .nav button[aria-current="page"]{border-left-color:var(--accent);background:rgba(var(--accent-rgb),.09)}
-  .navbrand{display:flex;align-items:center;gap:10px;font:700 19px/1 var(--f-display);color:var(--ink);margin:0 10px 28px}
-  .navfoot{display:flex;flex-direction:column;gap:8px;margin-top:auto;padding:16px 12px 0;border-top:1px solid var(--line-soft);font-size:13px;color:var(--ink-soft)}
-}
+/* --- Bandeau de stats personnelles : deux tuiles sobres, pas un bloc de
+   couleur plein écran. L'info passe par le chiffre, pas par le fond. --- */
+.statrow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:2px 0 18px}
+.stattile{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:13px 15px}
+.stattile b{display:block;font:700 26px/1 var(--f-display);color:var(--ink)}
+.stattile b.accent{color:var(--accent)}
+.stattile span{font-size:11.5px;color:var(--ink-soft)}
 
-/* Filtres : onglets soulignés plutôt qu'un sélecteur à curseur animé. */
-.filters{display:flex;flex-wrap:wrap;gap:22px;margin:4px 0 18px;border-bottom:1px solid var(--line-soft)}
-.seg{display:inline-flex;gap:18px}
-.filters .seg{gap:18px}
-.seg button{background:none;border:0;border-bottom:2px solid transparent;padding:0 0 11px;font:600 14.5px/1 var(--f-body);color:var(--ink-soft);margin-bottom:-1px;display:inline-flex;align-items:center;gap:6px}
-.seg button:hover{color:var(--ink)}
-.seg button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--accent)}
-.cnt{color:var(--ink-soft)}
-.seg button[aria-pressed="true"] .cnt{color:var(--accent)}
+/* --- Filtres : pastilles pleines plutôt que des onglets soulignés. --- */
+.pillrow{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
+.pillbtn{background:var(--card);border:1px solid var(--line-soft);border-radius:999px;padding:7px 14px;
+  font:600 13px/1 var(--f-body);color:var(--ink-soft);display:inline-flex;align-items:center;gap:6px}
+.pillbtn:hover{color:var(--ink);border-color:var(--ink-soft)}
+.pillbtn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pillbtn .cnt{font-size:11.5px;opacity:.75}
 
-/* Pro A : bande de journées à défilement horizontal. */
-.journeerow{display:flex;gap:6px;margin:0 0 20px;padding:2px 2px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.journeerow{display:flex;gap:6px;margin:0 0 16px;padding:1px 1px 7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
 .journeerow::-webkit-scrollbar{height:4px}
-.jchip{flex:0 0 auto;padding:7px 14px;border-radius:var(--radius);font:600 13.5px/1 var(--f-body);color:var(--ink-soft);background:none;border:1px solid var(--line-soft);white-space:nowrap}
-.jchip:hover{color:var(--ink);border-color:var(--ink-soft)}
+.jchip{flex:0 0 auto;padding:6px 13px;border-radius:999px;font:600 13px/1 var(--f-body);color:var(--ink-soft);background:var(--card);border:1px solid var(--line-soft);white-space:nowrap}
 .jchip[aria-pressed="true"]{color:#fff;background:var(--accent);border-color:var(--accent)}
 
-.day{font:600 15px/1.2 var(--f-display);margin:28px 0 12px;color:var(--ink-soft);display:flex;align-items:center;gap:12px;text-transform:capitalize}
-.day::after{content:"";flex:1;height:1px;background:var(--line-soft)}
-.matchgrid{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:4px;align-items:start}
-@media (min-width:720px){ .matchgrid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))} }
+/* -----------------------------------------------------------------------
+   Liste de matchs : groupée par compétition (barre de couleur comme un
+   bandeau de championnat Flashscore), puis par jour. Chaque match est une
+   RANGÉE dense, pas une carte encadrée — on peut en voir beaucoup d'un
+   coup d'œil, comme une vraie app de scores plutôt qu'un flux de cartes.
+   ----------------------------------------------------------------------- */
+.complabel{display:flex;align-items:center;gap:9px;margin:22px 0 2px;padding:9px 12px;border-radius:9px 9px 0 0;
+  background:rgba(var(--accent-rgb),.14);color:var(--ink)}
+.complabel:first-of-type{margin-top:4px}
+.compbar{width:4px;align-self:stretch;border-radius:2px;background:var(--accent);flex:none}
+.complabel b{font:600 13.5px/1.2 var(--f-display)}
+.complabel small{display:block;color:var(--ink-soft);font-size:11px;margin-top:1px}
+.day{font:600 11px/1 var(--f-body);letter-spacing:.06em;text-transform:uppercase;margin:0;color:var(--ink-soft);
+  padding:9px 12px 7px;background:var(--card-top)}
+.complist{background:var(--card-top);border-radius:0 0 12px 12px;overflow:hidden;margin-bottom:4px;border:1px solid var(--line-soft);border-top:0}
 
-/* --- Carte de match : une feuille de marque, pas une carte SaaS ---
-   Le ruban de haut donne la couleur du tournoi ; le corps est une paire de
-   lignes empilées (joueur A au-dessus, joueur B en-dessous), séparées par un
-   simple filet — comme le pointage réel d'un match de tennis de table —
-   plutôt que deux colonnes face à face. */
-.match{position:relative;background:var(--card);border:1px solid var(--line-soft);border-radius:var(--radius-lg);overflow:hidden;height:fit-content;border-top:3px solid var(--accent)}
-@media (prefers-reduced-motion:no-preference){ .match.enter{animation:cardIn .3s var(--ease) backwards} }
-.mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px 16px 4px}
-.mhead-l{min-width:0}
-.comp{font:600 13px/1.3 var(--f-display);color:var(--ink);display:flex;align-items:center;gap:6px}
-.compdot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}
-.rnd{color:var(--ink-soft);font-size:12px;margin-top:1px;display:block}
-.mhead-r{text-align:right;white-space:nowrap;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-.mhead-r time{font-size:12px;color:var(--ink-soft)}
-.pill{display:inline-block;font:600 11px/1 var(--f-body);color:var(--ink-soft);padding:3px 8px;border-radius:4px;background:rgba(var(--accent-rgb),.1)}
-.pill.live{color:#fff;background:var(--accent2)}
-@media (prefers-reduced-motion:no-preference){ .pill.live{animation:blink 1.4s step-end infinite} }
+.mrow{border-top:1px solid var(--line-soft);position:relative}
+.mrow:first-of-type{border-top:0}
+.mrow.islive{box-shadow:inset 3px 0 0 var(--live)}
+.mrowhead{display:flex;align-items:stretch;gap:0;width:100%;background:none;border:0;padding:0;text-align:left;color:inherit}
+.mtime{flex:0 0 60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:11px 4px;
+  font:600 12px/1.15 var(--f-body);color:var(--ink-soft)}
+.mtime .liv{color:var(--live);font-weight:700;font-size:11px;letter-spacing:.03em;display:flex;align-items:center;gap:4px}
+.mtime .livedotsm{width:5px;height:5px;border-radius:50%;background:var(--live)}
+@media (prefers-reduced-motion:no-preference){ .mtime .livedotsm{animation:blink 1.3s step-end infinite} }
+.msides{flex:1;min-width:0;padding:9px 6px;display:flex;flex-direction:column;gap:5px}
+.mside{display:flex;align-items:center;gap:7px;min-width:0}
+.mside.lose{opacity:.52}
+.mname{flex:1;min-width:0;font:600 14.5px/1.25 var(--f-display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.flag{width:1.1em;height:.85em;flex:none;border-radius:2px;box-shadow:0 0 0 1px var(--line-soft)}
+.mrk{font:500 10.5px/1 var(--f-body);color:var(--ink-soft);flex:none}
+.mrk .seed{color:var(--accent);font-weight:700}
+.msc{flex:0 0 26px;text-align:right;font:700 16px/1 var(--f-mono);color:var(--ink-soft)}
+.msc.win{color:var(--ink)}
+.mpredpill{flex:0 0 auto;font:700 11.5px/1 var(--f-mono);color:var(--ink-soft);background:var(--card);border:1px solid var(--line-soft);
+  border-radius:6px;padding:4px 8px;min-width:30px;text-align:center}
+.mright{flex:0 0 72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 10px 6px 2px}
+.statuspill{font:700 9.5px/1 var(--f-body);text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);
+  background:var(--paper-deep);border-radius:5px;padding:3px 6px}
+.statuspill.live{color:#fff;background:var(--live)}
+@media (prefers-reduced-motion:no-preference){ .statuspill.live{animation:blink 1.4s step-end infinite} }
+.chevron{color:var(--ink-soft);opacity:.6}
+.chevron svg{width:14px;height:14px;transition:transform .2s var(--ease)}
+.mrow.open .chevron svg{transform:rotate(180deg)}
 
-.board{padding:2px 16px 4px}
-.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line-soft)}
-.row:first-child{border-top:0}
-.row.lose .who{opacity:.5}
-.who{flex:1;min-width:0;font:600 17px/1.25 var(--f-display);color:var(--ink);display:flex;align-items:center;gap:7px;overflow-wrap:anywhere}
-.flag{width:1.2em;height:.9em;flex:none;border-radius:2px;box-shadow:0 0 0 1px var(--line-soft)}
-.win-badge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--good);color:#fff;font-size:10px;flex:none}
-.rk{font:500 12px/1 var(--f-body);color:var(--ink-soft);margin-left:4px;white-space:nowrap}
-.rk .seed{color:var(--accent);font-weight:700}
-.score{flex:none;display:flex;align-items:center}
-.chips{display:flex;gap:5px}
-.chip{width:36px;height:34px;background:var(--paper);border:1px solid var(--line-soft);border-radius:6px;font:600 14px/1 var(--f-display);color:var(--ink)}
-.chip[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
-.chip:not(:disabled):hover{border-color:var(--accent)}
-.chip:disabled{opacity:.45;cursor:not-allowed}
-.chip[aria-pressed="true"]:disabled{opacity:1}
-.finalnum{font:700 26px/1 var(--f-display);color:var(--ink-soft);min-width:1ch;text-align:right}
-.finalnum.win{color:var(--accent)}
+/* --- Panneau de pronostic : s'ouvre sous la rangée quand on la touche.
+   Sélecteur de score façon grille de pick'em (type DraftKings) : une
+   rangée de pastilles par camp, celle choisie se remplit en couleur. --- */
+.predpanel{padding:4px 12px 14px;background:var(--card);border-top:1px dashed var(--line-soft)}
+.predpanel.locked{padding-top:10px}
+.pickgrid{display:flex;flex-direction:column;gap:7px;margin:8px 0 2px}
+.pickside{display:flex;align-items:center;gap:10px}
+.pickside .pslabel{flex:0 0 108px;font:600 12.5px/1.2 var(--f-display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.scores{display:flex;gap:5px;flex:1}
+.scorebtn{flex:1;max-width:46px;height:38px;background:var(--paper-deep);border:1px solid var(--line-soft);border-radius:8px;
+  font:700 14.5px/1 var(--f-mono);color:var(--ink)}
+.scorebtn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.scorebtn:not(:disabled):hover{border-color:var(--accent)}
+.scorebtn:disabled{opacity:.4;cursor:not-allowed}
+.scorebtn[aria-pressed="true"]:disabled{opacity:1}
+.predstatus{font-size:12.5px;color:var(--ink-soft);margin:10px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.predstatus b{color:var(--ink);font-weight:700}
 
-/* Jauge : seulement une fois un score choisi, la probabilité de CE score précis. */
-.scoregauge{padding:2px 16px 10px}
-.scoregaugerow{display:flex;justify-content:space-between;align-items:baseline;font:500 12.5px/1 var(--f-body);color:var(--ink-soft);margin-bottom:6px}
-.scoregaugerow b{font:700 14px/1 var(--f-display);color:var(--accent)}
-.scoregaugebar{height:4px;border-radius:2px;background:var(--line-soft);overflow:hidden}
-.scoregaugebar i{display:block;height:100%;width:var(--w);background:var(--accent)}
-@media (prefers-reduced-motion:no-preference){ .scoregaugebar i{animation:barfill .5s var(--ease)} }
+.oddsgauge{display:flex;align-items:center;gap:9px;margin-top:9px}
+.oddsgauge .bar{flex:1;height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+.oddsgauge .bar i{display:block;height:100%;width:var(--w);background:var(--accent)}
+@media (prefers-reduced-motion:no-preference){ .oddsgauge .bar i{animation:barfill .5s var(--ease)} }
+.oddsgauge b{font:700 13px/1 var(--f-display);color:var(--accent);flex:none}
 
-.mfoot{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--line-soft);font-size:13px;color:var(--ink-soft)}
-.pts{font:700 12.5px/1 var(--f-display);padding:4px 9px;border-radius:5px;display:inline-block}
-.pts.p3{background:var(--accent);color:#fff}
-.pts.p1{background:rgba(var(--good-rgb),.16);color:var(--good)}
-.pts.p0{background:var(--line-soft);color:var(--ink-soft)}
-.friends{list-style:none;margin:0;padding:0 16px 12px;font-size:13px}
-.friends li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line-soft)}
-.friends li:first-child{border-top:0}
+.ptstag{font:700 11.5px/1 var(--f-display);padding:4px 9px;border-radius:999px;display:inline-block}
+.ptstag.p3{background:var(--accent);color:#fff}
+.ptstag.p1{background:rgba(var(--good-rgb),.2);color:var(--good)}
+.ptstag.p0{background:var(--line-soft);color:var(--ink-soft)}
+.friendstoggle{background:none;border:0;color:var(--accent);font:600 12.5px/1 var(--f-body);padding:0}
+.friends{list-style:none;margin:10px 0 0;padding:8px 0 0;border-top:1px solid var(--line-soft);font-size:12.5px}
+.friends li{display:flex;justify-content:space-between;gap:10px;padding:5px 0}
 
-/* Classement, rangée par rangée : le numéro de rang porte le même poids
-   visuel que le score, parce que c'est l'info qui compte en premier. */
-.lb{list-style:none;margin:0;padding:0}
-.lb li{display:grid;grid-template-columns:34px 1fr auto;gap:14px;align-items:center;padding:13px 4px;border-top:1px solid var(--line-soft)}
-.lb li:first-child{border-top:0}
-.lb li.me{border-left:3px solid var(--accent);padding-left:9px;margin-left:-12px}
-.rank{font:700 19px/1 var(--f-display);color:var(--ink-soft);text-align:center}
-.lbname{font:600 16px/1.3 var(--f-display);overflow-wrap:anywhere;color:var(--ink)}
-.lbsub{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
-.lbpts{font:700 22px/1 var(--f-display);text-align:right;color:var(--accent)}
-.lbpts small{font-size:12.5px;font-weight:500;color:var(--ink-soft);margin-left:3px;font-family:var(--f-body)}
-.rules{color:var(--ink-soft);font-size:12.5px;margin:18px 2px 4px;line-height:1.6}
-.lb li.lbrow{cursor:pointer}
-.lb li.lbrow:hover .lbname,.lb li.lbrow:focus-visible .lbname{color:var(--accent)}
-.namebtn{all:unset;cursor:pointer}
+/* -----------------------------------------------------------------------
+   Classements : vraie table de standings — rang en évidence (podium coloré
+   pour le top 3), rangées denses, points alignés à droite.
+   ----------------------------------------------------------------------- */
+.standings{width:100%;border-collapse:collapse;background:var(--card-top);border:1px solid var(--line-soft);border-radius:12px;overflow:hidden}
+.standings thead th{text-align:left;font:600 10.5px/1 var(--f-body);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);
+  padding:10px 10px;background:var(--paper-deep)}
+.standings thead th.num{text-align:right}
+.standings tbody tr{border-top:1px solid var(--line-soft)}
+.standings tbody tr.lbrow{cursor:pointer}
+.standings tbody tr.lbrow:hover{background:rgba(255,255,255,.03)}
+.standings tbody tr.me{background:rgba(var(--accent-rgb),.1)}
+.standings td{padding:11px 10px;vertical-align:middle}
+.rankcell{width:34px;text-align:center;font:700 15px/1 var(--f-display);color:var(--ink-soft)}
+.rankcell.top1{color:#F0C544}
+.rankcell.top2{color:#CBD3DC}
+.rankcell.top3{color:#D79A6B}
+.namecell{min-width:0}
+.lbname{font:600 14.5px/1.3 var(--f-display);color:var(--ink);display:flex;align-items:center;gap:6px;overflow-wrap:anywhere}
+.lbsub{font-size:11.5px;color:var(--ink-soft);margin-top:2px}
+.ptscell{text-align:right;font:700 17px/1 var(--f-display);color:var(--accent);white-space:nowrap}
+.ptscell small{font-size:11px;font-weight:500;color:var(--ink-soft);margin-left:3px;font-family:var(--f-body)}
+.rules{color:var(--ink-soft);font-size:12px;margin:16px 2px 4px;line-height:1.6}
+.namebtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .namebtn:hover,.namebtn:focus-visible{color:var(--accent)}
 
-/* Fiche détail d'un joueur/équipe : bandeau d'identité plein, puis sections
-   séparées par un simple titre + filet (pas des cartes imbriquées dans la carte). */
-.modalbackdrop{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
+/* --- Fiche détail joueur/équipe --- */
+.modalbackdrop{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}
 @media (prefers-reduced-motion:no-preference){ .modalbackdrop{animation:fadeIn .15s var(--ease)} }
 @media (min-width:640px){ .modalbackdrop{align-items:center;padding:20px} }
-.modal{position:relative;width:100%;max-width:440px;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--card);border-radius:16px 16px 0 0;box-shadow:0 20px 50px -20px rgba(0,0,0,.4)}
+.modal{position:relative;width:100%;max-width:440px;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--card);border-radius:16px 16px 0 0;box-shadow:0 20px 50px -20px rgba(0,0,0,.5)}
 @media (prefers-reduced-motion:no-preference){ .modal{animation:modalIn .22s var(--ease-spring)} }
 @media (min-width:640px){ .modal{border-radius:14px} }
-.modalclose{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.25);color:inherit;font-size:19px;line-height:1;cursor:pointer;z-index:1}
-.modalclose:hover{background:rgba(255,255,255,.4)}
+.modalclose{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:inherit;font-size:19px;line-height:1;cursor:pointer;z-index:1}
+.modalclose:hover{background:rgba(255,255,255,.22)}
 .modalhead{padding:22px 44px 18px 20px;background:var(--accent);color:#fff}
 .modalname{font:600 22px/1.25 var(--f-display);display:flex;align-items:center;gap:8px}
 .modalsub{font-size:13px;opacity:.85;margin-top:3px}
@@ -230,7 +291,8 @@ button{cursor:pointer}
 .statbox span{font-size:11px;opacity:.8}
 .modalbody{padding:6px 20px 20px}
 .modalsec{padding:14px 0 2px}
-.modalsec h3{display:flex;align-items:center;gap:8px;font:600 13.5px/1 var(--f-display);color:var(--ink-soft);margin:0 0 10px}
+.modalsec h3{display:flex;align-items:center;gap:8px;font:600 13px/1 var(--f-display);color:var(--ink-soft);margin:0 0 10px;
+  text-transform:uppercase;letter-spacing:.04em}
 .secdot{width:6px;height:6px;border-radius:50%;flex:none;background:var(--accent)}
 .sec-empty{color:var(--ink-soft);font-size:13.5px;text-align:center;padding:14px 0}
 .cmlist{list-style:none;margin:0;padding:0}
@@ -240,39 +302,39 @@ button{cursor:pointer}
 .cmmeta{display:flex;align-items:center;gap:8px;margin-top:3px}
 .cmdate{font-size:12px;color:var(--ink-soft);text-transform:capitalize}
 .cmres{flex:0 0 auto;font-weight:700;font-size:11.5px;padding:2px 7px;border-radius:4px;background:var(--line-soft);color:var(--ink-soft)}
-.cmres.win{color:var(--good);background:rgba(var(--good-rgb),.15)}
-.cmres.loss{color:var(--bad);background:rgba(var(--bad-rgb),.15)}
+.cmres.win{color:var(--good);background:rgba(var(--good-rgb),.18)}
+.cmres.loss{color:var(--bad);background:rgba(var(--bad-rgb),.18)}
 .roster{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px}
-.roster li{background:var(--paper);border:1px solid var(--line-soft);border-radius:6px;padding:8px 10px;font:500 13.5px/1.25 var(--f-body);color:var(--ink)}
+.roster li{background:var(--paper-deep);border:1px solid var(--line-soft);border-radius:6px;padding:8px 10px;font:500 13px/1.25 var(--f-body);color:var(--ink)}
 
-/* Formulaires et administration : panneaux plats, séparés par des filets. */
-.panel{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:20px;margin:0 0 16px}
-.panel h2{font:600 19px/1.2 var(--f-display);margin:0 0 4px;color:var(--ink)}
-.panel h3{font:600 15px/1.2 var(--f-display);margin:0;color:var(--ink)}
-.hint{color:var(--ink-soft);font-size:13px;margin:4px 0 0}
-label{display:block;font-size:12.5px;font-weight:600;margin:14px 0 5px;color:var(--ink-soft)}
-input,select,textarea{width:100%;background:var(--paper);border:1px solid var(--line-soft);border-radius:var(--radius);padding:10px 11px;font-size:16px;color:var(--ink);font-family:var(--f-body)}
-input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.16)}
+/* --- Formulaires / admin --- */
+.panel{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:18px;margin:0 0 14px}
+.panel h2{font:600 17px/1.2 var(--f-display);margin:0 0 4px;color:var(--ink)}
+.panel h3{font:600 14px/1.2 var(--f-display);margin:0;color:var(--ink)}
+.hint{color:var(--ink-soft);font-size:12.5px;margin:4px 0 0}
+label{display:block;font-size:12px;font-weight:600;margin:13px 0 5px;color:var(--ink-soft)}
+input,select,textarea{width:100%;background:var(--paper-deep);border:1px solid var(--line-soft);border-radius:var(--radius);padding:10px 11px;font-size:16px;color:var(--ink);font-family:var(--f-body)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.2)}
 textarea{resize:vertical}
-.btn{background:var(--accent);color:#fff;border:0;border-radius:var(--radius);padding:12px 18px;font:600 15px/1 var(--f-display);margin-top:16px;width:100%}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:var(--radius);padding:12px 18px;font:600 14.5px/1 var(--f-display);margin-top:14px;width:100%}
 .btn:hover{background:var(--accent-deep)}
 .btn.sec{background:transparent;color:var(--accent);border:1px solid var(--accent)}
-.btn.sec:hover{background:rgba(var(--accent-rgb),.08)}
-.btn.small{width:auto;margin-top:0;padding:8px 14px;font-size:13.5px}
+.btn.sec:hover{background:rgba(var(--accent-rgb),.12)}
+.btn.small{width:auto;margin-top:0;padding:8px 14px;font-size:13px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.adm-item{padding:14px 0;border-top:1px solid var(--line-soft)}
+.adm-item{padding:13px 0;border-top:1px solid var(--line-soft)}
 .adm-item:first-of-type{border-top:0}
 .adm-title{font-weight:600;color:var(--ink)}
-.adm-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.adm-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:9px}
 .scorein{width:52px;text-align:center;font:600 16px/1 var(--f-display);padding:8px 5px}
 .vs{font:600 15px/1 var(--f-body);color:var(--ink-soft)}
 
-/* Connexion : bandeau plein à gauche, formulaire à droite sur grand écran. */
+/* --- Connexion --- */
 .authshell{min-height:100vh;display:flex;flex-direction:column}
 .authbrand{padding:40px 24px 32px;color:#fff;background:var(--accent)}
 .authbrand-in{max-width:420px}
-.authbrand h1{font:700 36px/1 var(--f-display);margin:0 0 14px;display:flex;align-items:center;gap:14px}
-.authbrand p{font-size:15px;opacity:.88;margin:0;max-width:40ch;line-height:1.5}
+.authbrand h1{font:700 34px/1 var(--f-display);margin:0 0 14px;display:flex;align-items:center;gap:14px}
+.authbrand p{font-size:15px;opacity:.9;margin:0;max-width:40ch;line-height:1.5}
 .authform-col{flex:1;display:flex;align-items:center;justify-content:center;padding:36px 18px 56px}
 @media (min-width:900px){
   .authshell{flex-direction:row}
@@ -285,26 +347,27 @@ textarea{resize:vertical}
 .fok{color:var(--good)}
 .switch{text-align:center;color:var(--ink-soft);font-size:13px;margin-top:12px}
 
-.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:var(--radius);font-weight:600;font-size:13.5px;z-index:10;max-width:90vw;text-align:center;box-shadow:0 10px 26px rgba(0,0,0,.28)}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-weight:600;font-size:13px;z-index:30;max-width:90vw;text-align:center;box-shadow:0 10px 26px rgba(0,0,0,.4)}
+@media (min-width:860px){ .toast{bottom:24px} }
 @media (prefers-reduced-motion:no-preference){ .toast{animation:toastIn .22s var(--ease-spring)} }
 .toast.leaving{animation:toastOut .18s ease-in forwards}
 .toast.err{background:var(--bad);color:#fff}
 .empty{padding:30px 4px;text-align:center;color:var(--ink-soft)}
 .loading{padding:70px 0;text-align:center;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:12px}
 
-@keyframes cardIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes rowIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes modalIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @media (min-width:640px){ @keyframes modalIn{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}} }
 @keyframes barfill{from{width:0}to{width:var(--w)}}
-@keyframes blink{0%,45%{opacity:1}50%,95%{opacity:.35}100%{opacity:1}}
+@keyframes blink{0%,45%{opacity:1}50%,95%{opacity:.3}100%{opacity:1}}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
 @keyframes toastOut{to{opacity:0;transform:translate(-50%,8px)}}
 @media (prefers-reduced-motion:reduce){
   *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
   ::view-transition-old(root),::view-transition-new(root){animation:none!important}
 }
-::view-transition-old(root),::view-transition-new(root){animation-duration:.22s;animation-timing-function:cubic-bezier(.2,.65,.2,1)}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.2s;animation-timing-function:cubic-bezier(.2,.65,.2,1)}
 </style>
 </head>
 <body>
@@ -344,6 +407,15 @@ document.documentElement.style.setProperty('--logo', `url(${LOGO})`);
 const MARK = (size, light) => `<span class="mark${light ? ' light' : ''}" style="width:${size}px;height:${size}px" aria-hidden="true"></span>`;
 const $app = document.getElementById('app');
 let sb = null;
+
+/* Icônes de navigation (traits fins, cohérentes avec le reste de l'interface). */
+const ICONS = {
+  matches: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
+  board: '<svg viewBox="0 0 24 24"><path d="M17 20v-7M12 20V9M7 20v-4"/><path d="M4 20h16"/></svg>',
+  rankings: '<svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 6h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4"/></svg>',
+  admin: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.65 1.65 0 0 0 .33 1.82l.04.04a2 2 0 1 1-2.83 2.83l-.04-.04a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V19a2 2 0 1 1-4 0v-.06a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.04.04a2 2 0 1 1-2.83-2.83l.04-.04a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H4a2 2 0 1 1 0-4h.06a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.04-.04a2 2 0 1 1 2.83-2.83l.04.04a1.65 1.65 0 0 0 1.82.33h0A1.65 1.65 0 0 0 11 4.06V4a2 2 0 1 1 4 0v.06a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.04-.04a2 2 0 1 1 2.83 2.83l-.04.04a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H20a2 2 0 1 1 0 4h-.06a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
+  logout: '<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
+};
 
 const S = {
   session: null, pseudo: '', isAdmin: false,
@@ -630,18 +702,22 @@ function render() {
   const todo = S.matches.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
   const tabs = [['matches', 'Matchs'], ['board', 'Amis'], ['rankings', 'Classements']];
   if (S.isAdmin) tabs.push(['admin', 'Admin']);
+  const initial = (S.pseudo || '?').slice(0, 1).toUpperCase();
   $app.innerHTML = `
     <div class="shell">
       <nav class="nav" aria-label="Navigation principale">
-        <div class="navbrand">${MARK(30)}${esc(APP_NAME)}</div>
-        ${tabs.map(([k, label]) => `<button data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${label}${k === 'matches' && todo ? `<span class="badge" title="Matchs sans prono">${todo}</span>` : ''}</button>`).join('')}
-        <div class="navfoot"><span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
+        <div class="navbrand">${MARK(28)}</div>
+        ${tabs.map(([k, label]) => `<button class="navitem" data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${ICONS[k]}<span>${label}</span>${k === 'matches' && todo ? `<span class="navdot" title="Pronos à faire">${todo}</span>` : ''}</button>`).join('')}
+        <div class="navfoot"><span class="avatar">${esc(initial)}</span><button class="linkbtn" data-act="logout" aria-label="Se déconnecter" title="Se déconnecter">${ICONS.logout}</button></div>
       </nav>
       <div class="content">
-        <header class="top">
-          <div class="brand">${MARK(26)}${esc(APP_NAME)}</div>
-          <div class="me"><span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
-        </header>
+        <div class="topbar">
+          <header class="topbar-row">
+            <div class="brand">${MARK(24)}${esc(APP_NAME)}</div>
+            <div class="me"><span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
+          </header>
+          ${liveTicker()}
+        </div>
         <main>${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
       </div>
     </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}`;
@@ -653,11 +729,11 @@ function navigate(fn) {
   if (document.startViewTransition) document.startViewTransition(fn);
   else fn();
 }
-// Une rangée de filtres avec un curseur qui glisse jusqu'à l'onglet actif.
+// Rangée de pastilles de filtre (style app de scores, pas des onglets soulignés).
 const SEG_LABELS = { view: 'Période', circuit: 'Circuit', boardscope: 'Classement', rankview: 'Circuit' };
 function segRow(items, cur, act) {
-  return `<div class="seg" data-seg="${act}" role="group" aria-label="${SEG_LABELS[act] || ''}">
-    ${items.map(([k, l]) => `<button data-act="${act}" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div>`;
+  return `<div class="pillrow" data-seg="${act}" role="group" aria-label="${SEG_LABELS[act] || ''}">
+    ${items.map(([k, l]) => `<button class="pillbtn" data-act="${act}" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div>`;
 }
 
 function tabView() {
@@ -667,13 +743,26 @@ function tabView() {
   return matchesView();
 }
 
+// Ticker horizontal des matchs en direct, collé en haut de l'écran : s'inspire
+// du bandeau de scores toujours visible des apps type SofaScore/ESPN. Ne
+// s'affiche que sur l'onglet Matchs et seulement s'il y a du direct.
+function liveTicker() {
+  if (S.tab !== 'matches' || !S.session) return '';
+  const live = S.matches.filter(m => m.status === 'live');
+  if (!live.length) return '';
+  return `<div class="ticker" role="list" aria-label="Matchs en direct">
+    ${live.map(m => `<span class="tickeritem" role="listitem"><span class="tickerdot" aria-hidden="true"></span>
+      <span>${esc(m.side_a)}</span><span class="tickerscore">${m.score_a ?? 0}–${m.score_b ?? 0}</span><span>${esc(m.side_b)}</span></span>`).join('')}
+  </div>`;
+}
+
 /* --- Connexion --- */
 function authView() {
   const su = S.authMode === 'signup';
   return `
   <div class="authshell">
     <div class="authbrand"><div class="authbrand-in">
-      <h1>${MARK(44, true)}${esc(APP_NAME)}</h1>
+      <h1>${MARK(40, true)}${esc(APP_NAME)}</h1>
       <p>Les pronostics de tennis de table entre amis : WTT et Pro A. Vainqueur, score exact, et un bonus quand tu devines juste sur l'outsider.</p>
     </div></div>
     <div class="authform-col">
@@ -710,10 +799,14 @@ async function submitAuth(f) {
   btn.disabled = false;
 }
 
-/* --- Matchs --- */
+/* --- Matchs ---
+   Au lieu d'un gros bandeau de bienvenue en haut de l'écran (ancienne
+   maquette), l'accueil mène directement à l'essentiel : deux tuiles de
+   stats compactes, puis la liste groupée par compétition — comme on
+   ouvrirait une vraie app de scores plutôt qu'un tableau de bord perso. */
 function matchesView() {
   // "fresh" : la liste vient d'être ouverte ou filtrée (pas juste un prono posé
-  // ailleurs sur la même liste) -> les cartes ont le droit de rejouer leur entrée.
+  // ailleurs sur la même liste) -> les rangées ont le droit de rejouer leur entrée.
   const fresh = S._freshMatches; S._freshMatches = false;
   const list = S.matches.filter(m => S.circuit === 'ALL' || m.circuit === S.circuit);
   const up = list.filter(m => m.status === 'scheduled' || m.status === 'live').sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
@@ -739,49 +832,50 @@ function matchesView() {
       shown = shown.filter(m => journeeOf(m) === S.proJournee);
     }
   }
+
   let body = '';
   if (!shown.length) {
     body = `<div class="empty">${S.view === 'upcoming'
       ? (S.isAdmin ? "Aucun match à venir. Ajoute le premier dans l'onglet Admin." : (S.circuit === 'PRO_A' ? "Aucun match à venir pour cette journée." : "Aucun match à venir pour le moment. Ils apparaissent ici dès qu'ils sont ajoutés."))
       : (S.circuit === 'PRO_A' ? "Aucun match terminé pour cette journée." : "Aucun match terminé pour l'instant.")}</div>`;
   } else {
-    let lastDay = '';
-    let i = 0;
+    // Groupé par compétition (comme un bandeau de championnat Flashscore),
+    // puis par jour à l'intérieur de chaque compétition.
+    const groups = [];
     for (const m of shown) {
-      const d = fmtDay(m.starts_at);
-      if (d !== lastDay) {
-        if (lastDay) body += '</div>';
-        body += `<h2 class="day">${esc(d)}</h2><div class="matchgrid">`;
-        lastDay = d;
-      }
-      body += matchCard(m, fresh, i++);
+      let g = groups[groups.length - 1];
+      if (!g || g.competition !== m.competition) { g = { competition: m.competition, matches: [] }; groups.push(g); }
+      g.matches.push(m);
     }
-    body += '</div>';
+    let i = 0;
+    body = groups.map(g => {
+      const n = g.matches.length;
+      let lastDay = '', rows = '';
+      for (const m of g.matches) {
+        const d = fmtDay(m.starts_at);
+        if (d !== lastDay) { rows += `<div class="day">${esc(d)}</div>`; lastDay = d; }
+        rows += matchRow(m, fresh, i++);
+      }
+      return `<div class="complabel" style="${themeVarsCss(themeKeyFor(g.matches[0]))}"><span class="compbar" aria-hidden="true"></span>
+        <div><b>${esc(g.competition)}</b><small>${n} match${n > 1 ? 's' : ''}</small></div></div>
+        <div class="complist">${rows}</div>`;
+    }).join('');
   }
   const cnt = n => `<span class="cnt">${n}</span>`;
-  return heroBand(up) + `<div class="filters">`
-    + segRow([['upcoming', `À venir ${cnt(up.length)}`], ['done', `Terminés ${cnt(doneAll.length)}`]], S.view, 'view')
+  return statRow(up) + `<div class="pillrow">`
+    + segRow([['upcoming', `À venir ${cnt(up.length)}`], ['done', `Terminés ${cnt(doneAll.length)}`]], S.view, 'view').replace('<div class="pillrow"', '<div class="pillrow" style="margin:0"')
+    + `</div>`
     + segRow([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit')
-    + `</div>` + journeeRow + body;
+    + journeeRow + body;
 }
-// Bandeau d'accueil de l'onglet Matchs : salutation, ce qu'il reste à faire,
-// ta position au classement, et un signal si un match est en direct.
-function heroBand(upcoming) {
+// Tuiles de stats personnelles : ce qu'il reste à prédire, et ta position au
+// classement. Deux chiffres au lieu d'un bandeau de bienvenue.
+function statRow(upcoming) {
   const todo = upcoming.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
   const mine = S.board && S.board.find(r => r.user_id === S.session.user.id);
-  const live = S.matches.find(m => m.status === 'live');
-  return `<div class="hero">
-    <div class="herotop">
-      <div>
-        <div class="herogreet">Salut ${esc(S.pseudo)}</div>
-        <div class="herosub">${todo ? `Il te reste ${todo} prono${todo > 1 ? 's' : ''} à faire avant le coup d'envoi.` : "Tous tes pronos sont à jour, bien joué."}</div>
-      </div>
-      ${live ? `<span class="livechip"><span class="livedot" aria-hidden="true"></span>${esc(live.side_a)} ${live.score_a ?? 0}–${live.score_b ?? 0} ${esc(live.side_b)}</span>` : ''}
-    </div>
-    <div class="herostats">
-      <div class="herostat"><b>${todo}</b><span>${todo > 1 ? 'pronos à faire' : 'prono à faire'}</span></div>
-      <div class="herostat"><b>${mine ? mine.total_points : '—'}</b><span>${mine ? `point${mine.total_points > 1 ? 's' : ''}, ${ordinalRank(S.board, mine)}` : 'pas encore de points'}</span></div>
-    </div>
+  return `<div class="statrow">
+    <div class="stattile"><b class="${todo ? 'accent' : ''}">${todo}</b><span>${todo ? `prono${todo > 1 ? 's' : ''} à faire` : 'à jour, bien joué'}</span></div>
+    <div class="stattile"><b>${mine ? mine.total_points : '—'}</b><span>${mine ? `point${mine.total_points > 1 ? 's' : ''} · ${ordinalRank(S.board, mine)}` : 'pas encore de points'}</span></div>
   </div>`;
 }
 function ordinalRank(board, mine) {
@@ -794,94 +888,113 @@ function ordinalRank(board, mine) {
   return '';
 }
 
+// Génère les pastilles de score pour un camp (inchangé dans sa logique :
+// toujours n scores possibles, le choisi marqué aria-pressed, data-act="pick"
+// pour le câblage des clics) — seul le style de pastille change.
 function chips(m, side, mine, disabled) {
   const n = m.wins_needed, out = [];
   for (let k = 0; k < n; k++) {
     const a = side === 'A' ? n : k, b = side === 'A' ? k : n;
     const sel = !!mine && mine.pred_a === a && mine.pred_b === b;
     const who = side === 'A' ? m.side_a : m.side_b;
-    out.push(`<button class="chip" data-act="pick" data-id="${m.id}" data-a="${a}" data-b="${b}" aria-pressed="${sel}" aria-label="${esc(who)} gagne ${a} à ${b}" ${disabled ? 'disabled' : ''}>${a}–${b}</button>`);
+    out.push(`<button class="scorebtn" data-act="pick" data-id="${m.id}" data-a="${a}" data-b="${b}" aria-pressed="${sel}" aria-label="${esc(who)} gagne ${a} à ${b}" ${disabled ? 'disabled' : ''}>${a}–${b}</button>`);
   }
-  return `<div class="chips">${out.join('')}</div>`;
+  return `<div class="scores">${out.join('')}</div>`;
 }
 
-function matchCard(m, fresh, i) {
+// Une rangée dense par match (style SofaScore/Flashscore) : heure/statut à
+// gauche, deux noms empilés au centre avec le score ou le prono à droite.
+// Le panneau de prédiction (grille de pick'em) est toujours affiché sous la
+// rangée pour un match à venir — pas replié, pour que le geste de prono
+// reste visible et accessible d'un seul geste, comme demandé pour une appli
+// entre copains plutôt qu'un produit pro surchargé d'options.
+function matchRow(m, fresh, i) {
   const locked = isLocked(m), mine = S.myPreds[m.id];
-  const fin = m.status === 'finished', canc = m.status === 'cancelled';
+  const fin = m.status === 'finished', canc = m.status === 'cancelled', live = m.status === 'live';
   const winA = fin && m.score_a > m.score_b, winB = fin && m.score_b > m.score_a;
   const ca = S.competitors[m.competitor_a_id], cb = S.competitors[m.competitor_b_id];
   const flag = flagHtml;
   const rk = c => {
     if (!c || !c.ranking) return '';
-    return c.circuit === 'WTT' ? `<strong>#${c.ranking}</strong>` : `Classement ${c.ranking}`;
+    return c.circuit === 'WTT' ? `<strong>#${c.ranking}</strong>` : c.ranking;
   };
-  // Nom cliquable vers la fiche détail quand on a une fiche joueur/équipe liée
-  // (un match ajouté à la main par l'admin sans lien n'a pas de fiche : texte simple).
   const nameBtn = (c, label) => c
     ? `<button class="namebtn" data-act="competitor" data-id="${c.id}">${esc(label)}</button>`
     : esc(label);
-  let pill = '';
-  if (fin) pill = '<span class="pill">Terminé</span>';
-  else if (canc) pill = '<span class="pill">Annulé</span>';
-  else if (m.status === 'live') pill = '<span class="pill live">En direct</span>';
-  else if (locked) pill = '<span class="pill">Commencé</span>';
 
-  const showChips = !fin && !canc;
-  const t = (!locked && !canc) ? trend(m) : null;
-  // Jauge du pourcentage : seulement une fois qu'un prono a été fait, et pour
-  // CE score précis (plus de pourcentage de victoire affiché d'office).
-  const pickProb = (mine && t) ? Math.round(scoreProb(t.q, m.wins_needed, mine.pred_a, mine.pred_b) * 100) : null;
-  const gaugeHtml = pickProb !== null ? `
-    <div class="scoregauge">
-      <div class="scoregaugerow"><span>Chances d'avoir ${mine.pred_a}–${mine.pred_b}</span><b>${pickProb} %</b></div>
-      <div class="scoregaugebar" role="img" aria-label="${pickProb} % de chances d'avoir le score ${mine.pred_a}–${mine.pred_b}"><i style="--w:${pickProb}%;width:${pickProb}%"></i></div>
-    </div>` : '';
+  let statusPill = '';
+  if (fin) statusPill = '<span class="statuspill">Fini</span>';
+  else if (canc) statusPill = '<span class="statuspill">Annulé</span>';
+  else if (live) statusPill = '<span class="statuspill live">Live</span>';
 
-  let foot;
-  if (canc) foot = `<div class="mfoot"><span>Match annulé : aucun point en jeu.</span></div>`;
-  else if (!locked) foot = `<div class="mfoot"><span>${mine ? `Prono enregistré : ${mine.pred_a}–${mine.pred_b}. Modifiable jusqu'au début du match.` : 'Touche un score pour faire ton prono.'}</span></div>`;
-  else {
-    const pt = points(m, mine);
-    const det = mine ? pointsDetail(m, mine) : null;
-    foot = `<div class="mfoot"><span>${mine ? `Ton prono : ${mine.pred_a}–${mine.pred_b}` : `Tu n'as pas fait de prono.`}</span>
-      ${pt !== null ? `<span class="pts ${pt === 0 ? 'p0' : (det.exact ? 'p3' : 'p1')}">${pt > 0 ? '+' : ''}${pt} pt${pt > 1 ? 's' : ''}${det.bonus ? ` (dont bonus outsider +${det.bonus})` : ''}</span>` : ''}
-      <button class="linkbtn" data-act="friends" data-id="${m.id}">${S.openFriends[m.id] ? 'Masquer' : 'Voir'} les pronos des amis</button></div>`;
-  }
-
-  let friends = '';
-  if (S.openFriends[m.id]) {
-    const rows = (S.friends[m.id] || []).map(r => ({ ...r, pt: points(m, r) }))
-      .sort((x, y) => (y.pt ?? -1) - (x.pt ?? -1));
-    friends = rows.length
-      ? `<ul class="friends">${rows.map(r => `<li><span>${esc(r.profiles && r.profiles.pseudo)}${r.user_id === S.session.user.id ? ' (toi)' : ''}</span><span>${r.pred_a}–${r.pred_b}${r.pt !== null ? ` : ${r.pt} pt${r.pt > 1 ? 's' : ''}` : ''}</span></li>`).join('')}</ul>`
-      : `<p class="hint" style="padding:0 14px 12px">Personne n'a fait de prono sur ce match.</p>`;
-  }
-
-  const cardTheme = themeKeyFor(m);
-  const cardStyle = `${themeVarsCss(cardTheme)}${fresh ? `;animation-delay:${Math.min(i, 8) * 45}ms` : ''}`;
-  const compDot = m.circuit === 'WTT' ? `<span class="compdot" aria-hidden="true"></span>` : '';
-  // Une ligne par joueur/équipe (comme une vraie feuille de pointage), avec
-  // soit les boutons de score à droite (match pas encore joué), soit le
-  // nombre de manches gagnées par CE côté (match terminé).
-  const scoreRow = (c, label, side, isWinner, isLoser) => `
-    <div class="row${isLoser ? ' lose' : ''}">
-      <div class="who">${flag(c)}${nameBtn(c, label)}${isWinner ? '<span class="win-badge" aria-hidden="true">✓</span>' : ''}<span class="rk">${rk(c)}</span></div>
-      <div class="score">${fin
-        ? `<span class="finalnum${isWinner ? ' win' : ''}">${side === 'A' ? m.score_a : m.score_b}</span>`
-        : (showChips ? chips(m, side, mine, locked) : '')}</div>
+  const sideHtml = (c, label, side, isWinner, isLoser) => {
+    const scoreOrPred = fin
+      ? `<span class="msc${isWinner ? ' win' : ''}">${side === 'A' ? m.score_a : m.score_b}</span>`
+      : '';
+    return `<div class="mside${isLoser ? ' lose' : ''}">
+      <span class="mname">${flag(c)}${nameBtn(c, label)}<span class="mrk">${rk(c)}</span></span>
+      ${scoreOrPred}
     </div>`;
+  };
+
+  const rowStyle = `${themeVarsCss(themeKeyFor(m))}${fresh ? `;animation-delay:${Math.min(i, 10) * 35}ms` : ''}`;
+  const timeCol = live
+    ? `<span class="liv"><span class="livedotsm" aria-hidden="true"></span>LIVE</span>`
+    : esc(new Date(m.starts_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
+
+  let panel = '';
+  if (!fin && !canc) {
+    const showChips = true;
+    const t = !locked ? trend(m) : null;
+    const pickProb = (mine && t) ? Math.round(scoreProb(t.q, m.wins_needed, mine.pred_a, mine.pred_b) * 100) : null;
+    const gauge = pickProb !== null ? `
+      <div class="oddsgauge" role="img" aria-label="${pickProb} % de chances d'avoir le score ${mine.pred_a}–${mine.pred_b}">
+        <div class="bar"><i style="--w:${pickProb}%;width:${pickProb}%"></i></div><b>${pickProb}%</b>
+      </div>` : '';
+    const status = locked
+      ? `<span>${mine ? `Ton prono : <b>${mine.pred_a}–${mine.pred_b}</b>` : "Trop tard, pas de prono."}</span>`
+      : `<span>${mine ? `Prono : <b>${mine.pred_a}–${mine.pred_b}</b>, modifiable jusqu'au début du match.` : 'Touche un score pour pronostiquer.'}</span>`;
+    panel = `<div class="predpanel${locked ? ' locked' : ''}">
+      <div class="pickgrid">
+        <div class="pickside"><span class="pslabel">${flag(ca)}${esc(m.side_a)}</span>${chips(m, 'A', mine, locked)}</div>
+        <div class="pickside"><span class="pslabel">${flag(cb)}${esc(m.side_b)}</span>${chips(m, 'B', mine, locked)}</div>
+      </div>
+      <div class="predstatus">${status}</div>
+      ${gauge}
+    </div>`;
+  } else {
+    let foot;
+    if (canc) foot = `<span>Match annulé : aucun point en jeu.</span>`;
+    else {
+      const pt = points(m, mine);
+      const det = mine ? pointsDetail(m, mine) : null;
+      foot = `<span>${mine ? `Ton prono : ${mine.pred_a}–${mine.pred_b}` : `Tu n'as pas fait de prono.`}</span>
+        ${pt !== null ? `<span class="ptstag ${pt === 0 ? 'p0' : (det.exact ? 'p3' : 'p1')}">${pt > 0 ? '+' : ''}${pt} pt${pt > 1 ? 's' : ''}${det.bonus ? ` (bonus outsider +${det.bonus})` : ''}</span>` : ''}
+        <button class="friendstoggle" data-act="friends" data-id="${m.id}">${S.openFriends[m.id] ? 'Masquer' : 'Voir'} les pronos des amis</button>`;
+    }
+    let friends = '';
+    if (S.openFriends[m.id]) {
+      const rows = (S.friends[m.id] || []).map(r => ({ ...r, pt: points(m, r) }))
+        .sort((x, y) => (y.pt ?? -1) - (x.pt ?? -1));
+      friends = rows.length
+        ? `<ul class="friends">${rows.map(r => `<li><span>${esc(r.profiles && r.profiles.pseudo)}${r.user_id === S.session.user.id ? ' (toi)' : ''}</span><span>${r.pred_a}–${r.pred_b}${r.pt !== null ? ` : ${r.pt} pt${r.pt > 1 ? 's' : ''}` : ''}</span></li>`).join('')}</ul>`
+        : `<p class="hint" style="margin-top:8px">Personne n'a fait de prono sur ce match.</p>`;
+    }
+    panel = `<div class="predpanel locked"><div class="predstatus">${foot}</div>${friends}</div>`;
+  }
+
   return `
-  <article class="match${fresh ? ' enter' : ''}" data-card="${m.id}" style="${cardStyle}">
-    <div class="mhead">
-      <div class="mhead-l"><span class="comp">${compDot}${esc(m.competition)}</span>${m.round ? `<span class="rnd">${esc(m.round)}</span>` : ''}</div>
-      <div class="mhead-r"><time datetime="${esc(m.starts_at)}">${esc(fmtWhen(m.starts_at))}</time>${pill}</div>
+  <div class="mrow${live ? ' islive' : ''}${fresh ? ' enter' : ''}" style="${rowStyle}">
+    <div class="mrowhead">
+      <div class="mtime">${timeCol}${!live ? statusPill : ''}</div>
+      <div class="msides">
+        ${sideHtml(ca, m.side_a, 'A', winA, winB)}
+        ${sideHtml(cb, m.side_b, 'B', winB, winA)}
+      </div>
+      <div class="mright">${live ? statusPill : ''}${m.round ? `<span class="hint" style="font-size:10px;margin:0;text-align:right">${esc(m.round)}</span>` : ''}</div>
     </div>
-    <div class="board">
-      ${scoreRow(ca, m.side_a, 'A', winA, winB)}
-      ${scoreRow(cb, m.side_b, 'B', winB, winA)}
-    </div>
-    ${gaugeHtml}${foot}${friends}
-  </article>`;
+    ${panel}
+  </div>`;
 }
 
 async function pick(id, a, b) {
@@ -902,7 +1015,7 @@ async function toggleFriends(id) {
   S.friends[id] = data || []; S.openFriends[id] = true; keepRender();
 }
 
-/* --- Classement --- */
+/* --- Classement des amis : vraie table de standings, podium en évidence. --- */
 function boardView() {
   const seg = segRow([['ALL', 'Général'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.boardScope, 'boardscope');
   if (S.board === null) return seg + '<div class="loading">Chargement…</div>';
@@ -912,12 +1025,14 @@ function boardView() {
     const key = r.total_points + '/' + r.exact_scores;
     if (key !== prev) { rank = i + 1; prev = key; }
     const me = r.user_id === S.session.user.id;
-    return `<li class="${me ? 'me' : ''}"><div class="rank">${rank}</div>
-      <div><div class="lbname">${esc(r.pseudo)}${me ? ' (toi)' : ''}</div>
-      <div class="lbsub">${r.exact_scores} score${r.exact_scores > 1 ? 's' : ''} exact${r.exact_scores > 1 ? 's' : ''}, ${r.good_winners} bon${r.good_winners > 1 ? 's' : ''} vainqueur${r.good_winners > 1 ? 's' : ''} sur ${r.matches_played} match${r.matches_played > 1 ? 's' : ''}</div></div>
-      <div class="lbpts">${r.total_points}<small>pts</small></div></li>`;
+    const topClass = rank === 1 ? ' top1' : rank === 2 ? ' top2' : rank === 3 ? ' top3' : '';
+    return `<tr class="${me ? 'me' : ''}">
+      <td class="rankcell${topClass}">${rank}</td>
+      <td class="namecell"><div class="lbname">${esc(r.pseudo)}${me ? ' (toi)' : ''}</div>
+        <div class="lbsub">${r.exact_scores} score${r.exact_scores > 1 ? 's' : ''} exact${r.exact_scores > 1 ? 's' : ''} · ${r.good_winners} bon${r.good_winners > 1 ? 's' : ''} vainqueur${r.good_winners > 1 ? 's' : ''} / ${r.matches_played}</div></td>
+      <td class="ptscell">${r.total_points}<small>pts</small></td></tr>`;
   }).join('');
-  return seg + `<ol class="lb">${rows}</ol>` + rules();
+  return seg + `<table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>` + rules();
 }
 const rules = () => `<p class="rules">Barème : 1 point pour le bon vainqueur, 3 points pour le score exact. En WTT, un pronostic gagnant sur l'outsider (moins bien classé au tirage au sort) rapporte un bonus, d'autant plus grand que l'écart de tête de série est important (jusqu'à +5 points). En cas d'égalité au classement, le plus de scores exacts passe devant.</p>`;
 
@@ -934,21 +1049,22 @@ function rankingsView() {
       ? "Aucun classement mondial pour l'instant. Il se remplit au fil des tournois suivis."
       : "Aucun classement Pro A pour l'instant. Il se remplit dès que la saison commence."}</div>`;
   }
-  const rows = list.map(c => `
-    <li class="lbrow" data-act="competitor" data-id="${c.id}" role="button" tabindex="0" aria-label="Voir le détail de ${esc(c.name)}">
-      <div class="rank">${c.ranking}</div>
-      <div><div class="lbname">${flagHtml(c)}${esc(c.name)}</div>
-      ${scope === 'WTT' && c.country ? `<div class="lbsub">${esc(c.country)}</div>` : ''}</div>
-      ${c.ranking_points ? `<div class="lbpts">${c.ranking_points}<small>pts</small></div>` : '<div></div>'}
-    </li>`).join('');
+  const rows = list.map(c => {
+    const topClass = c.ranking === 1 ? ' top1' : c.ranking === 2 ? ' top2' : c.ranking === 3 ? ' top3' : '';
+    return `<tr class="lbrow" data-act="competitor" data-id="${c.id}" tabindex="0" aria-label="Voir le détail de ${esc(c.name)}">
+      <td class="rankcell${topClass}">${c.ranking}</td>
+      <td class="namecell"><div class="lbname">${flagHtml(c)}${esc(c.name)}</div>
+        ${scope === 'WTT' && c.country ? `<div class="lbsub">${esc(c.country)}</div>` : ''}</td>
+      <td class="ptscell">${c.ranking_points ? `${c.ranking_points}<small>pts</small>` : ''}</td></tr>`;
+  }).join('');
   const note = scope === 'WTT'
     ? `<p class="rules">Classement mondial simple, limité aux joueurs déjà croisés dans les tournois suivis par le site (pas la totalité du circuit).</p>`
     : `<p class="rules">Classement Pro A messieurs, mis à jour par le robot de synchronisation.</p>`;
-  return seg + `<ol class="lb">${rows}</ol>` + note;
+  return seg + `<table class="standings"><thead><tr><th>Rang</th><th>Joueur / équipe</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>` + note;
 }
 
 /* --- Fiche détail d'un joueur ou d'une équipe (clic sur son nom, où qu'il
-   apparaisse : carte de match, classement...). --- */
+   apparaisse : rangée de match, classement...). --- */
 function competitorModal(id) {
   const c = S.competitors[id];
   if (!c) return '';
@@ -970,9 +1086,7 @@ function competitorModal(id) {
     const won = (m.competitor_a_id === id && m.score_a > m.score_b) || (m.competitor_b_id === id && m.score_b > m.score_a);
     return `<span class="cmres ${won ? 'win' : 'loss'}">${won ? 'V' : 'D'} ${m.score_a}–${m.score_b}</span>`;
   };
-  // Chaque match = une mini-ligne à deux niveaux (adversaire bien visible au-dessus,
-  // date + résultat en dessous) plutôt qu'une phrase à lire d'un bloc.
-  const matchRow = m => `<li class="cmrow">
+  const matchRow2 = m => `<li class="cmrow">
     <div class="cmopp">${oppHtml(m)}</div>
     <div class="cmmeta"><span class="cmdate">${esc(fmtDay(m.starts_at))}</span>${resultTag(m)}</div>
   </li>`;
@@ -987,12 +1101,12 @@ function competitorModal(id) {
   const upcomingSec = upcoming.length ? `
     <section class="modalsec sec-upcoming">
       <h3><span class="secdot" aria-hidden="true"></span>À venir</h3>
-      <ul class="cmlist">${upcoming.slice(0, 5).map(matchRow).join('')}</ul>
+      <ul class="cmlist">${upcoming.slice(0, 5).map(matchRow2).join('')}</ul>
     </section>` : '';
   const recentSec = recent.length ? `
     <section class="modalsec sec-recent">
       <h3><span class="secdot" aria-hidden="true"></span>Derniers résultats</h3>
-      <ul class="cmlist">${recent.map(matchRow).join('')}</ul>
+      <ul class="cmlist">${recent.map(matchRow2).join('')}</ul>
     </section>` : '';
 
   return `
