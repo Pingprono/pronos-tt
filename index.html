@@ -198,7 +198,7 @@ a{color:inherit}
 .msides{flex:1;min-width:0;padding:9px 6px;display:flex;flex-direction:column;gap:5px}
 .mside{display:flex;align-items:center;gap:7px;min-width:0}
 .mside.lose{opacity:.52}
-.mname{flex:1;min-width:0;font:600 14.5px/1.25 var(--f-display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.mname{flex:1;min-width:0;font:600 14.5px/1.25 var(--f-display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px;color:var(--ink)}
 .flag{width:1.1em;height:.85em;flex:none;border-radius:2px;box-shadow:0 0 0 1px var(--line-soft)}
 .mrk{font:500 10.5px/1 var(--f-body);color:var(--ink-soft);flex:none}
 .mrk .seed{color:var(--accent);font-weight:700}
@@ -249,6 +249,34 @@ a{color:inherit}
 .stamp.p3{color:var(--accent);background:rgba(var(--accent-rgb),.12)}
 .stamp.p1{color:var(--good);background:rgba(var(--good-rgb),.16)}
 .stamp.p0{color:var(--ink-soft);background:var(--line-soft);border-style:dashed;transform:rotate(0)}
+.stamp.big{width:66px;height:66px;flex:none}
+.stamp.big b{font-size:25px}
+
+/* --- "Mon compte" : jauges, ladder par circuit et graphique en bâtons
+   (mêmes codes visuels que le reste de l'appli : pavés .stattile, tampon
+   .stamp, pastilles rondes façon score — pas un nouveau système). --- */
+.gaugetile{position:relative;padding-bottom:16px}
+.minibar{margin-top:8px;height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+.minibar i{display:block;height:100%;background:var(--good)}
+.minibar.accent i{background:var(--accent)}
+.streakrow{display:flex;flex-wrap:wrap;gap:6px}
+.streaktile{width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--line-soft);display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--line-soft);font-style:normal}
+.streaktile.hit{border-style:solid;border-color:var(--good);background:rgba(var(--good-rgb),.16);color:var(--good)}
+.spark{width:100%;height:56px;display:block;margin-top:10px}
+.sparklegend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:11.5px;color:var(--ink-soft)}
+.sparklegend span{display:flex;align-items:center;gap:5px}
+.sparklegend .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.laddwrap{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+.laddrow{padding:12px 14px;border-radius:var(--radius-lg);background:var(--card-top);border:1px solid var(--line-soft);
+  border-left:4px solid var(--ladcol)}
+.laddhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.laddname{font:600 14.5px/1.2 var(--f-display);color:var(--ink)}
+.laddpts{font:700 17px/1 var(--f-display);color:var(--ladcol)}
+.laddpts small{font-size:11px;font-weight:500;color:var(--ink-soft);margin-left:3px;font-family:var(--f-body)}
+.laddbar{margin-top:8px;height:6px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+.laddbar i{display:block;height:100%;background:var(--ladcol)}
+.laddsub{margin-top:6px;font-size:11.5px;color:var(--ink-soft)}
 .friendstoggle{background:none;border:0;color:var(--accent);font:600 12.5px/1 var(--f-body);padding:0}
 .friends{list-style:none;margin:10px 0 0;padding:8px 0 0;border-top:1px solid var(--line-soft);font-size:12.5px}
 .friends li{display:flex;justify-content:space-between;gap:10px;padding:5px 0}
@@ -1163,11 +1191,17 @@ function accountView() {
     }
   }
 
+  // Couleurs officielles des deux circuits (mêmes valeurs que THEME), pour
+  // teinter la répartition par circuit même hors contexte "Matchs" (ici le
+  // thème global de la page reste neutre) — lecture seule de THEME, sans
+  // jamais le modifier.
+  const circuitColor = c => c === 'WTT' ? THEME.WTT_SMASH.accent : THEME.PRO_A.accent;
   const byCircuit = ['WTT', 'PRO_A'].map(c => {
     const list = finished.filter(h => h.matches.circuit === c);
     return { c, n: list.length, pts: list.reduce((s, h) => s + h.pt.total, 0), exact: list.filter(h => h.pt.exact).length };
   }).filter(x => x.n);
   const circuitLabel = c => c === 'WTT' ? 'WTT' : 'Pro A';
+  const maxCircuitPts = Math.max(1, ...byCircuit.map(x => x.pts));
 
   const recent = finished.slice(-8).reverse();
   const matchLabel = m => `${esc(m.side_a)} – ${esc(m.side_b)}`;
@@ -1181,39 +1215,74 @@ function accountView() {
     </li>`;
   }).join('');
 
-  const circuitRows = byCircuit.map(x => `
-    <tr><td class="namecell"><div class="lbname">${circuitLabel(x.c)}</div><div class="lbsub">${x.n} prono${x.n > 1 ? 's' : ''} jugé${x.n > 1 ? 's' : ''} · ${x.exact} exact${x.exact > 1 ? 's' : ''}</div></td>
-      <td class="ptscell">${x.pts}<small>pts</small></td></tr>`).join('');
+  const circuitRows = byCircuit.map(x => {
+    const col = circuitColor(x.c), w = Math.max(6, Math.round(x.pts / maxCircuitPts * 100));
+    return `<div class="laddrow" style="--ladcol:${col}">
+      <div class="laddhead"><span class="laddname">${circuitLabel(x.c)}</span><span class="laddpts">${x.pts}<small>pts</small></span></div>
+      <div class="laddbar"><i style="width:${w}%"></i></div>
+      <div class="laddsub">${x.n} prono${x.n > 1 ? 's' : ''} jugé${x.n > 1 ? 's' : ''} · ${x.exact} exact${x.exact > 1 ? 's' : ''}</div>
+    </div>`;
+  }).join('');
+
+  // Petit graphique en bâtons (façon carnet de bord) : un bâton par match
+  // jugé, sur les 14 derniers, hauteur = points marqués sur ce match. Dessiné
+  // à la main en SVG (pas de librairie) pour rester léger et dans le même
+  // esprit "dessiné à l'encre" que le reste de l'appli.
+  const sparkN = finished.slice(-14);
+  const sparkMax = Math.max(3, ...sparkN.map(h => h.pt.total));
+  const sparkW = 320, sparkH = 56, sparkPad = 3;
+  const barW = (sparkW / sparkN.length) - sparkPad;
+  const sparkBars = sparkN.map((h, i) => {
+    const bh = Math.max(3, (h.pt.total / sparkMax) * (sparkH - 6));
+    const x = i * (sparkW / sparkN.length);
+    const y = sparkH - bh;
+    const col = h.pt.total === 0 ? 'var(--line-soft)' : (h.pt.exact ? 'var(--accent)' : 'var(--good)');
+    return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(2, barW).toFixed(1)}" height="${bh.toFixed(1)}" rx="2" fill="${col}"><title>${esc(fmtDay(h.matches.starts_at))} : ${h.pt.total > 0 ? '+' : ''}${h.pt.total} pt${Math.abs(h.pt.total) > 1 ? 's' : ''}</title></rect>`;
+  }).join('');
+  const sparkline = sparkN.length > 1 ? `
+  <div class="panel">
+    <h3>Tendance récente</h3>
+    <p class="hint" style="margin-top:2px">Points marqués sur chacun de tes ${sparkN.length} derniers pronos jugés.</p>
+    <svg class="spark" viewBox="0 0 ${sparkW} ${sparkH}" preserveAspectRatio="none" role="img" aria-label="Évolution des points sur les derniers pronos">${sparkBars}</svg>
+    <div class="sparklegend"><span><i class="dot" style="background:var(--accent)"></i>Score exact</span><span><i class="dot" style="background:var(--good)"></i>Bon vainqueur</span><span><i class="dot" style="background:var(--line-soft)"></i>0 point</span></div>
+  </div>` : '';
+
+  // Série en cours / meilleure série : rangée de pastilles façon "flip-tile"
+  // (même esprit que les pastilles de score des pronos), une par match jugé
+  // parmi les 10 derniers, verte si des points ont été marqués.
+  const streakTiles = finished.slice(-10).map(h => `<i class="streaktile${h.pt.total > 0 ? ' hit' : ''}" title="${h.pt.total > 0 ? '+' + h.pt.total : '0'} pt">${h.pt.total > 0 ? '●' : '○'}</i>`).join('');
 
   return `
   <div class="panel">
     <h2>Mon compte</h2>
     <p class="hint">Tes statistiques de pronostics, sur toute la durée du jeu.</p>
     <div class="statrow">
-      <div class="statbox"><b>${total}</b><span>points au total</span></div>
-      <div class="statbox"><b>${myRank ?? '—'}</b><span>rang au classement général</span></div>
+      <div class="stattile"><b class="accent">${total}</b><span>points au total</span></div>
+      <div class="stattile"><b>${myRank ? `#${myRank}` : '—'}</b><span>rang au classement général</span></div>
     </div>
     <div class="statrow">
-      <div class="statbox"><b>${pctGood}%</b><span>bons vainqueurs (${goodN}/${n})</span></div>
-      <div class="statbox"><b>${pctExact}%</b><span>scores exacts (${exactN}/${n})</span></div>
+      <div class="stattile gaugetile"><b>${pctGood}%</b><span>bons vainqueurs (${goodN}/${n})</span><div class="minibar"><i style="width:${pctGood}%"></i></div></div>
+      <div class="stattile gaugetile"><b>${pctExact}%</b><span>scores exacts (${exactN}/${n})</span><div class="minibar accent"><i style="width:${pctExact}%"></i></div></div>
     </div>
-    <div class="statrow">
-      <div class="statbox"><b>${curStreak}</b><span>série en cours</span></div>
-      <div class="statbox"><b>${bestStreak}</b><span>meilleure série</span></div>
-    </div>
+    <h3 style="margin:16px 0 8px">Série en cours</h3>
+    <div class="streakrow">${streakTiles}</div>
+    <p class="hint" style="margin-top:8px">${curStreak > 0 ? `${curStreak} prono${curStreak > 1 ? 's' : ''} gagnant${curStreak > 1 ? 's' : ''} d'affilée en ce moment.` : "Pas de série en cours."} Meilleure série : <b style="color:var(--ink)">${bestStreak}</b>.</p>
   </div>
+  ${sparkline}
   ${byCircuit.length ? `
   <div class="panel">
     <h3>Par circuit</h3>
-    <table class="standings" style="margin-top:10px"><tbody>${circuitRows}</tbody></table>
+    <div class="laddwrap">${circuitRows}</div>
   </div>` : ''}
   ${best && best.pt.total > 0 ? `
   <div class="panel">
     <h3>Ton meilleur coup</h3>
-    <div class="adm-item" style="border-top:0;padding-top:4px">
-      <div class="adm-title">${matchLabel(best.matches)}</div>
-      <div class="hint">${esc(fmtDay(best.matches.starts_at))} · prono ${best.pred_a}–${best.pred_b}, score réel ${best.matches.score_a}–${best.matches.score_b}</div>
-      <div class="stamp p3" style="margin-top:8px" aria-label="${best.pt.total} points gagnés sur ce match"><b>+${best.pt.total}</b><span>pts</span></div>
+    <div class="adm-item" style="border-top:0;padding-top:4px;display:flex;align-items:center;gap:14px">
+      <div class="stamp p3 big" aria-label="${best.pt.total} points gagnés sur ce match"><b>+${best.pt.total}</b><span>pts</span></div>
+      <div style="min-width:0">
+        <div class="adm-title">${matchLabel(best.matches)}</div>
+        <div class="hint">${esc(fmtDay(best.matches.starts_at))} · prono ${best.pred_a}–${best.pred_b}, score réel ${best.matches.score_a}–${best.matches.score_b}</div>
+      </div>
     </div>
   </div>` : ''}
   <div class="panel">
