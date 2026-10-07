@@ -342,14 +342,19 @@ jobs:
             return { ext: String(c.Code), name: name.trim(), country: c.Organization || null, seed: Number.isFinite(seed) && seed > 0 ? seed : null };
           }
 
-          async function wttCompetitorId(cache, p) {
+          // "gender" (M/F) est déduit automatiquement du tableau où joue le joueur
+          // (simple messieurs ou simple dames : voir SUBEVENT_FR et l'appel dans
+          // syncWttEvent) : pas de saisie à la main, pas de devinette sur le prénom.
+          async function wttCompetitorId(cache, p, gender) {
             const key = p.name.toLowerCase();
             const sameName = cache.byName.get(key);
             // Un joueur créé à la main est reconnu par son nom ; un autre joueur WTT de même nom est une autre personne.
             const found = cache.byExt.get(p.ext) || (sameName && sameName.source !== 'wtt' ? sameName : null);
-            if (found && found.source === 'wtt' && found.name === p.name && (found.country || null) === p.country && (!p.seed || found.ranking === p.seed)) return found.id; // rien à changer
+            if (found && found.source === 'wtt' && found.name === p.name && (found.country || null) === p.country
+              && (!p.seed || found.ranking === p.seed) && (!gender || found.gender === gender)) return found.id; // rien à changer
             const fields = { name: p.name, kind: 'player', circuit: 'WTT', country: p.country, source: 'wtt', external_id: p.ext };
             if (p.seed) fields.ranking = p.seed;
+            if (gender) fields.gender = gender;
             const write = async f => {
               if (found) { await db('PATCH', `competitors?id=eq.${found.id}`, f, 'return=minimal'); return found.id; }
               const rows = await db('POST', 'competitors', f, 'return=representation');
@@ -358,7 +363,11 @@ jobs:
             let id;
             try { id = await write(fields); }
             catch (e) { id = await write({ ...fields, name: `${p.name} (${p.country || '?'})` }); } // deux joueurs de même nom
-            const rec = { id, name: fields.name, source: 'wtt', external_id: p.ext, country: p.country, ranking: p.seed || (found && found.ranking) || null };
+            const rec = {
+              id, name: fields.name, source: 'wtt', external_id: p.ext, country: p.country,
+              ranking: p.seed || (found && found.ranking) || null,
+              gender: gender || (found && found.gender) || null,
+            };
             cache.byExt.set(p.ext, rec); cache.byName.set(key, rec);
             return id;
           }
@@ -442,6 +451,7 @@ jobs:
               if (official && !old) { s.dejaJoues++; continue; } // match déjà joué avant qu'on le suive : personne n'a pu pronostiquer
 
               const pa = wttPlayer(starts[0].Competitor), pb = wttPlayer(starts[1].Competitor);
+              const gender = u.SubEvent === "Men's Singles" ? 'M' : u.SubEvent === "Women's Singles" ? 'F' : null;
               const wn = old && old.wins_needed ? old.wins_needed : winsDefault;
               // Tête de série figée une fois pour toutes à la création du match, pour un bonus "outsider"
               // stable même si le classement du joueur change ensuite (par exemple à son tournoi suivant).
@@ -457,7 +467,7 @@ jobs:
                 circuit: 'WTT', competition: label,
                 round: `${SUBEVENT_FR[u.SubEvent] || u.SubEvent}, ${roundFr(u.Round)}`,
                 side_a: pa.name, side_b: pb.name,
-                competitor_a_id: await wttCompetitorId(cache, pa), competitor_b_id: await wttCompetitorId(cache, pb),
+                competitor_a_id: await wttCompetitorId(cache, pa, gender), competitor_b_id: await wttCompetitorId(cache, pb, gender),
                 starts_at: localToUTC(u.StartDate, zone), wins_needed: wn,
                 status, score_a: sa, score_b: sb, seed_a: seedA, seed_b: seedB,
                 tier: ev.EventType, // Grand Smash / Champions / Star Contender / Finals : sert à adapter les couleurs du site au tournoi
@@ -477,7 +487,7 @@ jobs:
           async function syncWTT() {
             const events = await wttEvents();
             if (!events.length) { console.log('WTT : aucun tournoi à suivre en ce moment.'); return; }
-            const existing = await db('GET', 'competitors?circuit=eq.WTT&select=id,name,source,external_id,country,ranking&limit=5000');
+            const existing = await db('GET', 'competitors?circuit=eq.WTT&select=id,name,source,external_id,country,ranking,gender&limit=5000');
             const cache = {
               byExt: new Map(existing.filter(c => c.source === 'wtt').map(c => [String(c.external_id), c])),
               byName: new Map(existing.map(c => [c.name.toLowerCase(), c])),
