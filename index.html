@@ -1008,7 +1008,7 @@ function render() {
       <nav class="nav" aria-label="Navigation principale">
         <div class="navbrand">${MARK(28)}</div>
         ${tabs.map(([k, label]) => `<button class="navitem" data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${ICONS[k]}<span>${label}</span>${k === 'matches' && todo ? `<span class="navdot" title="Pronos à faire">${todo}</span>` : ''}</button>`).join('')}
-        <div class="navfoot"><span class="avatar">${esc(initial)}</span><button class="linkbtn" data-act="logout" aria-label="Se déconnecter" title="Se déconnecter">${ICONS.logout}</button></div>
+        <div class="navfoot">${themeToggleBtn()}<span class="avatar">${esc(initial)}</span><button class="linkbtn" data-act="logout" aria-label="Se déconnecter" title="Se déconnecter">${ICONS.logout}</button></div>
       </nav>
       <div class="content">
         <div class="topbar">
