@@ -51,7 +51,8 @@ jobs:
           // ------------------------------------------------------------------
 
           const FFTT = 'https://www.fftt.com/pro/server/getEquResult.php';
-          const WTT_STATIC = 'https://wtt-web-frontdoor-cthahjeqhbh6aqe3.a01.azurefd.net/websitestaticapifiles';
+          const WTT_HOST = 'https://wtt-web-frontdoor-cthahjeqhbh6aqe3.a01.azurefd.net';
+          const WTT_STATIC = `${WTT_HOST}/websitestaticapifiles`;
           const WTT_CACHED = 'https://wtt-web-frontdoor-withoutcache-cqakg0andqf5hchn.a01.azurefd.net';
           const WTT_REF = 'https://www.worldtabletennis.com/';
           const UA = 'PronosPing/1.0 (jeu de pronostics prive entre amis; lecture rare et legere)';
@@ -112,6 +113,10 @@ jobs:
 
           const params = s => new URLSearchParams(s || '');
           const cleanName = s => String(s || '').replace(/\s+1$/, '').trim();
+          // Pour comparer deux noms de joueur WTT (fiche match vs classement mondial) malgré
+          // des différences mineures de formatage (accents, espaces multiples, casse).
+          const normName = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+            .toLowerCase().replace(/\s+/g, ' ').trim();
 
           // La FFTT donne parfois une "dateprevue" qui n'est qu'un placeholder
           // (souvent le 1er janvier) pour les rencontres dont la date réelle n'est
@@ -484,6 +489,41 @@ jobs:
               (s.dejaJoues ? `, ${s.dejaJoues} déjà joués ignorés` : '') + (s.enAttente ? `, ${s.enAttente} en attente d'adversaires` : ''));
           }
 
+          // Classement mondial WTT (simples messieurs/dames) : un seul fichier plat pour
+          // toutes les catégories ("Result"), filtré par SubEventCode ("MS"/"WS"). Appelé
+          // une seule fois par synchronisation (pas par tournoi), à la fin de syncWTT.
+          async function syncWorldRankings() {
+            let j;
+            try { j = await getJson(`${WTT_HOST}/ranking/SEN_SINGLES.json?q=${qNow()}`, { referer: WTT_REF, tries: 2 }); }
+            catch (e) { console.warn('Classement mondial WTT non lu :', e.message); return; }
+            const result = Array.isArray(j.Result) ? j.Result : [];
+            const bySub = code => result
+              .filter(r => r.SubEventCode === code)
+              .sort((a, b) => (parseInt(a.CurrentRank, 10) || 1e9) - (parseInt(b.CurrentRank, 10) || 1e9));
+            const ranked = { M: bySub('MS'), F: bySub('WS') };
+            const byName = {
+              M: new Map(ranked.M.map(r => [normName(r.PlayerName), r])),
+              F: new Map(ranked.F.map(r => [normName(r.PlayerName), r])),
+            };
+
+            const competitors = await db('GET', 'competitors?circuit=eq.WTT&gender=not.is.null&select=id,name,gender,world_ranking,world_ranking_points&limit=5000');
+            let matched = 0;
+            for (const c of competitors) {
+              const table = byName[c.gender];
+              if (!table) continue;
+              const r = table.get(normName(c.name));
+              if (!r) continue;
+              const rank = parseInt(r.CurrentRank, 10);
+              const pts = parseInt(r.RankingPointsYTD, 10);
+              if (!Number.isFinite(rank)) continue;
+              matched++;
+              const newPts = Number.isFinite(pts) ? pts : null;
+              if (c.world_ranking === rank && (c.world_ranking_points ?? null) === newPts) continue; // rien à changer
+              await db('PATCH', `competitors?id=eq.${c.id}`, { world_ranking: rank, world_ranking_points: newPts }, 'return=minimal');
+            }
+            console.log(`Classement mondial WTT : ${matched}/${competitors.length} joueurs suivis retrouvés dans le classement (${ranked.M.length} messieurs, ${ranked.F.length} dames au total).`);
+          }
+
           async function syncWTT() {
             const events = await wttEvents();
             if (!events.length) { console.log('WTT : aucun tournoi à suivre en ce moment.'); return; }
@@ -497,6 +537,8 @@ jobs:
               try { await syncWttEvent(ev, cache); }
               catch (e) { erreurs.push(`${shortEventName(ev.EventName)} : ${e.message}`); }
             }
+            try { await syncWorldRankings(); }
+            catch (e) { erreurs.push(`Classement mondial : ${e.message}`); }
             if (erreurs.length) throw new Error(erreurs.join(' ; '));
           }
 
