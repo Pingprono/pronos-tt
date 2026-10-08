@@ -1137,7 +1137,7 @@ function rankingsView() {
   const usingFallback = !withWorld.length && !!fallback.length;
   const genreLabel = S.rankGender === 'M' ? 'messieurs' : 'dames';
   if (!list.length) {
-    return seg + genderSeg + `<div class="empty">Aucun classement ${genreLabel} pour l'instant.${S.isAdmin ? " Renseigne le classement mondial WTT depuis l'onglet Admin." : ''}</div>`;
+    return seg + genderSeg + `<div class="empty">Aucun classement ${genreLabel} pour l'instant.${S.isAdmin ? " Il se remplit automatiquement à la prochaine synchronisation WTT." : ''}</div>`;
   }
   const rows = list.map(c => {
     const rk = usingFallback ? c.ranking : c.world_ranking;
@@ -1149,8 +1149,8 @@ function rankingsView() {
       <td class="ptscell">${(usingFallback ? null : c.world_ranking_points) ? `${c.world_ranking_points}<small>pts</small>` : ''}</td></tr>`;
   }).join('');
   const note = usingFallback
-    ? `<p class="rules">Classement mondial pas encore renseigné pour ce tableau : tête de série des tournois suivis affichée en attendant${S.isAdmin ? " (onglet Admin pour saisir le vrai classement WTT)" : ''}.</p>`
-    : `<p class="rules">Classement mondial WTT officiel (${genreLabel}), saisi à la main par l'admin : le WTT ne propose pas d'accès automatisable à son classement mondial complet.</p>`;
+    ? `<p class="rules">Classement mondial pas encore synchronisé pour ce tableau : tête de série des tournois suivis affichée en attendant.</p>`
+    : `<p class="rules">Classement mondial WTT officiel (${genreLabel}), mis à jour automatiquement par le robot de synchronisation.</p>`;
   return seg + genderSeg + `<table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>` + note;
 }
 
@@ -1441,12 +1441,14 @@ function adminView() {
           <button class="btn small sec" data-act="adm-rank" data-id="${c.id}">Enregistrer</button>
         </div>
         ${S.adminCircuit === 'WTT' ? `
-        <label class="hint" style="display:block;margin-top:10px">Classement mondial WTT officiel (à saisir à la main, pas d'accès automatisable trouvé)</label>
-        <div class="adm-actions" style="margin-top:4px">
-          <input class="scorein" style="width:90px" id="wr-${c.id}" type="number" min="1" inputmode="numeric" placeholder="Rang mondial" value="${c.world_ranking ?? ''}" aria-label="Classement mondial de ${esc(c.name)}">
-          <input class="scorein" style="width:90px" id="wp-${c.id}" type="number" min="0" inputmode="numeric" placeholder="Points" value="${c.world_ranking_points ?? ''}" aria-label="Points mondiaux de ${esc(c.name)}">
-          <button class="btn small sec" data-act="adm-worldrank" data-id="${c.id}">Enregistrer</button>
-        </div>` : ''}
+        <details style="margin-top:10px">
+          <summary class="hint" style="cursor:pointer">Classement mondial WTT : ${c.world_ranking != null ? `#${c.world_ranking}${c.world_ranking_points ? ` (${c.world_ranking_points} pts)` : ''}, mis à jour automatiquement` : 'pas encore synchronisé'} — forcer une correction</summary>
+          <div class="adm-actions" style="margin-top:6px">
+            <input class="scorein" style="width:90px" id="wr-${c.id}" type="number" min="1" inputmode="numeric" placeholder="Rang mondial" value="${c.world_ranking ?? ''}" aria-label="Classement mondial de ${esc(c.name)}">
+            <input class="scorein" style="width:90px" id="wp-${c.id}" type="number" min="0" inputmode="numeric" placeholder="Points" value="${c.world_ranking_points ?? ''}" aria-label="Points mondiaux de ${esc(c.name)}">
+            <button class="btn small sec" data-act="adm-worldrank" data-id="${c.id}">Enregistrer</button>
+          </div>
+        </details>` : ''}
         ${S.adminCircuit === 'PRO_A' ? `
         <label for="ro-${c.id}" class="hint" style="display:block;margin-top:10px">Joueurs de l'équipe (un par ligne)</label>
         <textarea id="ro-${c.id}" rows="3" style="width:100%;margin-top:4px" placeholder="Un nom par ligne">${esc((c.roster || []).join('\n'))}</textarea>
@@ -1517,8 +1519,9 @@ async function saveRoster(id) {
   if (error) { toast(friendlyError(error), true); return; }
   S.competitors[id].roster = roster.length ? roster : null; toast('Joueurs enregistrés.'); keepRender();
 }
-// Classement mondial WTT : saisi à la main, le WTT ne proposant pas d'accès
-// automatisable à son classement mondial complet (voir ajout-classement-mondial.sql).
+// Classement mondial WTT : mis à jour automatiquement par le robot de
+// synchronisation (synchro.mjs) à chaque passage ; cette fonction ne sert
+// qu'à une correction manuelle ponctuelle (ex. nom non reconnu par le robot).
 async function saveWorldRank(id) {
   const rawR = document.getElementById('wr-' + id).value.trim();
   const rawP = document.getElementById('wp-' + id).value.trim();
