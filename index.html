@@ -1077,8 +1077,9 @@ function streakBadgeHtml(streak, showPct) {
 // diminué) tant que le match n'a pas commencé -- voir setBalles().
 //
 // Effet : une mise de N balles sur un match, s'il est gagnant (bon vainqueur
-// ou score exact), multiplie les points de CE match par (1 + 12 % * N),
-// plafonné à x1.60 (atteint pile à la mise maximum autorisée par match).
+// ou score exact), multiplie les points de CE match par (1 + N) -- chaque
+// balle ajoute pile +1 au multiplicateur (1 balle = x2, 2 = x3, 3 = x4,
+// 4 = x5, 5 = x6), plafonné à x6 (atteint pile à la mise maximum par match).
 // Composition avec le bonus de série : les deux multiplicateurs s'appliquent
 // indépendamment sur le barème de base (1 ou 3 points) et se MULTIPLIENT
 // entre eux avant un seul arrondi final ; le bonus outsider continue, lui, à
@@ -1087,12 +1088,12 @@ function streakBadgeHtml(streak, showPct) {
 // ceux de la vue SQL "prediction_points" (ajout-balles.sql) : c'est elle qui
 // fait foi pour le classement, cette fonction n'est qu'un miroir d'affichage.
 // Exemple : score exact (3 pts), série de 5 pronos gagnants avant ce match
-// (x1.28), 3 balles misées (x1.36) -> round(3 * 1.28 * 1.36) = round(5.22)
-// = 5 points (+ bonus outsider éventuel, inchangé).
+// (x1.28), 3 balles misées (x4) -> round(3 * 1.28 * 4) = round(15.36)
+// = 15 points (+ bonus outsider éventuel, inchangé).
 const BALLES_STOCK = 10;          // stock de balles au début de chaque tournoi/journée
 const BALLES_MAX_PER_MATCH = 5;   // plafond par match (la moitié du stock de départ)
-const BALLES_BONUS_PER = 0.12;    // +12 % de multiplicateur par balle misée, si gagnant
-const BALLES_MULT_CEILING = 1.60; // plafond du multiplicateur (atteint à 5 balles : 1+0.12*5)
+const BALLES_BONUS_PER = 1;       // +1 au multiplicateur par balle misée, si gagnant
+const BALLES_MULT_CEILING = 6;    // plafond du multiplicateur (atteint à 5 balles : 1+1*5)
 
 // Clé de regroupement "tournoi" d'un match pour le budget de balles : un
 // tournoi WTT (m.competition) ou une journée Pro A (m.round) -- jamais mélangé
@@ -1169,7 +1170,7 @@ function ballesStepperHtml(m) {
       <b>${staked}</b>
       <button type="button" class="ballesbtn" data-act="balles" data-id="${m.id}" data-v="${staked + 1}" aria-label="Ajouter une balle" ${locked || staked >= cap ? 'disabled' : ''}>+</button>
     </div>
-    <small class="ballespct">${staked > 0 ? `×${ballesMult(staked).toFixed(2)} si gagnant (+${pct}%)` : `jusqu'à ${cap} ici`}</small>
+    <small class="ballespct">${staked > 0 ? `×${ballesMult(staked)} si gagnant (+${pct}%)` : `jusqu'à ${cap} ici`}</small>
   </div>`;
 }
 // À partir d'un historique déjà trié chronologiquement (du plus ancien au
