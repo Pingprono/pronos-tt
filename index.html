@@ -383,6 +383,14 @@ a{color:inherit}
 .panel h2{font:600 17px/1.2 var(--f-display);margin:0 0 4px;color:var(--ink)}
 .panel h3{font:600 14px/1.2 var(--f-display);margin:0;color:var(--ink)}
 .hint{color:var(--ink-soft);font-size:12.5px;margin:4px 0 0}
+.badgegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:14px;margin-top:12px}
+.badgecell{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.badgeicon{width:60px;height:60px;position:relative;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
+.badgecell.locked .badgeicon svg{filter:grayscale(1) brightness(.78) contrast(.85);opacity:.65}
+.badgelock{position:absolute;right:-3px;bottom:-3px;width:19px;height:19px;background:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--card)}
+.badgelock svg{width:10px;height:10px}
+.badgename{font:600 10.5px/1.2 var(--f-body);color:var(--ink-soft)}
+.badgecell.unlocked .badgename{color:var(--ink)}
 label{display:block;font-size:12px;font-weight:600;margin:13px 0 5px;color:var(--ink-soft)}
 input,select,textarea{width:100%;background:var(--paper-deep);border:1px solid var(--line-soft);border-radius:var(--radius);padding:10px 11px;font-size:16px;color:var(--ink);font-family:var(--f-body)}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.2)}
@@ -599,6 +607,8 @@ const S = {
   openCompetitor: null, // id du joueur/équipe dont la fiche détail est ouverte (null = fermée)
   myHistory: null, // tout l'historique de pronostics du compte (onglet "Mon compte") ; null = pas encore chargé
   accountBoard: null, // classement général (scope ALL), pour afficher le rang dans "Mon compte"
+  circuitBoard: null, // leaderboard_by_circuit, TOUT LE MONDE confondu (sert aux badges "Expert WTT/Pro A")
+  allJudgedPreds: null, // pronostics de tout le monde sur des matchs déjà jugés (sert au badge "Le Rival")
   themeMode: 'light', // préférence sombre/clair de la personne (indépendante du THEME par tournoi) ; persistée en localStorage
   soundOn: true, // préférence son activé/coupé ; persistée en localStorage (par défaut activé)
   _lastStreakTier: null, // dernier palier de série connu (pour détecter un nouveau palier franchi et jouer le son associé)
@@ -1081,6 +1091,18 @@ function points(m, p, streakBefore) {
   const d = pointsDetail(m, p, streakBefore);
   return d ? d.total : null;
 }
+// Historique de MES pronostics déjà jugés, trié chronologiquement, avec pour
+// chacun la série en cours avant/après (streakBefore/streakAfter) et le
+// détail des points (pt). Base commune à accountView() ET aux badges
+// (computeBadges), pour ne jamais faire dériver les deux calculs. Renvoie
+// null tant que S.myHistory n'est pas encore chargé (voir loadAccount()).
+function myJudgedHistory() {
+  if (S.myHistory === null) return null;
+  const sortedChrono = S.myHistory
+    .filter(h => h.matches && h.matches.status === 'finished')
+    .sort((a, b) => new Date(a.matches.starts_at) - new Date(b.matches.starts_at));
+  return computeStreakSeries(sortedChrono).map(h => ({ ...h, pt: pointsDetail(h.matches, h, h.streakBefore) }));
+}
 
 /* ---------- Chargement des données ---------- */
 async function reloadMatches() {
@@ -1125,21 +1147,48 @@ async function loadBoard() {
 async function loadAccount() {
   try {
     const uid = S.session.user.id;
-    const [h, b] = await Promise.all([
+    // circuitBoard (tous circuits, tout le monde) et allJudgedPreds (les
+    // pronostics de TOUT LE MONDE sur les matchs déjà terminés) ne servent
+    // qu'aux badges (comparaison "Expert WTT/Pro A" et duel "Le Rival") :
+    // pas besoin de requête supplémentaire côté sécurité, la policy RLS
+    // "voir pronostics" autorise déjà la lecture des pronostics d'autrui une
+    // fois le match terminé, et leaderboard_by_circuit est déjà une vue
+    // publique existante (utilisée par l'onglet Classements).
+    const [h, b, cb, ap] = await Promise.all([
       sb.from('predictions')
-        .select('pred_a,pred_b,match_id,matches(circuit,status,score_a,score_b,seed_a,seed_b,starts_at,competition,round,side_a,side_b,wins_needed)')
+        .select('pred_a,pred_b,match_id,created_at,matches(circuit,status,score_a,score_b,seed_a,seed_b,starts_at,competition,round,side_a,side_b,wins_needed)')
         .eq('user_id', uid).limit(5000),
       sb.from('leaderboard').select('*').order('total_points', { ascending: false }).order('exact_scores', { ascending: false }),
+      sb.from('leaderboard_by_circuit').select('*'),
+      sb.from('predictions')
+        .select('user_id,match_id,pred_a,pred_b,matches(circuit,status,score_a,score_b,seed_a,seed_b,starts_at)')
+        .limit(20000),
     ]);
     if (h.error) throw h.error;
     if (b.error) throw b.error;
     S.myHistory = h.data || [];
     S.accountBoard = b.data || [];
+    S.circuitBoard = cb.error ? [] : (cb.data || []);
+    // Seuls les pronostics (de tout le monde) déjà jugés arrivent ici de
+    // toute façon via la policy RLS ; le filtre n'est qu'une double sécurité.
+    S.allJudgedPreds = (ap.error ? [] : (ap.data || [])).filter(r => r.matches && r.matches.status === 'finished');
     checkStreakMilestone();
+    // "Trône de courte durée" (voir computeBadges) : le classement général
+    // est calculé en direct, jamais stocké dans le temps — on se contente
+    // donc de retenir, en local sur cet appareil, qu'on a déjà vu son propre
+    // nom en tête au moins une fois. Un souvenir, pas une preuve officielle.
+    try {
+      if (S.accountBoard.length && S.accountBoard[0].user_id === uid) {
+        localStorage.setItem('spin_was_first', '1');
+      }
+    } catch (e) { /* stockage indisponible : tant pis pour ce petit souvenir */ }
+    checkNewBadges();
   } catch (e) {
     toast(friendlyError(e), true);
     S.myHistory = S.myHistory || [];
     S.accountBoard = S.accountBoard || [];
+    S.circuitBoard = S.circuitBoard || [];
+    S.allJudgedPreds = S.allJudgedPreds || [];
   }
 }
 
@@ -1620,6 +1669,403 @@ function rankingsView() {
   return seg + genderSeg + `<table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>` + note;
 }
 
+/* =====================================================================
+   BADGES — "Carnet de Match" : petites récompenses façon vieil écusson
+   émaillé/gravé (sticker vintage : fond circulaire coloré, fin anneau
+   blanc "die-cut", dégradé + reflet + hachures gravées en bordure),
+   débloquées à partir des données déjà chargées pour "Mon compte" (pas de
+   nouvelle logique serveur, sauf deux requêtes de lecture déjà publiques
+   -- voir loadAccount() -- et un flag local pour "Trône de courte durée").
+   ===================================================================== */
+// Assombrit une couleur hexa de `amt` (0..1). Utilisé pour le dégradé du
+// fond de chaque badge (du clair en haut-gauche au foncé en bas-droite).
+function hexDarken(hex, amt) {
+  const h = hex.replace('#', '');
+  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+  const num = parseInt(full, 16) || 0;
+  const r = Math.round(((num >> 16) & 255) * (1 - amt));
+  const g = Math.round(((num >> 8) & 255) * (1 - amt));
+  const b = Math.round((num & 255) * (1 - amt));
+  return `rgb(${r},${g},${b})`;
+}
+// Trente-six petites hachures régulières façon anneau "die-cut" de
+// sticker découpé : dessinées UNE FOIS (chaîne constante), réutilisées à
+// l'identique par badgeShell() sur les 14 badges — c'est la texture de
+// bordure PARTAGÉE que tous les badges ont en commun.
+const BADGE_RING_HATCH = (() => {
+  let s = '';
+  for (let i = 0; i < 36; i++) {
+    const a = (i / 36) * Math.PI * 2;
+    const x1 = (50 + Math.cos(a) * 45.1).toFixed(1), y1 = (50 + Math.sin(a) * 45.1).toFixed(1);
+    const x2 = (50 + Math.cos(a) * 47.3).toFixed(1), y2 = (50 + Math.sin(a) * 47.3).toFixed(1);
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,.4)" stroke-width="0.6"/>`;
+  }
+  return s;
+})();
+let _badgeIdSeq = 0;
+// Le "cadre" PARTAGÉ par les 14 badges : fond circulaire en dégradé radial
+// (colorA clair -> colorB riche -> colorB assombri), liseré sombre, fin
+// anneau blanc façon découpe de sticker, hachures de bordure gravées
+// (BADGE_RING_HATCH), reflet en haut à gauche -- puis l'illustration
+// propre à chaque badge (innerSvg) posée par-dessus, centrée. Seules les
+// couleurs et l'illustration intérieure varient d'un badge à l'autre.
+function badgeShell(innerSvg, colorA, colorB) {
+  const gid = `bg${_badgeIdSeq++}`;
+  return `<svg viewBox="0 0 100 100" width="100%" height="100%" role="img" aria-hidden="true">
+    <defs>
+      <radialGradient id="${gid}" cx="33%" cy="28%" r="80%">
+        <stop offset="0%" stop-color="${colorA}"/>
+        <stop offset="58%" stop-color="${colorB}"/>
+        <stop offset="100%" stop-color="${hexDarken(colorB, 0.35)}"/>
+      </radialGradient>
+    </defs>
+    <circle cx="50" cy="50" r="47" fill="url(#${gid})"/>
+    <circle cx="50" cy="50" r="47" fill="none" stroke="rgba(0,0,0,.32)" stroke-width="1"/>
+    <circle cx="50" cy="50" r="44.2" fill="none" stroke="#fff" stroke-width="2.6"/>
+    <circle cx="50" cy="50" r="41.6" fill="none" stroke="rgba(0,0,0,.2)" stroke-width="0.7"/>
+    ${BADGE_RING_HATCH}
+    <path d="M20 29a33 33 0 0 1 36-15" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" opacity=".24"/>
+    <g>${innerSvg}</g>
+  </svg>`;
+}
+// Petit utilitaire "gravure" : un trait principal sombre + un fin trait
+// clair légèrement décalé (coin haut-gauche) pour donner l'impression de
+// profondeur/relief ciselé qu'a le trophée de la maquette de référence,
+// plutôt qu'un simple glyphe plat. Réutilisé par chaque illustration.
+function engr(d, dark, extraWidth) {
+  const w = 2.2 + (extraWidth || 0);
+  return `<path d="${d}" fill="none" stroke="${dark || 'rgba(0,0,0,.4)'}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `<path d="${d}" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="${(w * 0.4).toFixed(1)}" stroke-linecap="round" stroke-linejoin="round" transform="translate(-0.7,-0.7)"/>`;
+}
+
+/* ---------- Les 14 illustrations (viewBox local 0..100, centrées ~50,50) ---------- */
+const BADGE_ICONS = {
+  // 1. Œil de lynx : œil en amande, balle de ping-pong en pupille.
+  lynx: () => `
+    <path d="M14 52q18-22 36-22t36 22q-18 22-36 22t-36-22Z" fill="#fff" opacity=".92"/>
+    ${engr('M14 52q18-22 36-22t36 22', '#2E1B12')}
+    ${engr('M14 52q18 22 36 22t36-22', '#2E1B12')}
+    <circle cx="50" cy="52" r="12.5" fill="#F4EFE4" stroke="#C9922E" stroke-width="2.2"/>
+    <path d="M44 46q6-3 12 0" stroke="#C9922E" stroke-width="1.1" fill="none" opacity=".7"/>
+    <path d="M44 58q6 3 12 0" stroke="#C9922E" stroke-width="1.1" fill="none" opacity=".7"/>
+    <circle cx="46.5" cy="48.5" r="2.1" fill="#fff"/>`,
+  // 2. Sniper : raquette transformée en viseur/lunette de visée.
+  sniper: () => `
+    <circle cx="50" cy="50" r="19" fill="none" stroke="#2E1B12" stroke-width="2.4"/>
+    <circle cx="50" cy="50" r="19" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="0.9" transform="translate(-0.8,-0.8)"/>
+    ${engr('M50 31v12M50 57v12M31 50h12M57 50h12', '#2E1B12')}
+    <circle cx="50" cy="50" r="4" fill="#A8472A" stroke="#2E1B12" stroke-width="1.4"/>
+    <path d="M62 62l10 10" stroke="#2E1B12" stroke-width="3.4" stroke-linecap="round"/>
+    <path d="M62 62l10 10" stroke="rgba(255,255,255,.45)" stroke-width="1.1" stroke-linecap="round" transform="translate(-0.7,-0.7)"/>`,
+  // 3. Le Mur : briques + balle qui rebondit.
+  mur: () => `
+    ${[0, 1, 2].map(row => [0, 1, 2, 3].map(col => {
+      const off = row % 2 ? 9 : 0;
+      const x = 16 + col * 17 - off, y = 46 + row * 11;
+      if (x < 10 || x > 82) return '';
+      return `<rect x="${x}" y="${y}" width="15" height="9" rx="1.2" fill="#51637A" stroke="#2E1B12" stroke-width="1.3"/>`;
+    }).join('')).join('')}
+    <circle cx="68" cy="34" r="6.5" fill="#fff" stroke="#2E1B12" stroke-width="2"/>
+    <path d="M44 38q10-8 20-4" stroke="#2E1B12" stroke-width="1.6" fill="none" stroke-dasharray="2.4 3" stroke-linecap="round"/>`,
+  // 4. Sur un nuage : flamme ailée qui s'envole.
+  nuage: () => `
+    ${engr('M50 24c4 10-8 14-8 24a8 8 0 0 0 16 0c0-3-1.5-5.6-3-7.6 6 3 10 9 10 16A15 15 0 1 1 32 56.4C32 42.6 42 32 50 24Z', '#1C3F6E')}
+    <path d="M32 46q-14-2-16 8M68 46q14-2 16 8" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".85"/>
+    <path d="M32 46q-14-2-16 8M68 46q14-2 16 8" stroke="#2E1B12" stroke-width="0.8" fill="none" stroke-linecap="round" opacity=".5"/>`,
+  // 5. Table rase : raquette qui se redresse après être tombée/cassée.
+  tablerase: () => `
+    <ellipse cx="50" cy="52" rx="15" ry="19" fill="#9A5CE0" stroke="#2E1B12" stroke-width="2.2" transform="rotate(-18 50 52)"/>
+    <path d="M50 70v14" stroke="#2E1B12" stroke-width="3.4" stroke-linecap="round" transform="rotate(-18 50 52)"/>
+    ${engr('M20 36l10 8M14 44l12 2', '#2E1B12', -0.6)}
+    <path d="M26 66q24 10 48-2" stroke="rgba(255,255,255,.7)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-dasharray="1.6 3"/>`,
+  // 6. Increvable : calendrier tamponné partout.
+  increvable: () => `
+    <rect x="22" y="28" width="56" height="48" rx="4" fill="#F4EFE0" stroke="#2E1B12" stroke-width="2.2"/>
+    <path d="M22 40h56" stroke="#2E1B12" stroke-width="2"/>
+    <path d="M32 24v10M68 24v10" stroke="#2E1B12" stroke-width="2.6" stroke-linecap="round"/>
+    ${[0, 1, 2].map(r => [0, 1, 2, 3].map(c => `<circle cx="${30 + c * 14}" cy="${50 + r * 10}" r="3.1" fill="none" stroke="#3D8A4E" stroke-width="1.6" transform="rotate(${(r * 4 + c * 7) % 25 - 12} ${30 + c * 14} ${50 + r * 10})"/>`).join('')).join('')}`,
+  // 7. Vétéran : raquette usée/rafistolée façon médaille d'ancienneté.
+  veteran: () => `
+    <circle cx="50" cy="42" r="17" fill="#C9A24A" stroke="#2E1B12" stroke-width="2.2"/>
+    <circle cx="50" cy="42" r="17" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="0.9" transform="translate(-0.8,-0.8)"/>
+    <path d="M44 36l5 12 5-12" stroke="#2E1B12" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M38 58l6 20M62 58l-6 20" stroke="#8A6A33" stroke-width="5" stroke-linecap="round"/>
+    <path d="M38 58l6 20M62 58l-6 20" stroke="rgba(255,255,255,.4)" stroke-width="1.3" stroke-linecap="round" transform="translate(-0.6,-0.6)"/>`,
+  // 8. Lève-tôt : réveil, balle de ping-pong en cloche.
+  levetot: () => `
+    <circle cx="50" cy="54" r="19" fill="#FFE3A8" stroke="#2E1B12" stroke-width="2.2"/>
+    <circle cx="50" cy="54" r="19" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="0.9" transform="translate(-0.8,-0.8)"/>
+    <path d="M50 54V43l9 5" stroke="#2E1B12" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <circle cx="36" cy="33" r="6" fill="#fff" stroke="#D98A1E" stroke-width="2"/>
+    <circle cx="64" cy="33" r="6" fill="#fff" stroke="#D98A1E" stroke-width="2"/>
+    <path d="M32 24l10 5M68 24l-10 5" stroke="#2E1B12" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M24 70q4-6 8-2M76 70q-4-6-8-2" stroke="#2E1B12" stroke-width="2" stroke-linecap="round" fill="none"/>`,
+  // 9. Expert WTT : drapeau/pictogramme WTT stylisé.
+  wtt: () => `
+    <path d="M34 22v56" stroke="#2E1B12" stroke-width="3" stroke-linecap="round"/>
+    ${engr('M34 24q20-8 32 0q-4 10 0 18q-16 8-32 0Z', '#5B2FA8')}
+    <path d="M34 24q20-8 32 0q-4 10 0 18q-16 8-32 0Z" fill="#9A63E8" opacity=".9"/>
+    <path d="M42 30h4M42 36h8M42 42h5" stroke="#F3E9FA" stroke-width="2" stroke-linecap="round"/>`,
+  // 10. Expert Pro A : écusson/blason façon Pro A.
+  proa: () => `
+    ${engr('M50 22l24 8v18c0 16-11 26-24 30-13-4-24-14-24-30V30Z', '#102E82')}
+    <path d="M50 22l24 8v18c0 16-11 26-24 30-13-4-24-14-24-30V30Z" fill="#1E4FD1"/>
+    <path d="M50 30l15 5v13c0 10-7 17-15 20-8-3-15-10-15-20V35Z" fill="#D81E2C" opacity=".85"/>
+    <circle cx="50" cy="48" r="6" fill="#fff" stroke="#102E82" stroke-width="1.6"/>`,
+  // 11. Chasseur d'outsider : le lièvre qui se fait doubler par la tortue.
+  outsider: () => `
+    <ellipse cx="38" cy="66" rx="17" ry="9" fill="#5C7A3A" stroke="#2E1B12" stroke-width="2"/>
+    <circle cx="36" cy="58" r="8" fill="#6E8A46" stroke="#2E1B12" stroke-width="1.8"/>
+    <path d="M30 52q-3-6 1-9M40 52q3-6-1-9" stroke="#2E1B12" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M55 60l16-15" stroke="#2E1B12" stroke-width="2" stroke-linecap="round"/>
+    <path d="M60 46q6-4 10-1" stroke="#2E1B12" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="66" cy="42" rx="9" ry="6" fill="#E6DEC2" stroke="#2E1B12" stroke-width="1.8" transform="rotate(-28 66 42)"/>
+    <path d="M70 37l6-4M70 40l7-1" stroke="#2E1B12" stroke-width="1.5" stroke-linecap="round"/>`,
+  // 12. Le Rival : deux raquettes qui s'entrechoquent.
+  rival: () => `
+    <ellipse cx="34" cy="42" rx="12" ry="15" fill="#8E1F2B" stroke="#2E1B12" stroke-width="2" transform="rotate(-28 34 42)"/>
+    <path d="M30 56l-10 16" stroke="#2E1B12" stroke-width="3.2" stroke-linecap="round"/>
+    <ellipse cx="66" cy="42" rx="12" ry="15" fill="#B8532F" stroke="#2E1B12" stroke-width="2" transform="rotate(28 66 42)"/>
+    <path d="M70 56l10 16" stroke="#2E1B12" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M50 38l-3 6 6-1-3 7" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9"/>`,
+  // 13. Trône de courte durée : couronne sur un tabouret bancal.
+  trone: () => `
+    <path d="M32 72l4-18h28l4 18Z" fill="#8A6A1C" stroke="#2E1B12" stroke-width="2"/>
+    <path d="M34 72l-5 10M66 72l5 10" stroke="#2E1B12" stroke-width="2.4" stroke-linecap="round"/>
+    ${engr('M34 54l4-10h24l4 10Z', '#8A6A1C')}
+    <path d="M34 54l4-10h24l4 10Z" fill="#E4C66A"/>
+    <path d="M38 44l6 6 6-9 6 9 6-6" stroke="#2E1B12" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="38" cy="43" r="1.6" fill="#8A6A1C"/><circle cx="50" cy="39" r="1.6" fill="#8A6A1C"/><circle cx="62" cy="43" r="1.6" fill="#8A6A1C"/>`,
+  // 14. Citrouille d'or : citrouille façon logo SPIN, couronnée, dorée.
+  citrouille: () => `
+    <path d="M50 26v5" stroke="#4A7A33" stroke-width="2.4" stroke-linecap="round"/>
+    ${engr('M50 32c-14 0-22 10-22 20s8 20 22 20 22-10 22-20-8-20-22-20Z', '#9C4A14')}
+    <path d="M50 32c-14 0-22 10-22 20s8 20 22 20 22-10 22-20-8-20-22-20Z" fill="#E4A233"/>
+    <path d="M50 36v32M39 40c3 10 3 22 0 28M61 40c-3 10-3 22 0 28" stroke="rgba(0,0,0,.28)" stroke-width="1.3" fill="none"/>
+    <path d="M40 46l1.5 8M60 46l-1.5 8" stroke="#fff" stroke-width="1.4" fill="none" opacity=".6" stroke-linecap="round"/>
+    <path d="M36 26l6 6 8-10 8 10 6-6" stroke="#2E1B12" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M36 26l6 6 8-10 8 10 6-6Z" fill="#F4D27A" opacity=".9"/>`,
+};
+function badgeIcon(key, colorA, colorB) {
+  const fn = BADGE_ICONS[key];
+  return badgeShell(fn ? fn() : '', colorA, colorB);
+}
+// Petit cadenas (recouvre le coin bas-droit des badges encore verrouillés).
+const BADGE_LOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+
+/* ---------- Les 14 définitions (nom, couleurs, critère, icône) ---------- */
+// Chaque entrée : { id, name, desc, colorA, colorB, icon, test(ctx) }.
+// `ctx` regroupe tout ce dont les critères ont besoin, construit une seule
+// fois par computeBadges() à partir des données déjà chargées pour "Mon
+// compte" (voir loadAccount()) -- aucune logique serveur nouvelle, à part
+// les deux requêtes de lecture déjà publiques ajoutées à loadAccount().
+function circuitAccuracy(ctx, circuit) {
+  if (!S.circuitBoard || !S.circuitBoard.length) return null;
+  const rows = S.circuitBoard.filter(r => r.circuit === circuit && r.matches_played > 0);
+  if (rows.length < 2) return null;
+  const mine = rows.find(r => r.user_id === ctx.uid);
+  if (!mine || mine.matches_played < 10) return null;
+  const avgAcc = rows.reduce((s, r) => s + r.good_winners / r.matches_played, 0) / rows.length;
+  return { myAcc: mine.good_winners / mine.matches_played, avgAcc, n: rows.length };
+}
+// Table user_id -> Map(match_id -> points totaux), à partir de
+// S.allJudgedPreds (pronostics de tout le monde sur des matchs déjà
+// jugés). Réutilise computeStreakSeries/pointsDetail : chaque personne a
+// donc droit à SON propre calcul de série/bonus, comme sur le vrai
+// classement, pas une approximation plus grossière.
+function allUsersPointsByMatch() {
+  const byUser = {};
+  for (const r of (S.allJudgedPreds || [])) (byUser[r.user_id] = byUser[r.user_id] || []).push(r);
+  const out = {};
+  for (const uid in byUser) {
+    const sorted = byUser[uid].slice().sort((a, b) => new Date(a.matches.starts_at) - new Date(b.matches.starts_at));
+    const map = new Map();
+    for (const h of computeStreakSeries(sorted)) {
+      const pt = pointsDetail(h.matches, h, h.streakBefore);
+      map.set(h.match_id, pt ? pt.total : 0);
+    }
+    out[uid] = map;
+  }
+  return out;
+}
+const BADGE_DEFS = [
+  {
+    id: 'lynx', name: 'Œil de lynx', colorA: '#FCEBB0', colorB: '#C9922E',
+    desc: '90%+ de bons vainqueurs sur au moins 15 pronostics jugés.',
+    test: ctx => ctx.n >= 15 && (ctx.goodN / ctx.n) >= 0.9,
+  },
+  {
+    id: 'sniper', name: 'Sniper', colorA: '#F3C9A0', colorB: '#A8472A',
+    desc: '5 scores exacts sur une fenêtre de 10 pronostics consécutifs jugés.',
+    test: ctx => {
+      for (let i = 0; i + 10 <= ctx.finished.length; i++) {
+        if (ctx.finished.slice(i, i + 10).filter(h => h.pt.exact).length >= 5) return true;
+      }
+      return false;
+    },
+  },
+  {
+    id: 'mur', name: 'Le Mur', colorA: '#D9DEE6', colorB: '#51637A',
+    desc: 'Ne jamais finir à 0 point sur une série de 10 matchs jugés d’affilée.',
+    test: ctx => {
+      let best = 0, cur = 0;
+      for (const h of ctx.finished) { cur = h.pt.total > 0 ? cur + 1 : 0; best = Math.max(best, cur); }
+      return best >= 10;
+    },
+  },
+  {
+    id: 'nuage', name: 'Sur un nuage', colorA: '#BFE0F7', colorB: '#3E7FC9',
+    desc: 'Atteindre une série de 10 pronostics gagnants d’affilée (palier bleu).',
+    test: ctx => ctx.bestStreak >= 10,
+  },
+  {
+    id: 'tablerase', name: 'Table rase', colorA: '#D8C7F2', colorB: '#6B3FA0',
+    desc: 'Reconstruire une série de 5+ pronostics gagnants juste après une série totalement cassée à 0.',
+    test: ctx => {
+      const f = ctx.finished;
+      for (let i = 0; i < f.length; i++) {
+        if (f[i].streakBefore > 0 && f[i].streakAfter === 0) {
+          let run = 0;
+          for (let j = i + 1; j < f.length; j++) {
+            if (f[j].pt.total > 0) { run++; if (run >= 5) return true; }
+            else break;
+          }
+        }
+      }
+      return false;
+    },
+  },
+  {
+    id: 'increvable', name: 'Increvable', colorA: '#CFEAD0', colorB: '#3D8A4E',
+    desc: 'Pronostic posé sur 100% des matchs d’un tournoi WTT entier.',
+    test: () => {
+      const byComp = {};
+      for (const m of S.matches) {
+        if (m.circuit !== 'WTT' || !m.competition) continue;
+        (byComp[m.competition] = byComp[m.competition] || []).push(m);
+      }
+      return Object.values(byComp).some(list => list.length >= 3 && list.every(m => !!S.myPreds[m.id]));
+    },
+  },
+  {
+    id: 'veteran', name: 'Vétéran', colorA: '#E4D9B8', colorB: '#8A6A33',
+    desc: '200 pronostics faits au total, tous circuits confondus.',
+    test: () => (S.myHistory || []).length >= 200,
+  },
+  {
+    id: 'levetot', name: 'Lève-tôt', colorA: '#FFE3A8', colorB: '#D98A1E',
+    desc: 'Pronostic posé plus de 48h avant le début du match, dix fois.',
+    test: () => (S.myHistory || []).filter(h => h.created_at && h.matches && h.matches.starts_at &&
+      (new Date(h.matches.starts_at) - new Date(h.created_at)) >= 48 * 3600 * 1000).length >= 10,
+  },
+  {
+    id: 'expertwtt', name: 'Expert WTT', colorA: '#D8C9F5', colorB: '#5B2FA8',
+    desc: 'Précision sur WTT nettement meilleure que la moyenne du groupe.',
+    test: ctx => { const c = circuitAccuracy(ctx, 'WTT'); return !!c && (c.myAcc - c.avgAcc) >= 0.15; },
+  },
+  {
+    id: 'expertproa', name: 'Expert Pro A', colorA: '#BFD0F7', colorB: '#1E4FD1',
+    desc: 'Précision sur Pro A nettement meilleure que la moyenne du groupe.',
+    test: ctx => { const c = circuitAccuracy(ctx, 'PRO_A'); return !!c && (c.myAcc - c.avgAcc) >= 0.15; },
+  },
+  {
+    id: 'outsider', name: 'Chasseur d’outsider', colorA: '#E6DEC2', colorB: '#7A6B3A',
+    desc: 'Le bonus "outsider" a été touché au moins 5 fois.',
+    test: ctx => ctx.finished.filter(h => h.pt.bonus > 0).length >= 5,
+  },
+  {
+    id: 'rival', name: 'Le Rival', colorA: '#F2C6C6', colorB: '#8E1F2B',
+    desc: 'Être en tête, en points cumulés, sur au moins 10 matchs jugés en commun avec un ami.',
+    test: ctx => {
+      const all = allUsersPointsByMatch();
+      const mine = all[ctx.uid];
+      if (!mine || !mine.size) return false;
+      for (const uid in all) {
+        if (uid === ctx.uid) continue;
+        const theirs = all[uid];
+        let common = 0, myPts = 0, theirPts = 0;
+        for (const [mid, pts] of mine) {
+          if (theirs.has(mid)) { common++; myPts += pts; theirPts += theirs.get(mid); }
+        }
+        if (common >= 10 && myPts > theirPts) return true;
+      }
+      return false;
+    },
+  },
+  {
+    id: 'trone', name: 'Trône de courte durée', colorA: '#FBE9A9', colorB: '#B8860B',
+    desc: 'Avoir été 1er du classement général à un moment donné (même sans l’être resté).',
+    test: () => { try { return localStorage.getItem('spin_was_first') === '1'; } catch (e) { return false; } },
+  },
+  {
+    id: 'citrouille', name: 'Citrouille d’or', colorA: '#FFD78A', colorB: '#C9711E',
+    desc: 'Atteindre le palier le plus rare (bleu) de la série au moins une fois.',
+    test: ctx => ctx.bestStreak >= 10,
+  },
+];
+// Calcule les 14 badges (débloqué ou pas) à partir des données déjà
+// chargées. Renvoie null tant que l'historique du compte n'est pas encore
+// disponible (voir myJudgedHistory()).
+function computeBadges() {
+  const finished = myJudgedHistory();
+  if (finished === null) return null;
+  const n = finished.length;
+  const goodN = finished.filter(h => h.pt.total > 0).length;
+  let bestStreak = 0; for (const h of finished) bestStreak = Math.max(bestStreak, h.streakAfter);
+  const ctx = { finished, n, goodN, bestStreak, uid: S.session && S.session.user.id };
+  return BADGE_DEFS.map(def => ({
+    id: def.id, name: def.name, desc: def.desc,
+    unlocked: !!def.test(ctx),
+    icon: badgeIcon(def.id, def.colorA, def.colorB),
+  }));
+}
+// Détecte les badges fraîchement débloqués depuis le dernier chargement de
+// "Mon compte" (même esprit que checkStreakMilestone : jamais de fanfare
+// pour des badges déjà acquis au tout premier chargement de la session,
+// seulement pour un badge franchi "sous les yeux" de la personne). Le
+// "déjà vu" est mémorisé en localStorage, même mécanique que
+// spin_theme_mode/spin_sound_on.
+function checkNewBadges() {
+  try {
+    const list = computeBadges();
+    if (!list) return;
+    let seen = [];
+    try { seen = JSON.parse(localStorage.getItem('spin_badges_seen') || '[]'); } catch (e) { /* ignore */ }
+    const seenSet = new Set(seen);
+    let initialized = false;
+    try { initialized = localStorage.getItem('spin_badges_init') === '1'; } catch (e) { /* ignore */ }
+    const newlyUnlocked = initialized ? list.filter(b => b.unlocked && !seenSet.has(b.id)) : [];
+    list.forEach(b => { if (b.unlocked) seenSet.add(b.id); });
+    try {
+      localStorage.setItem('spin_badges_seen', JSON.stringify([...seenSet]));
+      localStorage.setItem('spin_badges_init', '1');
+    } catch (e) { /* stockage indisponible : pas de mémoire d'une session à l'autre, tant pis */ }
+    if (newlyUnlocked.length) {
+      playSound('milestone');
+      newlyUnlocked.forEach(b => toast(`Nouveau badge débloqué : ${b.name} \u{1F3AF}`));
+    }
+  } catch (e) { /* un souci de badge ne doit jamais casser l'appli */ }
+}
+// Grille de badges de l'onglet "Mon compte" : en couleur et détaillés une
+// fois débloqués, désaturés avec un petit cadenas tant qu'ils ne le sont
+// pas -- le critère à atteindre reste lisible en infobulle (title) dans
+// les deux cas, pour que tout le monde sache viser quoi.
+function badgesPanel() {
+  const list = computeBadges();
+  if (!list) return '';
+  const unlockedN = list.filter(b => b.unlocked).length;
+  const cells = list.map(b => `
+    <div class="badgecell ${b.unlocked ? 'unlocked' : 'locked'}" title="${esc(b.name)} — ${esc(b.desc)}">
+      <div class="badgeicon">${b.icon}${b.unlocked ? '' : `<span class="badgelock" aria-hidden="true">${BADGE_LOCK_SVG}</span>`}</div>
+      <span class="badgename">${esc(b.name)}</span>
+    </div>`).join('');
+  return `<div class="panel">
+    <h3>Badges</h3>
+    <p class="hint" style="margin-top:2px">${unlockedN}/${list.length} badge${unlockedN > 1 ? 's' : ''} débloqué${unlockedN > 1 ? 's' : ''}. Survole un badge verrouillé pour voir comment le décrocher.</p>
+    <div class="badgegrid">${cells}</div>
+  </div>`;
+}
+
 // Rangée compacte façon "laddrow" pour un groupe tournoi/journée (réutilisée
 // par le panneau "Par tournoi / saison" de "Mon compte").
 function breakdownRow(label, s, col) {
@@ -1632,16 +2078,12 @@ function breakdownRow(label, s, col) {
    de pronostics du compte (pas seulement les matchs encore affichés dans
    l'onglet Matchs), calculées avec le même barème que le classement des amis. --- */
 function accountView() {
-  if (S.myHistory === null) return '<div class="loading">Chargement…</div>';
-  const sortedChrono = S.myHistory
-    .filter(h => h.matches && h.matches.status === 'finished')
-    .sort((a, b) => new Date(a.matches.starts_at) - new Date(b.matches.starts_at));
   // La série (streakBefore/streakAfter) ne dépend QUE de l'ordre chronologique
-  // des matchs déjà jugés : chaque pt.total ci-dessous est donc calculé avec
-  // la série telle qu'elle était réellement au moment de CE match, jamais
-  // recalculée après coup avec la série d'aujourd'hui.
-  const finished = computeStreakSeries(sortedChrono)
-    .map(h => ({ ...h, pt: pointsDetail(h.matches, h, h.streakBefore) }));
+  // des matchs déjà jugés : chaque pt.total est donc calculé avec la série
+  // telle qu'elle était réellement au moment de CE match, jamais recalculée
+  // après coup avec la série d'aujourd'hui. Voir myJudgedHistory().
+  const finished = myJudgedHistory();
+  if (finished === null) return '<div class="loading">Chargement…</div>';
 
   if (!finished.length) {
     return `<div class="panel"><h2>Mon compte</h2><p class="hint">Pas encore de match terminé sur lequel tu as pronostiqué : reviens ici une fois que tes premiers pronos auront été jugés.</p></div>`;
@@ -1814,6 +2256,7 @@ function accountView() {
     <div class="streakrow">${streakTiles}</div>
     <p class="hint" style="margin-top:8px">${curStreak > 0 ? `${curStreak} prono${curStreak > 1 ? 's' : ''} gagnant${curStreak > 1 ? 's' : ''} d'affilée en ce moment${curPct > 0 ? `, le prochain prono gagnant rapporte +${curPct}%` : ''}.` : "Pas de série en cours."} Meilleure série : <b style="color:var(--ink)">${bestStreak}</b>.</p>
   </div>
+  ${badgesPanel()}
   ${sparkline}
   ${byCircuit.length ? `
   <div class="panel">
