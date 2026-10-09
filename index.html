@@ -600,6 +600,8 @@ const S = {
   myHistory: null, // tout l'historique de pronostics du compte (onglet "Mon compte") ; null = pas encore chargé
   accountBoard: null, // classement général (scope ALL), pour afficher le rang dans "Mon compte"
   themeMode: 'light', // préférence sombre/clair de la personne (indépendante du THEME par tournoi) ; persistée en localStorage
+  soundOn: true, // préférence son activé/coupé ; persistée en localStorage (par défaut activé)
+  _lastStreakTier: null, // dernier palier de série connu (pour détecter un nouveau palier franchi et jouer le son associé)
 };
 // Préférence sombre/clair : lue une fois depuis localStorage (silencieux si
 // indisponible — fenêtre privée, stockage bloqué...). Ne touche en rien au
@@ -608,6 +610,11 @@ try {
   const savedMode = localStorage.getItem('spin_theme_mode');
   if (savedMode === 'dark' || savedMode === 'light' || savedMode === 'halloween') S.themeMode = savedMode;
 } catch (e) { /* stockage indisponible : on garde la valeur par défaut */ }
+// Préférence son : même mécanique/clé-style que le thème, lue une fois.
+try {
+  const savedSound = localStorage.getItem('spin_sound_on');
+  if (savedSound === '0') S.soundOn = false;
+} catch (e) { /* stockage indisponible : on garde le son activé par défaut */ }
 
 /* ---------- Petits outils ---------- */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -746,7 +753,107 @@ const fmtWhen = iso => new Date(iso).toLocaleString('fr-FR', { weekday: 'short',
 const fmtDay = iso => new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 const isLocked = m => m.status !== 'scheduled' || new Date(m.starts_at) <= new Date();
 
+/* ---------- Petits sons (Web Audio, synthétisés — pas de fichiers audio) ---------- */
+// Design sonore minimal : quelques bips courts (80-250ms) générés à la
+// volée avec des oscillateurs, pour un fichier unique sans ressource externe
+// à héberger/licencier. Le contexte audio n'est créé qu'au premier appel de
+// playSound(), jamais avant : les navigateurs bloquent toute lecture audio
+// avant un geste réel de la personne (clic, appui...), et on respecte cette
+// règle plutôt que d'essayer de la contourner. Tout est "best effort" :
+// Web Audio peut être indisponible ou lever une erreur dans certains
+// contextes restrictifs (vieux navigateur, certaines webviews...) — jamais
+// cela ne doit faire planter le reste de l'appli (render, toast, pick...),
+// d'où les try/catch à chaque étage.
+let _actx = null;
+function getAudioCtx() {
+  if (_actx) return _actx;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    _actx = new Ctx();
+    return _actx;
+  } catch (e) { return null; }
+}
+// Une tonalité brève : fréquence fixe ou glissée (freq -> freqEnd), durée,
+// forme d'onde, volume de pointe modeste. Enveloppe attaque rapide /
+// relâchement exponentiel doux pour éviter tout "clic" de coupure brutale.
+function tone(ctx, { freq, freqEnd, dur = 0.12, type = 'sine', gain = 0.08, delay = 0 }) {
+  const t0 = ctx.currentTime + delay;
+  const osc = ctx.createOscillator();
+  const amp = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  if (freqEnd != null) osc.frequency.exponentialRampToValueAtTime(Math.max(freqEnd, 1), t0 + dur);
+  amp.gain.setValueAtTime(0, t0);
+  amp.gain.linearRampToValueAtTime(gain, t0 + Math.min(0.015, dur / 4));
+  amp.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(amp).connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0 + dur + 0.02);
+}
+// Bibliothèque de sons courts, un par moment clé (voir playSound()). Les
+// variantes "Halloween" (grincement/whoosh grave au lieu d'une petite
+// fanfare) ne sont utilisées que quand S.themeMode === 'halloween' — même
+// système playSound()/SOUNDS, juste des paramètres de synthèse différents,
+// plutôt qu'un second système de sons à maintenir.
+const SOUNDS = {
+  // Pronostic confirmé / toast de succès : petit blip à deux tons, net et bref.
+  confirm(ctx) {
+    tone(ctx, { freq: 660, dur: 0.07, type: 'sine', gain: 0.07 });
+    tone(ctx, { freq: 880, dur: 0.09, type: 'sine', gain: 0.07, delay: 0.06 });
+  },
+  // Toast d'erreur : tonalité courte et descendante, nettement distincte du succès.
+  error(ctx) {
+    tone(ctx, { freq: 340, freqEnd: 180, dur: 0.18, type: 'square', gain: 0.05 });
+  },
+  // Tap sur un score de la "fiche de match" / changement d'onglet : tick
+  // discret, presque un murmure, pour rester agréable même répété vite.
+  tick(ctx) {
+    tone(ctx, { freq: 520, dur: 0.035, type: 'sine', gain: 0.035 });
+  },
+  // Nouveau palier de série franchi (vert -> orange -> violet -> bleu) :
+  // petite fanfare montante à 3 notes, un peu plus marquée (c'est rare).
+  milestone(ctx) {
+    if (S.themeMode === 'halloween') { SOUNDS.milestoneSpooky(ctx); return; }
+    [523.25, 659.25, 783.99].forEach((f, i) => tone(ctx, { freq: f, dur: 0.14, type: 'triangle', gain: 0.09, delay: i * 0.08 }));
+  },
+  // Variante Halloween du palier de série : un whoosh grave qui glisse vers
+  // l'aigu, façon grincement de porte/esprit qui passe — plus en phase avec
+  // l'ambiance fantomatique que la fanfare habituelle.
+  milestoneSpooky(ctx) {
+    tone(ctx, { freq: 110, freqEnd: 330, dur: 0.4, type: 'sawtooth', gain: 0.05 });
+    tone(ctx, { freq: 90, freqEnd: 60, dur: 0.3, type: 'sine', gain: 0.06, delay: 0.05 });
+  },
+};
+// Point d'entrée unique, à appeler partout dans l'appli : no-op silencieux
+// si le son est coupé (S.soundOn) ou si Web Audio est indisponible/a levé
+// une erreur — ne lève jamais d'exception vers l'appelant.
+function playSound(name) {
+  try {
+    if (!S.soundOn) return;
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    if (ctx.state === 'suspended' && ctx.resume) ctx.resume().catch(() => {});
+    const fn = SOUNDS[name];
+    if (fn) fn(ctx);
+  } catch (e) { /* un souci de son ne doit jamais casser l'appli */ }
+}
+// Détecte le franchissement d'un nouveau palier de série (voir flameTier)
+// depuis le dernier chargement de l'historique du compte, et joue le son
+// de palier le cas échéant. Ne joue rien au tout premier chargement de la
+// session (on ne fête pas une série déjà en cours au moment de se
+// connecter, seulement un palier franchi "sous les yeux" de la personne,
+// par ex. en revenant sur l'onglet "Mon compte" après un nouveau résultat).
+function checkStreakMilestone() {
+  try {
+    const tier = flameTier(myStreakInfo().now);
+    if (S._lastStreakTier != null && tier > S._lastStreakTier) playSound('milestone');
+    S._lastStreakTier = tier;
+  } catch (e) { /* ignore */ }
+}
+
 function toast(msg, isErr) {
+  playSound(isErr ? 'error' : 'confirm');
   const el = document.createElement('div');
   el.className = 'toast' + (isErr ? ' err' : '');
   el.setAttribute('role', 'status');
@@ -1028,6 +1135,7 @@ async function loadAccount() {
     if (b.error) throw b.error;
     S.myHistory = h.data || [];
     S.accountBoard = b.data || [];
+    checkStreakMilestone();
   } catch (e) {
     toast(friendlyError(e), true);
     S.myHistory = S.myHistory || [];
@@ -1072,13 +1180,13 @@ function render() {
       <nav class="nav" aria-label="Navigation principale">
         <div class="navbrand">${MARK(28)}</div>
         ${tabs.map(([k, label]) => `<button class="navitem" data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${ICONS[k]}<span>${label}</span>${k === 'matches' && todo ? `<span class="navdot" title="Pronos à faire">${todo}</span>` : ''}</button>`).join('')}
-        <div class="navfoot">${themeToggleBtn()}<span class="avatar">${esc(initial)}</span><button class="linkbtn" data-act="logout" aria-label="Se déconnecter" title="Se déconnecter">${ICONS.logout}</button></div>
+        <div class="navfoot">${themeToggleBtn()}${soundToggleBtn()}<span class="avatar">${esc(initial)}</span><button class="linkbtn" data-act="logout" aria-label="Se déconnecter" title="Se déconnecter">${ICONS.logout}</button></div>
       </nav>
       <div class="content">
         <div class="topbar">
           <header class="topbar-row">
             <div class="brand">${MARK(24)}${esc(APP_NAME)}</div>
-            <div class="me">${themeToggleBtn()}<span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
+            <div class="me">${themeToggleBtn()}${soundToggleBtn()}<span>${esc(S.pseudo)}</span><button class="linkbtn" data-act="logout">Se déconnecter</button></div>
           </header>
           ${liveTicker()}
         </div>
@@ -1104,6 +1212,15 @@ function themeToggleBtn() {
   const LABEL = { light: 'Mode clair actif', dark: 'Mode sombre actif', halloween: 'Mode Halloween actif' };
   const NEXT = { light: 'sombre', dark: 'Halloween', halloween: 'clair' };
   return `<button class="linkbtn themetoggle" data-act="thememode" aria-label="${LABEL[mode]}, passer en mode ${NEXT[mode]}" title="Changer de thème (clair / sombre / Halloween)">${ICON[mode]}</button>`;
+}
+// Bouton son activé/coupé : même style/emplacement que le bouton de thème
+// (bouton icône .linkbtn), préférence persistée en localStorage sur le même
+// modèle que spin_theme_mode. Par défaut activé.
+function soundToggleBtn() {
+  const on = S.soundOn;
+  const ICON_ON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M17.3 8.7a5 5 0 0 1 0 6.6M20 6a8.2 8.2 0 0 1 0 12"/></svg>';
+  const ICON_OFF = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16.2 9.2l5 5.6M21.2 9.2l-5 5.6"/></svg>';
+  return `<button class="linkbtn soundtoggle" data-act="soundtoggle" aria-label="${on ? 'Son activé, couper le son' : 'Son coupé, activer le son'}" title="Activer/couper les sons">${on ? ICON_ON : ICON_OFF}</button>`;
 }
 function keepRender() { const y = window.scrollY; render(); window.scrollTo(0, y); }
 // Change d'écran avec un fondu enchaîné natif quand le navigateur le sait faire
@@ -1409,6 +1526,7 @@ function matchRow(m, fresh, i, streakInfo) {
 async function pick(id, a, b) {
   const m = S.matches.find(x => x.id === id);
   if (!m || isLocked(m)) { toast('Trop tard : le match a commencé.', true); keepRender(); return; }
+  playSound('tick'); // retour tactile immédiat au tap, sans attendre la réponse réseau (toast() jouera le "confirm"/"error" une fois enregistré)
   const { data, error } = await sb.from('predictions')
     .upsert({ user_id: S.session.user.id, match_id: id, pred_a: a, pred_b: b }, { onConflict: 'user_id,match_id' })
     .select().single();
@@ -2094,9 +2212,16 @@ $app.addEventListener('click', async e => {
     try { localStorage.setItem('spin_theme_mode', S.themeMode); } catch (e) { /* ignore */ }
     navigate(render);
   }
+  else if (act === 'soundtoggle') {
+    S.soundOn = !S.soundOn;
+    try { localStorage.setItem('spin_sound_on', S.soundOn ? '1' : '0'); } catch (e) { /* ignore */ }
+    if (S.soundOn) playSound('tick'); // petit retour immédiat pour confirmer que le son est bien réactivé
+    navigate(render);
+  }
   else if (act === 'exportmatch') exportMatchImage(id);
   else if (act === 'exportboard') exportBoardImage();
   else if (act === 'tab') {
+    if (el.dataset.tab !== S.tab) playSound('tick'); // tap discret, seulement quand on change vraiment d'onglet
     S.tab = el.dataset.tab;
     if (S.tab === 'matches') S._freshMatches = true;
     if (S.tab === 'board') { S.board = null; navigate(render); await loadBoard(); }
