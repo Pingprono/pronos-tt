@@ -296,6 +296,21 @@ a{color:inherit}
 .streakbadge small{font:600 10px/1 var(--f-body);opacity:.85;margin-left:1px}
 .flameicon{flex:none;display:block}
 @media (prefers-reduced-motion:no-preference){ .flameflick{animation:flameflick 1.7s ease-in-out infinite} }
+
+/* --- Balles (mise stratégique par tournoi) : un petit stepper compact sous
+   le panneau de pronostic, dans le même esprit que .oddsgauge -- pas un
+   second widget encadré, juste une ligne de plus. --- */
+.ballesrow{display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap}
+.balleslabel{display:inline-flex;align-items:center;gap:5px;font:600 12px/1 var(--f-body);color:var(--ink-soft)}
+.ballesstepper{display:inline-flex;align-items:center;gap:7px;background:var(--paper-deep);border:1px solid var(--line-soft);
+  border-radius:999px;padding:3px 10px}
+.ballesstepper b{font:700 13.5px/1 var(--f-mono);color:var(--ink);min-width:11px;text-align:center}
+.ballesbtn{flex:none;width:21px;height:21px;border-radius:50%;background:var(--accent);color:#fff;border:0;
+  font:700 14px/1 var(--f-mono);display:flex;align-items:center;justify-content:center;padding:0}
+.ballesbtn:disabled{opacity:.3;cursor:not-allowed}
+.ballespct{font:600 11.5px/1 var(--f-body);color:var(--ink-soft)}
+.ballesbudget{flex:none;margin-left:auto;display:inline-flex;align-items:center;gap:4px;font:700 11.5px/1 var(--f-mono);
+  color:var(--ink-soft);white-space:nowrap}
 .laddwrap.compact{gap:9px}
 .laddwrap.compact .laddrow{padding:9px 12px}
 .subh{font:600 11px/1 var(--f-body);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:16px 0 8px}
@@ -613,6 +628,8 @@ const S = {
   themeMode: 'light', // préférence sombre/clair de la personne (indépendante du THEME par tournoi) ; persistée en localStorage
   soundOn: true, // préférence son activé/coupé ; persistée en localStorage (par défaut activé)
   _lastStreakTier: null, // dernier palier de série connu (pour détecter un nouveau palier franchi et jouer le son associé)
+  openRecap: null, // { key, circuit } du bilan de tournoi/journée animé actuellement ouvert ; null = fermé
+  recapAnimPlayed: false, // vrai une fois la séquence d'entrée du bilan déjà jouée (pour ne pas la rejouer à chaque micro-rendu)
 };
 // Préférence sombre/clair : lue une fois depuis localStorage (silencieux si
 // indisponible — fenêtre privée, stockage bloqué...). Ne touche en rien au
@@ -1045,6 +1062,116 @@ function streakBadgeHtml(streak, showPct) {
   const tier = flameTier(streak), pct = Math.round((streakMult(streak) - 1) * 100);
   return `<span class="streakbadge t${tier}" title="Série de ${streak} pronostic${streak > 1 ? 's' : ''} gagnant${streak > 1 ? 's' : ''} d'affilée${tier ? ` (palier ${esc(FLAME_LABELS[tier])})` : ''}">${flameSvg(streak, 15)}<b>${streak}</b>${showPct && pct > 0 ? `<small>+${pct}%</small>` : ''}</span>`;
 }
+
+// --- Balles (mise stratégique par tournoi) : au début de chaque tournoi WTT
+// (une valeur de m.competition) ou de chaque journée Pro A (une valeur de
+// m.round, Pro A n'ayant pas de saisons multiples pour l'instant -- même
+// regroupement que byTournament/byJournee dans accountView()), chacun reçoit
+// un stock FIXE de balles à misez sur ses pronostics de CE tournoi. Choix du
+// nombre : assez pour forcer de vrais choix sur un tournoi entier (impossible
+// de tout maximiser), pas assez pour être frustrant -- la plupart des
+// tournois WTT suivis / journées Pro A comptent entre 4 et 10 matchs.
+// Les balles ne se récupèrent JAMAIS en cours de tournoi, qu'on gagne ou
+// qu'on perde le match sur lequel elles sont misées : la mise est déduite dès
+// qu'elle est posée. Seul son MONTANT peut encore être changé (augmenté ou
+// diminué) tant que le match n'a pas commencé -- voir setBalles().
+//
+// Effet : une mise de N balles sur un match, s'il est gagnant (bon vainqueur
+// ou score exact), multiplie les points de CE match par (1 + 12 % * N),
+// plafonné à x1.60 (atteint pile à la mise maximum autorisée par match).
+// Composition avec le bonus de série : les deux multiplicateurs s'appliquent
+// indépendamment sur le barème de base (1 ou 3 points) et se MULTIPLIENT
+// entre eux avant un seul arrondi final ; le bonus outsider continue, lui, à
+// s'ajouter par-dessus sans jamais être multiplié -- exactement comme avant
+// cet ajout (voir pointsDetail ci-dessous). Formule et paliers IDENTIQUES à
+// ceux de la vue SQL "prediction_points" (ajout-balles.sql) : c'est elle qui
+// fait foi pour le classement, cette fonction n'est qu'un miroir d'affichage.
+// Exemple : score exact (3 pts), série de 5 pronos gagnants avant ce match
+// (x1.28), 3 balles misées (x1.36) -> round(3 * 1.28 * 1.36) = round(5.22)
+// = 5 points (+ bonus outsider éventuel, inchangé).
+const BALLES_STOCK = 10;          // stock de balles au début de chaque tournoi/journée
+const BALLES_MAX_PER_MATCH = 5;   // plafond par match (la moitié du stock de départ)
+const BALLES_BONUS_PER = 0.12;    // +12 % de multiplicateur par balle misée, si gagnant
+const BALLES_MULT_CEILING = 1.60; // plafond du multiplicateur (atteint à 5 balles : 1+0.12*5)
+
+// Clé de regroupement "tournoi" d'un match pour le budget de balles : un
+// tournoi WTT (m.competition) ou une journée Pro A (m.round) -- jamais mélangé
+// entre deux tournois WTT ni entre deux journées Pro A différentes.
+function ballesScopeKey(m) {
+  return m.circuit === 'WTT' ? (m.competition || 'WTT') : (m.round || m.competition || 'Pro A');
+}
+// Multiplicateur de points pour N balles misées (0 balle = x1, exactement le
+// comportement d'avant cet ajout : rétro-compatible avec tout pronostic jugé
+// sans donnée de mise).
+function ballesMult(staked) {
+  const n = Math.max(0, Math.min(staked || 0, BALLES_MAX_PER_MATCH));
+  return Math.min(1 + BALLES_BONUS_PER * n, BALLES_MULT_CEILING);
+}
+// Balles déjà dépensées par la personne connectée sur le même tournoi/journée
+// que `m` (toutes les entrées de S.myPreds dont le match correspondant
+// partage la même scope), hors le match `excludeMatchId` le cas échéant --
+// pour pouvoir calculer "combien puis-je encore mettre sur CE match-ci" sans
+// compter sa propre mise actuelle en double. Basé sur S.myPreds/S.matches
+// déjà chargés : aucune requête réseau supplémentaire.
+function ballesSpentInScope(m, excludeMatchId) {
+  const scope = ballesScopeKey(m);
+  let spent = 0;
+  for (const midStr in S.myPreds) {
+    const mid = +midStr;
+    if (excludeMatchId != null && mid === excludeMatchId) continue;
+    const p = S.myPreds[mid];
+    if (!p || !p.balles_staked) continue;
+    const mm = S.matches.find(x => x.id === mid);
+    if (!mm || mm.circuit !== m.circuit || ballesScopeKey(mm) !== scope) continue;
+    spent += p.balles_staked;
+  }
+  return spent;
+}
+// Balles encore disponibles pour ce tournoi/journée, en excluant la mise déjà
+// posée sur `m` elle-même (donc : "combien puis-je au total mettre sur ce
+// match" = ballesRemaining(m, m.id), mise actuelle de ce match comprise).
+function ballesRemaining(m, excludeMatchId) {
+  return Math.max(0, BALLES_STOCK - ballesSpentInScope(m, excludeMatchId));
+}
+// Petite icône "balle" en SVG inline (même esprit que flameSvg/MARK : pas
+// d'image, juste un trait fin qui prend la couleur courante).
+function ballIcon(size) {
+  size = size || 13;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8.4"/><path d="M8.2 6.6q2.4 5.4 0 10.8" stroke-width="1.3" opacity=".6"/></svg>`;
+}
+// Budget de balles d'un groupe de matchs (ex : l'en-tête d'un tournoi dans
+// matchesView) : n'affiche un total que si tous les matchs du groupe
+// partagent bien la même scope tournoi/journée (sinon le nombre serait
+// trompeur -- ça n'arrive qu'en filtre "Tous" si plusieurs journées Pro A
+// sont affichées ensemble, jamais dans les onglets WTT/Pro A filtrés).
+function groupBallesBudgetHtml(matches) {
+  if (!matches.length) return '';
+  const scopes = new Set(matches.map(ballesScopeKey));
+  if (scopes.size !== 1) return '';
+  const rem = ballesRemaining(matches[0], null);
+  return `<span class="ballesbudget" title="Balles encore disponibles pour ce tournoi">${ballIcon(12)}${rem}/${BALLES_STOCK}</span>`;
+}
+// Mini-stepper de mise, affiché sous le panneau de pronostic d'un match pas
+// encore jugé : visible seulement une fois un prono posé (on mise SUR un
+// pronostic existant, pas dans le vide), boutons désactivés une fois le match
+// verrouillé (même convention que les pastilles de score, voir chips()).
+function ballesStepperHtml(m) {
+  const mine = S.myPreds[m.id];
+  if (!mine) return '';
+  const locked = isLocked(m);
+  const staked = mine.balles_staked || 0;
+  const cap = Math.min(BALLES_MAX_PER_MATCH, ballesRemaining(m, m.id));
+  const pct = Math.round((ballesMult(staked) - 1) * 100);
+  return `<div class="ballesrow">
+    <span class="balleslabel">${ballIcon(13)}Balles misées</span>
+    <div class="ballesstepper">
+      <button type="button" class="ballesbtn" data-act="balles" data-id="${m.id}" data-v="${Math.max(0, staked - 1)}" aria-label="Retirer une balle" ${locked || staked <= 0 ? 'disabled' : ''}>−</button>
+      <b>${staked}</b>
+      <button type="button" class="ballesbtn" data-act="balles" data-id="${m.id}" data-v="${staked + 1}" aria-label="Ajouter une balle" ${locked || staked >= cap ? 'disabled' : ''}>+</button>
+    </div>
+    <small class="ballespct">${staked > 0 ? `×${ballesMult(staked).toFixed(2)} si gagnant (+${pct}%)` : `jusqu'à ${cap} ici`}</small>
+  </div>`;
+}
 // À partir d'un historique déjà trié chronologiquement (du plus ancien au
 // plus récent), calcule pour chaque entrée la série EN COURS avant et
 // après ce match. "bonVainqueur" = la victoire était la bonne (score exact
@@ -1085,8 +1212,18 @@ function pointsDetail(m, p, streakBefore) {
   const mult = bonVainqueur ? streakMult(streakBefore) : 1;
   const withStreak = Math.round(base * mult);
   const streakBonus = withStreak - base;
+  // Multiplicateur balles : se compose avec le bonus de série en multipliant
+  // les DEUX facteurs sur le barème de base avant un seul arrondi final (pas
+  // en enchaînant deux arrondis successifs) -- voir le commentaire au-dessus
+  // de BALLES_STOCK. staked = 0/undefined (tout pronostic jugé avant cet
+  // ajout) -> ballesMult = 1 -> withBalles === withStreak : comportement
+  // strictement inchangé, donc rétro-compatible.
+  const staked = p.balles_staked || 0;
+  const ballesMultiplier = bonVainqueur ? ballesMult(staked) : 1;
+  const withBalles = Math.round(base * mult * ballesMultiplier);
+  const ballesBonus = withBalles - withStreak;
   const bonus = outsiderBonus(m, bonVainqueur);
-  return { total: withStreak + bonus, base, bonus, streakBonus, exact, streakBefore: streakBefore || 0 };
+  return { total: withBalles + bonus, base, bonus, streakBonus, ballesBonus, balles: staked, exact, streakBefore: streakBefore || 0 };
 }
 function points(m, p, streakBefore) {
   const d = pointsDetail(m, p, streakBefore);
@@ -1157,12 +1294,17 @@ async function loadAccount() {
     // publique existante (utilisée par l'onglet Classements).
     const [h, b, cb, ap] = await Promise.all([
       sb.from('predictions')
-        .select('pred_a,pred_b,match_id,created_at,matches(circuit,status,score_a,score_b,seed_a,seed_b,starts_at,competition,round,side_a,side_b,wins_needed)')
+        .select('pred_a,pred_b,match_id,created_at,balles_staked,matches(circuit,status,score_a,score_b,seed_a,seed_b,starts_at,competition,round,side_a,side_b,wins_needed)')
         .eq('user_id', uid).limit(5000),
       sb.from('leaderboard').select('*').order('total_points', { ascending: false }).order('exact_scores', { ascending: false }),
       sb.from('leaderboard_by_circuit').select('*'),
+      // competition/round/tier ajoutés à ce select existant (et uniquement
+      // à celui-ci) pour pouvoir regrouper ces pronostics de tout le monde
+      // par tournoi WTT / journée Pro A dans le bilan animé — sans requête
+      // supplémentaire, juste trois colonnes de plus sur une jointure déjà
+      // là pour les badges.
       sb.from('predictions')
-        .select('user_id,match_id,pred_a,pred_b,matches(circuit,status,score_a,score_b,seed_a,seed_b,starts_at)')
+        .select('user_id,match_id,pred_a,pred_b,balles_staked,matches(circuit,status,score_a,score_b,seed_a,seed_b,starts_at,competition,round,tier)')
         .limit(20000),
     ]);
     if (h.error) throw h.error;
@@ -1242,7 +1384,8 @@ function render() {
         </div>
         <main>${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
       </div>
-    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}`;
+    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}`;
+  if (S.openRecap && !S.recapAnimPlayed) { S.recapAnimPlayed = true; mountRecapAnimation(); }
 }
 // Bouton clair/sombre/Halloween : préférence globale de la personne,
 // indépendante du THEME par tournoi (voir resolveThemeKey). Un seul bouton
@@ -1409,7 +1552,7 @@ function matchesView() {
         rows += matchRow(m, fresh, i++, streakInfo);
       }
       return `<div class="complabel" style="${themeVarsCss(themeKeyFor(g.matches[0]))}"><span class="compbar" aria-hidden="true"></span>
-        <div><b>${esc(g.competition)}</b><small>${n} match${n > 1 ? 's' : ''}</small></div></div>
+        <div><b>${esc(g.competition)}</b><small>${n} match${n > 1 ? 's' : ''}</small></div>${groupBallesBudgetHtml(g.matches)}</div>
         <div class="complist">${rows}</div>`;
     }).join('');
   }
@@ -1518,6 +1661,7 @@ function matchRow(m, fresh, i, streakInfo) {
       </div>
       <div class="predstatus">${status}${streakTeaser}</div>
       ${gauge}
+      ${ballesStepperHtml(m)}
     </div>`;
   } else {
     let foot, stamp = '';
@@ -1540,6 +1684,7 @@ function matchRow(m, fresh, i, streakInfo) {
       }
       const bonusBits = [];
       if (det && det.streakBonus) bonusBits.push(`bonus série +${det.streakBonus}`);
+      if (det && det.ballesBonus) bonusBits.push(`bonus balles (${det.balles}) +${det.ballesBonus}`);
       if (det && det.bonus) bonusBits.push(`bonus outsider +${det.bonus}`);
       foot = `<span>${mine ? `Ton prono : ${mine.pred_a}–${mine.pred_b}` : `Tu n'as pas fait de prono.`}</span>
         ${bonusBits.length ? `<span class="hint" style="margin:2px 0 0">(dont ${bonusBits.join(', ')})</span>` : ''}
@@ -1585,9 +1730,30 @@ async function pick(id, a, b) {
   toast(`Prono enregistré : ${a}–${b}`);
   keepRender();
 }
+// Change la mise de balles sur un pronostic déjà posé (voir ballesStepperHtml
+// / BALLES_STOCK). newVal est la valeur ABSOLUE visée (pas un delta) ; elle
+// est re-plafonnée ici (jamais confiance aveugle dans les data-v du bouton
+// cliqué) par le plafond par match ET le budget restant du tournoi -- la
+// vérité finale reste de toute façon le déclencheur SQL (check_prediction,
+// voir ajout-balles.sql), qui referait le même calcul côté base de données.
+async function setBalles(id, newVal) {
+  const m = S.matches.find(x => x.id === id);
+  const mine = S.myPreds[id];
+  if (!m || isLocked(m)) { toast('Trop tard : le match a commencé.', true); keepRender(); return; }
+  if (!mine) { toast('Fais d’abord un prono sur ce match.', true); keepRender(); return; }
+  const cap = Math.min(BALLES_MAX_PER_MATCH, ballesRemaining(m, id));
+  const v = Math.max(0, Math.min(newVal, cap));
+  if (v === (mine.balles_staked || 0)) { keepRender(); return; }
+  const { data, error } = await sb.from('predictions').update({ balles_staked: v }).eq('id', mine.id).select().single();
+  if (error) { toast(friendlyError(error), true); return; }
+  S.myPreds[id] = data;
+  playSound('tick');
+  toast(v > 0 ? `${v} balle${v > 1 ? 's' : ''} misée${v > 1 ? 's' : ''} sur ce match.` : 'Mise de balles retirée.');
+  keepRender();
+}
 async function toggleFriends(id) {
   if (S.openFriends[id]) { S.openFriends[id] = false; keepRender(); return; }
-  const { data, error } = await sb.from('predictions').select('user_id,pred_a,pred_b,profiles(pseudo)').eq('match_id', id);
+  const { data, error } = await sb.from('predictions').select('user_id,pred_a,pred_b,balles_staked,profiles(pseudo)').eq('match_id', id);
   if (error) { toast(friendlyError(error), true); return; }
   S.friends[id] = data || []; S.openFriends[id] = true; keepRender();
 }
@@ -1922,11 +2088,32 @@ function badgesPanel() {
 
 // Rangée compacte façon "laddrow" pour un groupe tournoi/journée (réutilisée
 // par le panneau "Par tournoi / saison" de "Mon compte").
-function breakdownRow(label, s, col) {
+function breakdownRow(label, s, col, circuit) {
+  // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
+  // entièrement terminé (voir isTournamentFinished) : pas de bilan sur
+  // quelque chose encore en cours.
+  const recapBtn = circuit && isTournamentFinished(circuit, label)
+    ? `<button class="linkbtn recapbtn" data-act="recap" data-key="${esc(label)}" data-circuit="${circuit}">Voir le récap ✨</button>`
+    : '';
   return `<div class="laddrow" style="--ladcol:${col}">
     <div class="laddhead"><span class="laddname">${esc(label)}</span><span class="laddpts">${s.pts}<small>pts</small></span></div>
     <div class="laddsub">${s.n} prono${s.n > 1 ? 's' : ''} jugé${s.n > 1 ? 's' : ''} · ${s.exact} exact${s.exact > 1 ? 's' : ''}</div>
+    ${recapBtn}
   </div>`;
+}
+// Un tournoi WTT / une journée Pro A est "terminé" s'il n'a plus aucun match
+// encore programmé ou en direct. S'il n'apparaît plus du tout dans S.matches
+// (fenêtre glissante de 90 jours, voir reloadMatches), c'est forcément qu'il
+// est déjà passé depuis longtemps : terminé aussi.
+function isTournamentFinished(circuit, key) {
+  const ms = S.matches.filter(m => m.circuit === circuit && tournamentGroupKey(m) === key);
+  if (!ms.length) return true;
+  return ms.every(m => m.status === 'finished' || m.status === 'cancelled');
+}
+// Clé de regroupement tournoi (WTT) / journée (Pro A) d'un match, identique
+// à celle déjà utilisée pour "Par tournoi / saison" dans accountView.
+function tournamentGroupKey(m) {
+  return m.circuit === 'WTT' ? (m.competition || 'WTT') : (m.round || 'Pro A');
 }
 /* --- "Mon compte" : statistiques personnelles sur l'ensemble de l'historique
    de pronostics du compte (pas seulement les matchs encore affichés dans
@@ -2047,11 +2234,11 @@ function accountView() {
   }
   const tournamentRows = Object.entries(byTournament)
     .sort((a, b) => new Date(b[1].last) - new Date(a[1].last))
-    .map(([name, s]) => breakdownRow(name, s, THEME.WTT_SMASH.accent)).join('');
+    .map(([name, s]) => breakdownRow(name, s, THEME.WTT_SMASH.accent, 'WTT')).join('');
   const journeeNum = k => { const mm = /^Journée (\d+)$/.exec(k); return mm ? +mm[1] : 999; };
   const journeeRows = Object.entries(byJournee)
     .sort((a, b) => journeeNum(a[0]) - journeeNum(b[0]))
-    .map(([name, s]) => breakdownRow(name, s, THEME.PRO_A.accent)).join('');
+    .map(([name, s]) => breakdownRow(name, s, THEME.PRO_A.accent, 'PRO_A')).join('');
   const seasonPanel = (tournamentRows || journeeRows) ? `
   <div class="panel">
     <h3>Par tournoi / saison</h3>
@@ -2134,6 +2321,171 @@ function accountView() {
     <h3>Forme récente</h3>
     <ul class="cmlist">${recentRows}</ul>
   </div>`;
+}
+
+/* =============================================================================
+   Bilan de tournoi animé ("récap") — déclenché depuis "Par tournoi / saison"
+   dans "Mon compte" (bouton "Voir le récap" posé par breakdownRow, voir plus
+   haut). Un seul moment de motion design soigné (bannière, rang et points qui
+   comptent jusqu'à leur valeur, podium) plutôt que des micro-animations
+   dispersées partout — cohérent avec le reste de l'appli (tampons, pastilles,
+   chiffres en mono). Respecte prefers-reduced-motion : état final affiché
+   d'un coup, sans séquence, voir mountRecapAnimation() et le CSS .recap-step.
+   ========================================================================= */
+
+// Construit le classement de CE tournoi/journée, tous les amis confondus, à
+// partir de S.allJudgedPreds (pronostics de tout le monde déjà jugés, voir
+// loadAccount) : chaque personne garde SA propre série (computeStreakSeries)
+// calculée sur TOUT son historique chronologique (comme sur le vrai
+// classement), seuls les totaux affichés sont ensuite limités à ce
+// tournoi/journée. Ne touche ni ne dépend d'aucune nouvelle requête réseau.
+function computeRecapData(key, circuit) {
+  if (!S.allJudgedPreds || !S.accountBoard) return null;
+  const uid = S.session && S.session.user.id;
+  const pseudoOf = {};
+  (S.accountBoard || []).forEach(r => { pseudoOf[r.user_id] = r.pseudo; });
+
+  const byUser = {};
+  for (const r of S.allJudgedPreds) {
+    if (!r.matches) continue;
+    (byUser[r.user_id] || (byUser[r.user_id] = [])).push(r);
+  }
+
+  const rows = [];
+  for (const userId in byUser) {
+    const sorted = byUser[userId].slice().sort((a, b) => new Date(a.matches.starts_at) - new Date(b.matches.starts_at));
+    const scored = computeStreakSeries(sorted).map(h => ({ ...h, pt: pointsDetail(h.matches, h, h.streakBefore) }));
+    const inT = scored.filter(h => h.matches.circuit === circuit && tournamentGroupKey(h.matches) === key);
+    if (!inT.length) continue;
+    let bestStreakInT = 0; for (const h of inT) bestStreakInT = Math.max(bestStreakInT, h.streakAfter);
+    rows.push({
+      userId, pseudo: pseudoOf[userId] || '—',
+      pts: inT.reduce((s, h) => s + h.pt.total, 0),
+      exact: inT.filter(h => h.pt.exact).length,
+      n: inT.length,
+      bestStreak: bestStreakInT,
+    });
+  }
+  rows.sort((a, b) => b.pts - a.pts || b.exact - a.exact);
+  let prevKey = null, rk = 0;
+  rows.forEach((r, i) => {
+    const k = r.pts + '/' + r.exact;
+    if (k !== prevKey) { rk = i + 1; prevKey = k; }
+    r.rank = rk;
+  });
+  const me = rows.find(r => r.userId === uid) || null;
+  const theme = circuit === 'PRO_A' ? THEME.PRO_A : THEME[TIER_KEY[(S.matches.find(m => m.circuit === 'WTT' && tournamentGroupKey(m) === key) || {}).tier]] || THEME.WTT_DEFAULT;
+  return { key, circuit, rows, me, podium: rows.slice(0, 3), theme };
+}
+
+// Badges débloqués "sous les yeux" pendant CE tournoi précisément (pas avant,
+// pas après) : même mécanique que checkNewBadges, rejouée sur deux
+// sous-ensembles de l'historique perso (juste avant / jusqu'à la fin du
+// tournoi) pour isoler ce qui a basculé pendant cette fenêtre-là. Ne modifie
+// ni ne rappelle computeBadges/checkNewBadges (pas d'effet de bord, pas de
+// double notification).
+function recapNewBadges(key, circuit) {
+  const finished = myJudgedHistory();
+  if (!finished || !finished.length) return [];
+  const inT = finished.filter(h => h.matches.circuit === circuit && tournamentGroupKey(h.matches) === key);
+  if (!inT.length) return [];
+  const firstTs = inT[0].matches.starts_at, lastTs = inT[inT.length - 1].matches.starts_at;
+  const badgesOf = list => {
+    const n = list.length, goodN = list.filter(h => h.pt.total > 0).length;
+    let bestStreak = 0; for (const h of list) bestStreak = Math.max(bestStreak, h.streakAfter);
+    const ctx = { finished: list, n, goodN, bestStreak, uid: S.session && S.session.user.id };
+    return new Set(BADGE_DEFS.filter(d => d.test(ctx)).map(d => d.id));
+  };
+  const before = badgesOf(finished.filter(h => h.matches.starts_at < firstTs));
+  const after = badgesOf(finished.filter(h => h.matches.starts_at <= lastTs));
+  return BADGE_DEFS.filter(d => after.has(d.id) && !before.has(d.id));
+}
+
+function podiumColumn(row, place) {
+  if (!row) return '';
+  const H = { 1: 96, 2: 74, 3: 58 }, COL = { 1: '#F0C544', 2: '#CBD3DC', 3: '#D79A6B' };
+  return `<div class="podiumcol place${place}">
+    <div class="podiumname">${esc(row.pseudo)}</div>
+    <div class="podiumpts">${row.pts}<small>pts</small></div>
+    <div class="podiumbar" style="height:${H[place]}px;background:${COL[place]}"><span>${place}</span></div>
+  </div>`;
+}
+
+function recapModal(key, circuit) {
+  const data = computeRecapData(key, circuit);
+  if (!data || !data.me) return '';
+  const { me, podium, theme } = data;
+  const newBadges = recapNewBadges(key, circuit);
+  const order = [podium[1], podium[0], podium[2]], places = [2, 1, 3];
+  const podiumHtml = order.map((r, i) => podiumColumn(r, places[i])).join('');
+  const circuitLabel = circuit === 'WTT' ? 'Circuit WTT' : 'Pro A';
+  return `
+  <div class="modalbackdrop" data-act="closerecap">
+    <div class="modal recapmodal" role="dialog" aria-modal="true" aria-label="Bilan — ${esc(key)}" data-act="stop" style="${themeVarsCss(Object.keys(THEME).find(k => THEME[k] === theme) || 'ALL')}">
+      <button class="modalclose" data-act="closerecap" aria-label="Fermer">&times;</button>
+      <div class="recapbanner recap-step" style="animation-delay:.02s">
+        <div class="recapkicker">Bilan de tournoi</div>
+        <h2 class="recapname">${esc(key)}</h2>
+        <div class="recapsub">${circuitLabel} · ${me.n} prono${me.n > 1 ? 's' : ''} jugé${me.n > 1 ? 's' : ''}</div>
+      </div>
+      <div class="modalbody recapbody">
+        <div class="recap-step" style="animation-delay:.16s">
+          <div class="statrow">
+            <div class="stattile"><b class="accent recap-count" data-target="${me.rank}" data-prefix="#" data-delay="140">#0</b><span>ton rang</span></div>
+            <div class="stattile"><b class="recap-count" data-target="${me.pts}" data-delay="300">0</b><span>${me.pts === 1 ? 'point' : 'points'}</span></div>
+          </div>
+        </div>
+        <div class="recap-step" style="animation-delay:.3s">
+          <div class="statrow">
+            <div class="stattile"><b class="recap-count" data-target="${me.bestStreak}" data-delay="480">0</b><span>meilleure série</span></div>
+            <div class="stattile"><b class="recap-count" data-target="${me.exact}" data-delay="600">0</b><span>score${me.exact > 1 ? 's' : ''} exact${me.exact > 1 ? 's' : ''}</span></div>
+          </div>
+        </div>
+        ${newBadges.length ? `
+        <div class="recap-step" style="animation-delay:.44s">
+          <h3 class="subh" style="margin-top:14px">Badge débloqué pendant ce tournoi</h3>
+          <div class="badgegrid">${newBadges.map(b => `
+            <div class="badgecell unlocked"><div class="badgeicon">${badgeIcon(b.id, b.name)}</div><span class="badgename">${esc(b.name)}</span></div>`).join('')}</div>
+        </div>` : ''}
+        ${podium.length ? `
+        <div class="recap-step" style="animation-delay:.58s">
+          <h3 class="subh" style="margin-top:14px">Podium du tournoi</h3>
+          <div class="recap-podium">${podiumHtml}</div>
+        </div>` : ''}
+        <button class="btn sec recap-step" style="animation-delay:.7s" data-act="exportrecap" data-key="${esc(key)}" data-circuit="${esc(circuit)}">Exporter en image</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Fait "compter" les chiffres du bilan jusqu'à leur valeur réelle, avec un
+// décalage croissant par ligne (le vrai motion design de cette fonctionnalité
+// est ici, pas éparpillé ailleurs dans l'appli). Respecte scrupuleusement
+// prefers-reduced-motion : affiche directement la valeur finale, sans aucune
+// séquence ni délai, pour qui a demandé moins de mouvement.
+function mountRecapAnimation() {
+  try {
+    const modal = document.querySelector('.recapmodal');
+    if (!modal) return;
+    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    modal.querySelectorAll('.recap-count[data-target]').forEach(el => {
+      const target = Number(el.dataset.target) || 0;
+      const prefix = el.dataset.prefix || '';
+      const delay = reduced ? 0 : (Number(el.dataset.delay) || 0);
+      if (reduced) { el.textContent = prefix + target; return; }
+      el.textContent = prefix + '0';
+      setTimeout(() => {
+        const dur = 850, start = performance.now();
+        const tick = now => {
+          const p = Math.min(1, (now - start) / dur);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = prefix + Math.round(target * eased);
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }, delay);
+    });
+  } catch (e) { /* une animation ratée ne doit jamais empêcher d'ouvrir le bilan */ }
 }
 
 /* --- Fiche détail d'un joueur ou d'une équipe (clic sur son nom, où qu'il
@@ -2451,6 +2803,7 @@ async function exportMatchImage(id) {
     ctx.fillStyle = '#9A9CA6'; ctx.font = '600 13px Arial, sans-serif';
     let yy = 330;
     if (det.streakBonus) { ctx.fillText(`dont bonus série +${det.streakBonus}`, 28, yy); yy += 20; }
+    if (det.ballesBonus) { ctx.fillText(`dont bonus balles (${det.balles}) +${det.ballesBonus}`, 28, yy); yy += 20; }
     if (det.bonus) { ctx.fillText(`dont bonus outsider +${det.bonus}`, 28, yy); yy += 20; }
   } else if (mine) {
     ctx.fillStyle = '#9A9CA6'; ctx.font = '600 13px Arial, sans-serif';
@@ -2517,6 +2870,9 @@ $app.addEventListener('click', async e => {
   }
   else if (act === 'exportmatch') exportMatchImage(id);
   else if (act === 'exportboard') exportBoardImage();
+  else if (act === 'exportrecap') exportRecapImage(el.dataset.key, el.dataset.circuit);
+  else if (act === 'recap') { S.openRecap = { key: el.dataset.key, circuit: el.dataset.circuit }; S.recapAnimPlayed = false; navigate(render); }
+  else if (act === 'closerecap') { S.openRecap = null; keepRender(); }
   else if (act === 'tab') {
     if (el.dataset.tab !== S.tab) playSound('tick'); // tap discret, seulement quand on change vraiment d'onglet
     S.tab = el.dataset.tab;
@@ -2535,6 +2891,7 @@ $app.addEventListener('click', async e => {
   else if (act === 'closecompetitor') { S.openCompetitor = null; keepRender(); }
   else if (act === 'stop') { /* clic à l'intérieur de la fiche détail : ne pas la fermer */ }
   else if (act === 'pick') pick(id, Number(el.dataset.a), Number(el.dataset.b));
+  else if (act === 'balles') setBalles(id, Number(v));
   else if (act === 'friends') toggleFriends(id);
   else if (act === 'adm-result') saveResult(id);
   else if (act === 'adm-cancel') cancelMatch(id);
@@ -2545,6 +2902,7 @@ $app.addEventListener('click', async e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && S.openCompetitor) { S.openCompetitor = null; keepRender(); }
+  if (e.key === 'Escape' && S.openRecap) { S.openRecap = null; keepRender(); }
 });
 $app.addEventListener('submit', e => {
   e.preventDefault();
