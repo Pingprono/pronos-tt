@@ -59,8 +59,13 @@
 html{-webkit-text-size-adjust:100%}
 body{
   margin:0;min-height:100vh;color:var(--ink);font:400 15.5px/1.48 var(--f-body);
-  background:var(--paper);font-variant-numeric:tabular-nums;
+  background-color:var(--paper);font-variant-numeric:tabular-nums;
   transition:background-color .3s var(--ease);
+  /* Grain de papier façon trame halftone : la base de l'identité visuelle,
+     posée sur TOUTE l'appli (pas une texture par écran). Un simple dégradé
+     radial répété, assez discret pour ne jamais gêner la lecture. */
+  background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1.4px);
+  background-size:9px 9px;
 }
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -196,7 +201,8 @@ a{color:inherit}
    coup d'œil, comme une vraie app de scores plutôt qu'un flux de cartes.
    ----------------------------------------------------------------------- */
 .complabel{display:flex;align-items:center;gap:9px;margin:22px 0 2px;padding:9px 12px;border-radius:9px 9px 0 0;
-  background:rgba(var(--accent-rgb),.14);color:var(--ink)}
+  background-color:rgba(var(--accent-rgb),.14);color:var(--ink);
+  background-image:radial-gradient(rgba(var(--accent-rgb),.55) 1.1px, transparent 1.7px);background-size:8px 8px}
 .complabel:first-of-type{margin-top:4px}
 .compbar{width:4px;align-self:stretch;border-radius:2px;background:var(--accent);flex:none}
 .complabel b{font:600 13.5px/1.2 var(--f-display)}
@@ -262,12 +268,13 @@ a{color:inherit}
    terminé, chiffre en gros caractères mono, légèrement de travers comme un
    coup de tampon sur une feuille de match. */
 .stamp{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  width:54px;height:54px;border-radius:10px;border:2px solid currentColor;transform:rotate(-4deg)}
+  width:54px;height:54px;border-radius:10px;border:2px solid currentColor;transform:rotate(-4deg);
+  background-image:radial-gradient(color-mix(in srgb, currentColor 55%, transparent) 1px, transparent 1.6px);background-size:6px 6px}
 .stamp b{font:700 21px/1 var(--f-mono)}
 .stamp span{font:600 9px/1 var(--f-body);text-transform:uppercase;letter-spacing:.05em;opacity:.85;margin-top:1px}
-.stamp.p3{color:var(--accent);background:rgba(var(--accent-rgb),.12)}
-.stamp.p1{color:var(--good);background:rgba(var(--good-rgb),.16)}
-.stamp.p0{color:var(--ink-soft);background:var(--line-soft);border-style:dashed;transform:rotate(0)}
+.stamp.p3{color:var(--accent);background-color:rgba(var(--accent-rgb),.12)}
+.stamp.p1{color:var(--good);background-color:rgba(var(--good-rgb),.16)}
+.stamp.p0{color:var(--ink-soft);background-color:var(--line-soft);border-style:dashed;transform:rotate(0)}
 .stamp.big{width:66px;height:66px;flex:none}
 .stamp.big b{font-size:25px}
 
@@ -368,7 +375,9 @@ a{color:inherit}
 @media (min-width:640px){ .modal{border-radius:14px} }
 .modalclose{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:inherit;font-size:19px;line-height:1;cursor:pointer;z-index:1}
 .modalclose:hover{background:rgba(255,255,255,.22)}
-.modalhead{padding:22px 44px 18px 20px;background:var(--accent);color:#fff}
+.modalhead{padding:22px 44px 18px 20px;color:#fff;
+  background-color:var(--accent);
+  background-image:radial-gradient(rgba(255,255,255,.16) 1.1px, transparent 1.7px);background-size:9px 9px}
 .modalname{font:600 22px/1.25 var(--f-display);display:flex;align-items:center;gap:8px}
 .modalsub{font-size:13px;opacity:.85;margin-top:3px}
 .modalstats{display:flex;gap:18px;margin-top:16px}
@@ -449,6 +458,46 @@ textarea{resize:vertical}
 .toast.err{background:var(--bad);color:#fff}
 .empty{padding:30px 4px;text-align:center;color:var(--ink-soft)}
 .loading{padding:70px 0;text-align:center;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:12px}
+
+/* -----------------------------------------------------------------------
+   Bilan de tournoi ("récap") : seul écran à porter la touche Retro VHS
+   évoquée pour l'identité visuelle — en plus de la trame halftone déjà
+   posée partout (bandeau, podium), effet "re-diffusion" d'un moment déjà
+   joué : scanlines, aberration chromatique sur le titre, mentions REC /
+   REPLAY façon caméscope. Jamais ailleurs dans l'appli : utilisé une seule
+   fois, sur un seul écran, il reste un moment plutôt qu'une fatigue visuelle.
+   ----------------------------------------------------------------------- */
+.recapmodal{overflow:hidden}
+.recapbanner{position:relative;overflow:hidden;padding:22px 20px 20px;border-radius:16px 16px 0 0;color:#fff;
+  background-color:var(--accent);
+  background-image:radial-gradient(rgba(255,255,255,.16) 1.1px, transparent 1.7px);background-size:9px 9px}
+.recapbanner::before{content:"● REC";position:absolute;top:12px;left:20px;font:700 10px/1 var(--f-mono);
+  letter-spacing:.08em;color:rgba(255,255,255,.75)}
+@media (prefers-reduced-motion:no-preference){ .recapbanner::before{animation:blink 1.6s step-end infinite} }
+.recapbanner::after{content:"REPLAY";position:absolute;bottom:10px;right:20px;font:700 10px/1 var(--f-mono);
+  letter-spacing:.1em;color:rgba(255,255,255,.55)}
+.recapkicker{font:700 11px/1 var(--f-body);text-transform:uppercase;letter-spacing:.08em;opacity:.8;margin:14px 0 6px}
+.recapname{font:700 24px/1.15 var(--f-display);margin:0;
+  text-shadow:1.5px 0 rgba(255,60,80,.55),-1.5px 0 rgba(60,200,255,.5)}
+.recapsub{font-size:13px;opacity:.85;margin-top:5px}
+.recapbody{position:relative}
+.recapbody::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:repeating-linear-gradient(to bottom, rgba(255,255,255,.03) 0 1px, transparent 1px 3px)}
+.recap-step{animation:recapIn .5s var(--ease-spring) both}
+@keyframes recapIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.recap-podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-top:4px}
+.podiumcol{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;max-width:108px;min-width:0}
+.podiumname{font:600 12.5px/1.2 var(--f-display);color:var(--ink);text-align:center;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.place1 .podiumname{color:#F0C544}
+.place2 .podiumname{color:#CBD3DC}
+.place3 .podiumname{color:#D79A6B}
+.podiumpts{font:700 15px/1 var(--f-display);color:var(--ink-soft)}
+.podiumpts small{font-size:10.5px;font-weight:500;margin-left:2px;font-family:var(--f-body)}
+.podiumbar{width:100%;border-radius:8px 8px 3px 3px;display:flex;align-items:flex-start;justify-content:center;
+  padding-top:8px;background-color:var(--pcol);
+  background-image:radial-gradient(rgba(0,0,0,.18) 1px, transparent 1.6px);background-size:7px 7px}
+.podiumbar span{font:700 15px/1 var(--f-display);color:rgba(0,0,0,.55)}
 
 @keyframes rowIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -2408,7 +2457,7 @@ function podiumColumn(row, place) {
   return `<div class="podiumcol place${place}">
     <div class="podiumname">${esc(row.pseudo)}</div>
     <div class="podiumpts">${row.pts}<small>pts</small></div>
-    <div class="podiumbar" style="height:${H[place]}px;background:${COL[place]}"><span>${place}</span></div>
+    <div class="podiumbar" style="height:${H[place]}px;--pcol:${COL[place]}"><span>${place}</span></div>
   </div>`;
 }
 
