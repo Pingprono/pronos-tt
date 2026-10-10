@@ -44,7 +44,7 @@ jobs:
             subEvents: ["Men's Singles", "Women's Singles"],   // simples messieurs et dames
             rounds: null,                                       // null = tout le tableau principal ; ou une liste, ex : ['8FNL', 'QFNL', 'SFNL', 'FNL-'] (dès les huitièmes)
             daysAhead: 7,                                       // on regarde les tournois qui commencent dans les 7 jours
-            daysAfter: 2,                                       // et ceux terminés depuis moins de 2 jours
+            daysAfter: 7,                                       // et ceux terminés depuis moins de 7 jours (résultats publiés en retard)
             winsByType: { 'WTT Star Contender': 3 },            // victoires nécessaires (3 = au meilleur des 5), 3 par défaut
             winsDefault: 3,
           };
@@ -94,6 +94,19 @@ jobs:
             return text ? JSON.parse(text) : null;
           }
 
+          // Lecture COMPLÈTE d'une table : Supabase plafonne chaque réponse à 1000
+          // lignes (réglage "Max rows"), même avec un "limit" plus grand. Au-delà, des
+          // joueurs ou des matchs manquaient silencieusement au robot (doublons,
+          // classements mondiaux jamais mis à jour). On lit donc page par page.
+          async function dbAll(path) {
+            const all = [];
+            for (let offset = 0; ; offset += 1000) {
+              const page = await db('GET', `${path}${path.includes('?') ? '&' : '?'}limit=1000&offset=${offset}`);
+              all.push(...(page || []));
+              if (!page || page.length < 1000) return all;
+            }
+          }
+
           // Convertit une date et une heure locales d'un fuseau (ex : Europe/Paris) en heure universelle.
           function zonedToISO(y, m, d, hh, mm, tz) {
             const guess = Date.UTC(y, m - 1, d, hh, mm);
@@ -117,6 +130,11 @@ jobs:
           // des différences mineures de formatage (accents, espaces multiples, casse).
           const normName = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
             .toLowerCase().replace(/\s+/g, ' ').trim();
+          // Clé de rapprochement : mêmes mots dans n'importe quel ordre ("Yingsha SUN"
+          // sur la fiche de match = "SUN Yingsha" dans le classement), sans le
+          // suffixe de pays ajouté aux homonymes ("Nom (FRA)"), tirets = espaces.
+          const nameKey = s => normName(s).replace(/\s*\([a-z]{3}\)$/, '').replace(/[-‐]/g, ' ')
+            .split(' ').filter(Boolean).sort().join(' ');
 
           // La FFTT donne parfois une "dateprevue" qui n'est qu'un placeholder
           // (souvent le 1er janvier) pour les rencontres dont la date réelle n'est
@@ -157,7 +175,7 @@ jobs:
             const started = classement.some(c => parseInt(c.joue, 10) > 0);
             const rank = new Map(classement.map(c => [String(c.idequipe), c]));
 
-            const existing = await db('GET', `competitors?circuit=eq.${div.circuit}&select=id,name,source,external_id&limit=2000`);
+            const existing = await dbAll(`competitors?circuit=eq.${div.circuit}&select=id,name,source,external_id&order=id`);
             const byExt = new Map(existing.filter(c => c.source === 'fftt').map(c => [String(c.external_id), c]));
             const byName = new Map(existing.map(c => [c.name.toLowerCase(), c]));
 
@@ -182,7 +200,7 @@ jobs:
           }
 
           async function syncMatches(div, rencontres, idByExt) {
-            const existing = await db('GET', `matches?source=eq.fftt&circuit=eq.${div.circuit}&select=external_id,status,score_a,score_b,wins_needed&limit=5000`);
+            const existing = await dbAll(`matches?source=eq.fftt&circuit=eq.${div.circuit}&select=external_id,status,score_a,score_b,wins_needed&order=id`);
             const ex = new Map(existing.map(m => [String(m.external_id), m]));
             const rows = [];
             const s = { total: 0, nouveaux: 0, termines: 0, direct: 0, ignores: 0, inattendus: 0, dates_suspectes: 0 };
@@ -437,7 +455,7 @@ jobs:
               if (!cur || better(score, cur.score)) best.set(u.Code, { u, score, i });
             });
 
-            const existing = await db('GET', `matches?source=eq.wtt&circuit=eq.WTT&external_id=like.${id}:*&select=external_id,status,score_a,score_b,wins_needed,seed_a,seed_b&limit=5000`);
+            const existing = await dbAll(`matches?source=eq.wtt&circuit=eq.WTT&external_id=like.${id}:*&select=external_id,status,score_a,score_b,wins_needed,seed_a,seed_b&order=id`);
             const ex = new Map(existing.map(m => [String(m.external_id), m]));
             const winsDefault = WTT_CONFIG.winsByType[ev.EventType] ?? WTT_CONFIG.winsDefault;
             const s = { suivis: 0, nouveaux: 0, termines: 0, dejaJoues: 0, enAttente: 0 };
@@ -447,7 +465,14 @@ jobs:
               if (!WTT_CONFIG.subEvents.includes(u.SubEvent)) continue;
               if (WTT_CONFIG.rounds && !WTT_CONFIG.rounds.includes(u.Round)) continue;
               if (u.Draw && u.Draw !== 'MAIN') continue; // on saute les qualifications
-              if (/cancel/i.test(u.ScheduleStatus || '')) continue;
+              if (/cancel/i.test(u.ScheduleStatus || '')) {
+                const extC = `${id}:${u.Code.replace(/-+$/, '')}`, oldC = ex.get(extC);
+                if (oldC && oldC.status !== 'finished' && oldC.status !== 'cancelled') {
+                  await db('PATCH', `matches?source=eq.wtt&external_id=eq.${encodeURIComponent(extC)}`, { status: 'cancelled' }, 'return=minimal');
+                  console.log(`WTT ${label} : match ${extC} annulé par le WTT`);
+                }
+                continue;
+              }
               if (!knownPair(u)) { s.enAttente++; continue; }
               const starts = u.StartList.Start.slice().sort((x, y) => (x.StartOrder || 0) - (y.StartOrder || 0));
               const code = u.Code.replace(/-+$/, ''), ext = `${id}:${code}`;
@@ -502,16 +527,16 @@ jobs:
               .sort((a, b) => (parseInt(a.CurrentRank, 10) || 1e9) - (parseInt(b.CurrentRank, 10) || 1e9));
             const ranked = { M: bySub('MS'), F: bySub('WS') };
             const byName = {
-              M: new Map(ranked.M.map(r => [normName(r.PlayerName), r])),
-              F: new Map(ranked.F.map(r => [normName(r.PlayerName), r])),
+              M: new Map(ranked.M.map(r => [nameKey(r.PlayerName), r])),
+              F: new Map(ranked.F.map(r => [nameKey(r.PlayerName), r])),
             };
 
-            const competitors = await db('GET', 'competitors?circuit=eq.WTT&gender=not.is.null&select=id,name,gender,world_ranking,world_ranking_points&limit=5000');
+            const competitors = await dbAll('competitors?circuit=eq.WTT&gender=not.is.null&select=id,name,gender,world_ranking,world_ranking_points&order=id');
             let matched = 0;
             for (const c of competitors) {
               const table = byName[c.gender];
               if (!table) continue;
-              const r = table.get(normName(c.name));
+              const r = table.get(nameKey(c.name));
               if (!r) continue;
               const rank = parseInt(r.CurrentRank, 10);
               const pts = parseInt(r.RankingPointsYTD, 10);
@@ -522,12 +547,45 @@ jobs:
               await db('PATCH', `competitors?id=eq.${c.id}`, { world_ranking: rank, world_ranking_points: newPts }, 'return=minimal');
             }
             console.log(`Classement mondial WTT : ${matched}/${competitors.length} joueurs suivis retrouvés dans le classement (${ranked.M.length} messieurs, ${ranked.F.length} dames au total).`);
+
+            // Le vrai classement mondial (top 100 de chaque tableau), pas seulement les
+            // joueurs déjà croisés dans un tournoi suivi : c'est ce que l'onglet
+            // "Classements" affiche (table world_rankings, voir
+            // classement-mondial-complet.sql). Remplacé rang par rang (jamais vidé
+            // d'abord), et sans effet si la table n'existe pas encore.
+            try {
+              const idByKey = { M: new Map(), F: new Map() };
+              for (const c of competitors) if (idByKey[c.gender]) idByKey[c.gender].set(nameKey(c.name), c.id);
+              const country = r => {
+                const v = String(r.CountryCode || r.AssociationCountryCode || r.Nationality || r.Country || '').trim().toUpperCase();
+                return /^[A-Z]{3}$/.test(v) ? v : null;
+              };
+              for (const g of ['M', 'F']) {
+                const rows = [];
+                for (const r of ranked[g]) {
+                  const rank = parseInt(r.CurrentRank, 10);
+                  if (!Number.isFinite(rank) || rank > 100) continue;
+                  const pts = parseInt(r.RankingPointsYTD, 10);
+                  // pos = place dans la liste (1, 2, 3...), toujours unique ; rank = rang
+                  // officiel affiché, qui peut être partagé par deux ex aequo.
+                  rows.push({ gender: g, pos: rows.length + 1, rank, name: String(r.PlayerName || '').trim(), country: country(r),
+                    points: Number.isFinite(pts) ? pts : null, competitor_id: idByKey[g].get(nameKey(r.PlayerName)) ?? null,
+                    updated_at: new Date().toISOString() });
+                }
+                if (!rows.length) continue;
+                await db('POST', 'world_rankings?on_conflict=gender,pos', rows, 'resolution=merge-duplicates,return=minimal');
+                await db('DELETE', `world_rankings?gender=eq.${g}&pos=gt.${rows.length}`, undefined, 'return=minimal');
+              }
+              console.log(`Classement mondial WTT : top 100 enregistré (${Math.min(100, ranked.M.length)} messieurs, ${Math.min(100, ranked.F.length)} dames).`);
+            } catch (e) {
+              console.warn('Classement mondial complet non enregistré (as-tu lancé classement-mondial-complet.sql ?) :', e.message);
+            }
           }
 
           async function syncWTT() {
             const events = await wttEvents();
             if (!events.length) { console.log('WTT : aucun tournoi à suivre en ce moment.'); return; }
-            const existing = await db('GET', 'competitors?circuit=eq.WTT&select=id,name,source,external_id,country,ranking,gender&limit=5000');
+            const existing = await dbAll('competitors?circuit=eq.WTT&select=id,name,source,external_id,country,ranking,gender&order=id');
             const cache = {
               byExt: new Map(existing.filter(c => c.source === 'wtt').map(c => [String(c.external_id), c])),
               byName: new Map(existing.map(c => [c.name.toLowerCase(), c])),
