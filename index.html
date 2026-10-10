@@ -298,18 +298,22 @@ a{color:inherit}
 .compbar{display:none}
 .complabel b{display:block;font:800 23px/.95 var(--f-display);text-transform:uppercase;letter-spacing:.015em}
 .complabel small{display:block;font:600 12.5px/1.2 var(--f-body);margin-top:4px;opacity:.88}
-.complist{background:var(--card)}
-.day{font:700 16px/1.1 var(--f-display);letter-spacing:.01em;margin:0;color:var(--ink);padding:13px 14px 0}
+.complist{background:var(--wash);padding:2px 10px 14px}
+.day{font:700 16px/1.1 var(--f-display);letter-spacing:.01em;margin:0;color:var(--ink);padding:14px 4px 0}
 .day::first-letter{text-transform:uppercase}
 .day::after{content:"";display:block;height:4px;margin-top:8px;background:radial-gradient(circle,var(--rule-2) 1.1px,transparent 1.5px) 0 50%/6px 4px repeat-x}
 
-.mrow{position:relative}
-.mrow + .mrow{background:radial-gradient(circle,var(--rule-2) 1.1px,transparent 1.5px) 0 0/6px 4px repeat-x}
-.mrow.islive .mrowhead{position:relative;isolation:isolate}
+/* Un match = un ticket : bord encré, coins nets, espace franc avec le
+   suivant. Le pronostic est le talon du ticket, séparé par une ligne de
+   perforation et deux encoches. */
+.mrow{position:relative;margin-top:12px;background:var(--card);border:2px solid var(--rule);border-radius:var(--radius);
+  box-shadow:3px 3px 0 var(--rule-3)}
+.day + .mrow{margin-top:10px}
+.mrow.islive .mrowhead{position:relative;isolation:isolate;overflow:hidden;border-radius:2px 2px 0 0}
 .mrow.islive .mrowhead::before{content:"";position:absolute;left:0;top:0;bottom:0;width:170px;z-index:-1;pointer-events:none;
   background:color-mix(in srgb,var(--live) 42%,transparent);transform:scaleX(-1);
   -webkit-mask:var(--ht-fade-s) right center/170px 80px repeat-y;mask:var(--ht-fade-s) right center/170px 80px repeat-y}
-.mrow.islive{box-shadow:inset 4px 0 0 var(--live)}
+.mrow.islive{border-color:var(--live);box-shadow:inset 4px 0 0 var(--live),3px 3px 0 color-mix(in srgb,var(--live) 45%,transparent)}
 @media (prefers-reduced-motion:no-preference){ .mrow.enter{animation:rowIn .32s var(--ease) both} }
 .mrowhead{display:flex;align-items:stretch;gap:0;width:100%;background:none;border:0;padding:0;text-align:left;color:inherit}
 .mtime{flex:0 0 62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:12px 4px;
@@ -321,7 +325,7 @@ a{color:inherit}
 .msides{flex:1;min-width:0;padding:11px 6px;display:flex;flex-direction:column;gap:6px}
 .mside{display:flex;align-items:center;gap:8px;min-width:0}
 .mside.lose{opacity:.5}
-.mname{flex:1;min-width:0;font:700 19px/1.05 var(--f-display);letter-spacing:.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+.mname{flex:1;min-width:0;font:700 18px/1.05 var(--f-display);letter-spacing:.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   display:flex;align-items:center;gap:7px;color:var(--ink)}
 .flag{width:1.15em;height:.82em;flex:none;border-radius:1px;box-shadow:0 0 0 1.5px var(--rule)}
 .mname .flag{font-size:16px}
@@ -330,13 +334,14 @@ a{color:inherit}
 .mrk .seed{color:var(--accent-ink);font-weight:700}
 .msc{flex:0 0 30px;text-align:right;font:800 28px/.9 var(--f-display);color:var(--ink-soft)}
 .msc.win{color:var(--ink)}
-.mright{flex:0 0 96px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:5px;padding:8px 12px 8px 2px;text-align:right}
+.mright{flex:0 0 86px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:5px;padding:8px 12px 8px 2px;text-align:right}
 .mround{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
 .mround b{font:700 15px/1 var(--f-display);color:var(--ink);letter-spacing:.01em}
 .mround small{font:600 10.5px/1.15 var(--f-body);color:var(--ink-soft)}
 .statuspill{font:800 12px/1 var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);
   border:1.5px solid currentColor;border-radius:2px;padding:3px 5px 2px}
 .statuspill.live{color:#fff;background:var(--live);border-color:var(--live)}
+.statuspill.wait{color:var(--ink);border-style:dashed;letter-spacing:.02em;text-transform:none;font-size:11.5px;white-space:nowrap;padding:3px 3px 2px}
 @media (prefers-reduced-motion:no-preference){ .statuspill.live{animation:blink 1.4s step-end infinite} }
 .namebtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .namebtn:hover,.namebtn:focus-visible{color:var(--accent-ink);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
@@ -344,8 +349,12 @@ a{color:inherit}
 /* --- Panneau de pronostic : la grille de scores comme une planche de
    tampons ; le score choisi est imprimé en couleur, avec sa trame et son
    décalage de repérage. --- */
-.predpanel{padding:8px 14px 15px;background:var(--wash);
-  background-image:radial-gradient(circle,var(--rule-2) 1.1px,transparent 1.5px);background-size:6px 4px;background-repeat:repeat-x}
+.predpanel{position:relative;padding:10px 14px 15px;background:color-mix(in srgb,var(--wash) 55%,var(--card));border-radius:0 0 2px 2px;
+  background-image:radial-gradient(circle,var(--rule-2) 1.2px,transparent 1.6px);background-size:7px 4px;background-repeat:repeat-x;background-position:10px 0}
+.predpanel::before,.predpanel::after{content:"";position:absolute;top:-9px;width:16px;height:16px;border-radius:50%;
+  background:var(--wash);border:2px solid var(--rule);clip-path:inset(0 0 0 50%)}
+.predpanel::before{left:-10px}
+.predpanel::after{right:-10px;clip-path:inset(0 50% 0 0)}
 .predpanel.locked{padding-top:12px}
 .pickgrid{display:flex;flex-direction:column;gap:8px;margin:8px 0 2px}
 .pickside{display:flex;align-items:center;gap:10px}
@@ -469,6 +478,7 @@ a{color:inherit}
 .namecell{min-width:0}
 .lbname{font:700 19px/1.1 var(--f-display);letter-spacing:.01em;color:var(--ink);display:flex;align-items:center;gap:7px;overflow-wrap:anywhere}
 .lbsub{font:500 12px/1.3 var(--f-body);color:var(--ink-soft);margin-top:3px}
+.lbfollow{color:var(--accent-ink);font-weight:700;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:2px}
 .ptscell{text-align:right;font:800 28px/1 var(--f-display);color:var(--accent-ink);white-space:nowrap}
 .ptscell small{font:600 11px/1 var(--f-body);color:var(--ink-soft);margin-left:3px}
 .rules{color:var(--ink-soft);font:500 12.5px/1.6 var(--f-body);margin:20px 2px 4px;max-width:70ch}
@@ -517,6 +527,31 @@ a{color:inherit}
 .roster{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px}
 .roster li{background:var(--card-top);border:2px solid var(--rule-2);border-radius:var(--radius);padding:8px 10px;font:700 16px/1.15 var(--f-display);letter-spacing:.01em;color:var(--ink)}
 
+/* --- Badge en grand : plaqué comme un autocollant sur une explosion de
+   points à ses propres couleurs (colorA / colorB de BADGE_DEFS). --- */
+.badgemodal{max-width:400px;text-align:center}
+.badgezoom{position:relative;isolation:isolate;overflow:hidden;display:grid;place-items:center;padding:34px 20px 26px;background:var(--ba,var(--accent));
+  border-bottom:2px solid var(--rule)}
+.badgezoom::before{content:"";position:absolute;inset:-60px;z-index:-1;background:var(--bb,var(--accent2));
+  -webkit-mask:var(--ht-burst) center/560px 560px no-repeat;mask:var(--ht-burst) center/560px 560px no-repeat}
+.badgezoom.locked{background:var(--paper-deep)}
+.badgezoom.locked::before{background:var(--rule-2)}
+.badgezoom-img{position:relative;width:200px;height:200px;filter:drop-shadow(5px 6px 0 rgba(0,0,0,.28))}
+.badgezoom-img img{width:100%;height:100%;display:block;object-fit:contain}
+.badgezoom.locked .badgezoom-img img{filter:grayscale(1) contrast(.85) brightness(.92);opacity:.6}
+.badgezoom-img .badgelock{width:48px;height:48px;right:8px;bottom:8px;box-shadow:0 0 0 3px var(--paper)}
+.badgezoom-img .badgelock svg{width:24px;height:24px}
+@media (prefers-reduced-motion:no-preference){ .badgezoom-img{animation:badgePop .55s var(--ease-spring) both} }
+@keyframes badgePop{from{opacity:0;transform:scale(.3) rotate(-18deg)}to{opacity:1;transform:none}}
+.badgemodal-body{padding:18px 22px 26px}
+.badgestatus{display:inline-block;font:800 13px/1 var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px 3px;border:1.5px dashed var(--rule-2);
+  border-radius:2px;color:var(--ink-soft)}
+.badgestatus.on{border-style:solid;border-color:var(--good);color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent)}
+.badgetitle{margin:12px 0 0;font:900 40px/.92 var(--f-display);text-transform:uppercase;letter-spacing:.015em;color:var(--ink);
+  text-shadow:2.5px 2.5px 0 color-mix(in srgb,var(--accent2) 70%,transparent)}
+.badgehow{margin:16px 0 4px;font:700 13px/1.2 var(--f-body);color:var(--ink-soft)}
+.badgedesc{margin:0 auto;font:600 17px/1.4 var(--f-body);color:var(--ink);max-width:28ch}
+
 /* --- Panneaux, formulaires, admin --- */
 .panel{position:relative;background:var(--card);border:2px solid var(--rule);border-radius:var(--radius-lg);padding:18px 18px 20px;margin:0 0 18px}
 .panel h2{font:900 34px/.92 var(--f-display);text-transform:uppercase;letter-spacing:.015em;margin:0 0 8px;color:var(--ink);
@@ -524,7 +559,11 @@ a{color:inherit}
 .panel h3{font:800 22px/1 var(--f-display);letter-spacing:.01em;margin:0;color:var(--ink)}
 .hint{color:var(--ink-soft);font:500 13px/1.45 var(--f-body);margin:5px 0 0}
 .badgegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:16px 12px;margin-top:14px}
-.badgecell{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center}
+.badgecell{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;background:none;border:0;padding:4px 2px;margin:0;
+  font:inherit;color:inherit;cursor:pointer;border-radius:6px}
+button.badgecell:hover .badgeicon{transform:translateY(-2px) rotate(-3deg)}
+button.badgecell:active .badgeicon{transform:scale(.94)}
+@media (prefers-reduced-motion:no-preference){ .badgeicon{transition:transform .18s var(--ease-spring)} }
 .badgeicon{width:62px;height:62px;position:relative;filter:drop-shadow(2px 2px 0 var(--rule-3))}
 .badgeicon img{width:100%;height:100%;display:block;object-fit:contain}
 .badgecell.locked .badgeicon img{filter:grayscale(1) contrast(.85) brightness(.9);opacity:.5}
@@ -786,6 +825,8 @@ const S = {
   themeMode: 'light', // préférence sombre/clair de la personne (indépendante du THEME par tournoi) ; persistée en localStorage
   soundOn: true, // préférence son activé/coupé ; persistée en localStorage (par défaut activé)
   _lastStreakTier: null, // dernier palier de série connu (pour détecter un nouveau palier franchi et jouer le son associé)
+  openBadge: null, // id du badge affiché en grand (null = aucun)
+  worldRankings: null, // top 100 mondial WTT (messieurs + dames), voir loadWorldRankings ; null = pas encore chargé
   openRecap: null, // { key, circuit } du bilan de tournoi/journée animé actuellement ouvert ; null = fermé
   recapAnimPlayed: false, // vrai une fois la séquence d'entrée du bilan déjà jouée (pour ne pas la rejouer à chaque micro-rendu)
 };
@@ -940,6 +981,12 @@ function currentThemeKey() {
 const fmtWhen = iso => new Date(iso).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const fmtDay = iso => new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 const isLocked = m => m.status !== 'scheduled' || new Date(m.starts_at) <= new Date();
+// Match commencé depuis plus de 5 heures mais toujours sans résultat (le
+// robot ne l'a pas encore reçu, ou abandon/forfait à saisir à la main dans
+// Admin) : ce n'est plus "à venir". Il passe dans "Terminés" avec la
+// mention "En attente", sans points tant que le résultat n'est pas connu.
+const AWAIT_AFTER_MS = 5 * 3600e3;
+const isAwaitingResult = m => (m.status === 'scheduled' || m.status === 'live') && Date.now() - new Date(m.starts_at).getTime() > AWAIT_AFTER_MS;
 
 /* ---------- Petits sons (Web Audio, synthétisés — pas de fichiers audio) ---------- */
 // Design sonore minimal : quelques bips courts (80-250ms) générés à la
@@ -1433,8 +1480,21 @@ async function reloadMatches() {
   if (r.error) throw r.error;
   S.matches = r.data || [];
 }
+// Supabase ne renvoie jamais plus de 1000 lignes par requête (réglage "Max
+// rows"), quel que soit le .limit() demandé : au-delà, des joueurs, des
+// pronos ou des matchs manquaient sans prévenir (classements incomplets,
+// séries fausses...). On lit donc page par page, dans un ordre stable.
+async function fetchAllRows(build) {
+  const all = [];
+  for (let from = 0; ; from += 1000) {
+    const r = await build().range(from, from + 999);
+    if (r.error) return { data: null, error: r.error };
+    all.push(...(r.data || []));
+    if (!r.data || r.data.length < 1000) return { data: all, error: null };
+  }
+}
 async function reloadCompetitors() {
-  const r = await sb.from('competitors').select('*').limit(2000);
+  const r = await fetchAllRows(() => sb.from('competitors').select('*').order('id'));
   if (r.error) throw r.error;
   S.competitors = {};
   (r.data || []).forEach(c => { S.competitors[c.id] = c; });
@@ -1443,7 +1503,7 @@ async function loadAll() {
   const uid = S.session.user.id;
   const [p, preds, adm] = await Promise.all([
     sb.from('profiles').select('pseudo').eq('id', uid).maybeSingle(),
-    sb.from('predictions').select('*').eq('user_id', uid).limit(3000),
+    fetchAllRows(() => sb.from('predictions').select('*').eq('user_id', uid).order('id')),
     sb.rpc('is_admin')
   ]);
   await Promise.all([reloadMatches(), reloadCompetitors()]);
@@ -1452,7 +1512,18 @@ async function loadAll() {
   (preds.data || []).forEach(x => { S.myPreds[x.match_id] = x; });
   S.isAdmin = adm.data === true;
   loadBoard().then(render); // chargé à part : n'empêche pas la connexion s'il échoue
+  loadWorldRankings().then(() => { if (S.tab === 'rankings') render(); });
   loadAccount().then(render); // idem : pour la pastille de série sur les cartes de match, sans bloquer la connexion
+}
+// Vrai classement mondial WTT (top 100 de chaque tableau), enregistré par le
+// robot de synchronisation dans world_rankings (voir
+// classement-mondial-complet.sql). Table absente ou vide -> [] : l'onglet
+// garde alors l'ancien affichage, basé sur les seuls joueurs suivis.
+async function loadWorldRankings() {
+  try {
+    const r = await sb.from('world_rankings').select('gender,pos,rank,name,country,points,competitor_id').order('gender').order('pos');
+    S.worldRankings = r.error ? [] : (r.data || []);
+  } catch (e) { S.worldRankings = []; }
 }
 async function loadBoard() {
   const q = S.boardScope === 'ALL'
@@ -1477,9 +1548,9 @@ async function loadAccount() {
     // fois le match terminé, et leaderboard_by_circuit est déjà une vue
     // publique existante (utilisée par l'onglet Classements).
     const [h, b, cb, ap] = await Promise.all([
-      sb.from('predictions')
+      fetchAllRows(() => sb.from('predictions')
         .select('pred_a,pred_b,match_id,created_at,balles_staked,matches(circuit,status,score_a,score_b,seed_a,seed_b,starts_at,competition,round,side_a,side_b,wins_needed)')
-        .eq('user_id', uid).limit(5000),
+        .eq('user_id', uid).order('id')),
       sb.from('leaderboard').select('*').order('total_points', { ascending: false }).order('exact_scores', { ascending: false }),
       sb.from('leaderboard_by_circuit').select('*'),
       // competition/round/tier ajoutés à ce select existant (et uniquement
@@ -1487,9 +1558,9 @@ async function loadAccount() {
       // par tournoi WTT / journée Pro A dans le bilan animé — sans requête
       // supplémentaire, juste trois colonnes de plus sur une jointure déjà
       // là pour les badges.
-      sb.from('predictions')
+      fetchAllRows(() => sb.from('predictions')
         .select('user_id,match_id,pred_a,pred_b,balles_staked,matches(circuit,status,score_a,score_b,seed_a,seed_b,starts_at,competition,round,tier)')
-        .limit(20000),
+        .order('id')),
     ]);
     if (h.error) throw h.error;
     if (b.error) throw b.error;
@@ -1568,7 +1639,7 @@ function render() {
         </div>
         <main>${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
       </div>
-    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}`;
+    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}`;
   if (S.openRecap && !S.recapAnimPlayed) { S.recapAnimPlayed = true; mountRecapAnimation(); }
 }
 // Bouton clair/sombre/Halloween : préférence globale de la personne,
@@ -1626,7 +1697,7 @@ function tabView() {
 // s'affiche que sur l'onglet Matchs et seulement s'il y a du direct.
 function liveTicker() {
   if (S.tab !== 'matches' || !S.session) return '';
-  const live = S.matches.filter(m => m.status === 'live');
+  const live = S.matches.filter(m => m.status === 'live' && !isAwaitingResult(m));
   if (!live.length) return '';
   return `<div class="ticker" role="list" aria-label="Matchs en direct">
     ${live.map(m => `<span class="tickeritem" role="listitem"><span class="tickerdot" aria-hidden="true"></span>
@@ -1691,8 +1762,8 @@ function matchesView() {
   // ailleurs sur la même liste) -> les rangées ont le droit de rejouer leur entrée.
   const fresh = S._freshMatches; S._freshMatches = false;
   const list = S.matches.filter(m => S.circuit === 'ALL' || m.circuit === S.circuit);
-  const up = list.filter(m => m.status === 'scheduled' || m.status === 'live').sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
-  const doneAll = list.filter(m => m.status === 'finished' || m.status === 'cancelled');
+  const up = list.filter(m => (m.status === 'scheduled' || m.status === 'live') && !isAwaitingResult(m)).sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+  const doneAll = list.filter(m => m.status === 'finished' || m.status === 'cancelled' || isAwaitingResult(m));
   const done = doneAll.slice().sort((a, b) => new Date(b.starts_at) - new Date(a.starts_at)).slice(0, 60);
   let shown = S.view === 'upcoming' ? up : done;
 
@@ -1844,7 +1915,8 @@ function chips(m, side, mine, disabled) {
 function matchRow(m, fresh, i, streakInfo) {
   streakInfo = streakInfo || { before: new Map(), now: 0 };
   const locked = isLocked(m), mine = S.myPreds[m.id];
-  const fin = m.status === 'finished', canc = m.status === 'cancelled', live = m.status === 'live';
+  const awaiting = isAwaitingResult(m);
+  const fin = m.status === 'finished', canc = m.status === 'cancelled', live = m.status === 'live' && !awaiting;
   const winA = fin && m.score_a > m.score_b, winB = fin && m.score_b > m.score_a;
   const ca = S.competitors[m.competitor_a_id], cb = S.competitors[m.competitor_b_id];
   const flag = flagHtml;
@@ -1859,6 +1931,7 @@ function matchRow(m, fresh, i, streakInfo) {
   let statusPill = '';
   if (fin) statusPill = '<span class="statuspill">Fini</span>';
   else if (canc) statusPill = '<span class="statuspill">Annulé</span>';
+  else if (awaiting) statusPill = '<span class="statuspill wait">En attente</span>';
   else if (live) statusPill = '<span class="statuspill live">Live</span>';
 
   const sideHtml = (c, label, side, isWinner, isLoser) => {
@@ -1885,7 +1958,9 @@ function matchRow(m, fresh, i, streakInfo) {
       <div class="oddsgauge" role="img" aria-label="${pickProb} % de chances d'avoir le score ${mine.pred_a}–${mine.pred_b}">
         <div class="bar"><i style="--w:${pickProb}%;width:${pickProb}%"></i></div><b>${pickProb}%</b>
       </div>` : '';
-    const status = locked
+    const status = awaiting
+      ? `<span>${mine ? `Ton prono : <b>${mine.pred_a}–${mine.pred_b}</b>. ` : ''}Résultat pas encore reçu : les points arrivent dès qu'il est connu.</span>`
+      : locked
       ? `<span>${mine ? `Ton prono : <b>${mine.pred_a}–${mine.pred_b}</b>` : "Trop tard, pas de prono."}</span>`
       : `<span>${mine ? `Prono : <b>${mine.pred_a}–${mine.pred_b}</b>, modifiable jusqu'au début du match.` : 'Touche un score pour pronostiquer.'}</span>`;
     // Pastille de série : seulement si elle offre vraiment un bonus (série
@@ -2060,6 +2135,26 @@ function rankingsView() {
   // WTT : classement mondial, messieurs et dames séparés (déduits automatiquement
   // du tableau où joue chaque joueur : simple messieurs ou simple dames).
   const genderSeg = segRow([['M', 'Messieurs'], ['F', 'Dames']], S.rankGender, 'rankgender');
+  const genreLbl = S.rankGender === 'M' ? 'messieurs' : 'dames';
+  const world = (S.worldRankings || []).filter(r => r.gender === S.rankGender);
+  if (world.length) {
+    // "SUN Yingsha" (format du classement WTT) -> "Sun Yingsha".
+    const pretty = n => String(n || '').split(/\s+/).map(w => w.length > 1 && w === w.toUpperCase() ? w.charAt(0) + w.slice(1).toLowerCase() : w).join(' ');
+    const rows = world.map(r => {
+      const c = r.competitor_id ? S.competitors[r.competitor_id] : null;
+      const name = c ? c.name : pretty(r.name);
+      const ctry = r.country || (c && c.country) || '';
+      const topClass = r.rank === 1 ? ' top1' : r.rank === 2 ? ' top2' : r.rank === 3 ? ' top3' : '';
+      const attrs = c ? ` class="lbrow" data-act="competitor" data-id="${c.id}" tabindex="0" aria-label="Voir la fiche de ${esc(name)}"` : '';
+      return `<tr${attrs}>
+        <td class="rankcell${topClass}">${r.rank}</td>
+        <td class="namecell"><div class="lbname">${flagHtml({ circuit: 'WTT', country: ctry })}${esc(name)}</div>
+          <div class="lbsub">${esc(ctry)}${c ? `${ctry ? ' · ' : ''}<span class="lbfollow">voir la fiche</span>` : ''}</div></td>
+        <td class="ptscell">${r.points != null ? `${r.points}<small>pts</small>` : ''}</td></tr>`;
+    }).join('');
+    return seg + genderSeg + `<table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>`
+      + `<p class="rules">Classement mondial WTT officiel (${genreLbl}), top ${world.length}, mis à jour automatiquement par le robot de synchronisation. Touche un nom marqué « voir la fiche » pour son calendrier et ses résultats.</p>`;
+  }
   const pool = Object.values(S.competitors).filter(c => c.circuit === 'WTT' && c.gender === S.rankGender);
   const withWorld = pool.filter(c => c.world_ranking != null).sort((a, b) => a.world_ranking - b.world_ranking || a.name.localeCompare(b.name));
   const fallback = !withWorld.length ? pool.filter(c => c.ranking != null).sort((a, b) => a.ranking - b.ranking || a.name.localeCompare(b.name)) : [];
@@ -2323,14 +2418,39 @@ function badgesPanel() {
   if (!list) return '';
   const unlockedN = list.filter(b => b.unlocked).length;
   const cells = list.map(b => `
-    <div class="badgecell ${b.unlocked ? 'unlocked' : 'locked'}" title="${esc(b.name)} — ${esc(b.desc)}">
+    <button type="button" class="badgecell ${b.unlocked ? 'unlocked' : 'locked'}" data-act="badge" data-badge="${esc(b.id)}" aria-label="${esc(b.name)}, ${b.unlocked ? 'débloqué' : 'verrouillé'} : voir le détail">
       <div class="badgeicon">${b.icon}${b.unlocked ? '' : `<span class="badgelock" aria-hidden="true">${BADGE_LOCK_SVG}</span>`}</div>
       <span class="badgename">${esc(b.name)}</span>
-    </div>`).join('');
+    </button>`).join('');
   return `<div class="panel">
     <h3>Badges</h3>
-    <p class="hint" style="margin-top:2px">${unlockedN}/${list.length} badge${unlockedN > 1 ? 's' : ''} débloqué${unlockedN > 1 ? 's' : ''}. Survole un badge verrouillé pour voir comment le décrocher.</p>
+    <p class="hint" style="margin-top:2px">${unlockedN}/${list.length} badge${unlockedN > 1 ? 's' : ''} débloqué${unlockedN > 1 ? 's' : ''}. Touche un badge pour l'agrandir et voir comment le décrocher.</p>
     <div class="badgegrid">${cells}</div>
+  </div>`;
+}
+
+// Un badge en grand (ouvert d'un appui dans "Mon compte") : il "saute" à
+// l'écran comme un autocollant qu'on plaque, sur une explosion de points
+// à ses propres couleurs, avec son nom et ce qu'il faut faire pour l'avoir.
+function badgeModal(id) {
+  const list = computeBadges();
+  const b = list && list.find(x => x.id === id);
+  const def = BADGE_DEFS.find(d => d.id === id);
+  if (!b || !def) return '';
+  return `
+  <div class="modalbackdrop" data-act="closebadge">
+    <div class="modal badgemodal" role="dialog" aria-modal="true" aria-label="Badge ${esc(b.name)}" data-act="stop" style="--ba:${def.colorA};--bb:${def.colorB}">
+      <button class="modalclose" data-act="closebadge" aria-label="Fermer">&times;</button>
+      <div class="badgezoom ${b.unlocked ? 'unlocked' : 'locked'}">
+        <div class="badgezoom-img">${b.icon}${b.unlocked ? '' : `<span class="badgelock" aria-hidden="true">${BADGE_LOCK_SVG}</span>`}</div>
+      </div>
+      <div class="badgemodal-body">
+        <span class="badgestatus ${b.unlocked ? 'on' : ''}">${b.unlocked ? 'Débloqué' : 'Pas encore débloqué'}</span>
+        <h2 class="badgetitle">${esc(b.name)}</h2>
+        <p class="badgehow">${b.unlocked ? 'Obtenu pour :' : 'Pour le débloquer :'}</p>
+        <p class="badgedesc">${esc(b.desc)}</p>
+      </div>
+    </div>
   </div>`;
 }
 
@@ -3340,6 +3460,8 @@ $app.addEventListener('click', async e => {
   else if (act === 'rankgender') { S.rankGender = v; navigate(render); }
   else if (act === 'competitor') { S.openCompetitor = id; keepRender(); }
   else if (act === 'closecompetitor') { S.openCompetitor = null; keepRender(); }
+  else if (act === 'badge') { S.openBadge = el.dataset.badge; playSound('tick'); keepRender(); }
+  else if (act === 'closebadge') { S.openBadge = null; keepRender(); }
   else if (act === 'stop') { /* clic à l'intérieur de la fiche détail : ne pas la fermer */ }
   else if (act === 'pick') pick(id, Number(el.dataset.a), Number(el.dataset.b));
   else if (act === 'balles') setBalles(id, Number(v));
@@ -3353,6 +3475,7 @@ $app.addEventListener('click', async e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && S.openCompetitor) { S.openCompetitor = null; keepRender(); }
+  if (e.key === 'Escape' && S.openBadge) { S.openBadge = null; keepRender(); }
   if (e.key === 'Escape' && S.openRecap) { S.openRecap = null; keepRender(); }
 });
 $app.addEventListener('submit', e => {
