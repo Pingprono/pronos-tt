@@ -333,7 +333,7 @@ a{color:inherit}
 .pickside .pslabel{flex:0 0 84px;min-width:0;font:700 15px/1.12 var(--f-head);color:var(--on-table);
   display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;text-shadow:0 1px 1px rgba(0,0,0,.25)}
 .pickside .pslabel .flag{margin-right:5px;vertical-align:-1px;font-size:13px;box-shadow:0 0 0 1px rgba(255,255,255,.4)}
-@media (min-width:560px){ .pickside .pslabel{flex-basis:150px} .scorebtn{max-width:78px} }
+@media (min-width:560px){ .pickside .pslabel{flex-basis:150px} .scorebtn{max-width:120px} }
 .scores{display:flex;gap:7px;flex:1;min-width:0}
 /* Tuile de score : une carte de marqueur avec son épaisseur. */
 .scorebtn{position:relative;flex:1;max-width:66px;height:44px;border:0;border-radius:7px;padding:0;
@@ -905,6 +905,82 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .tuto-balls i{width:28px;height:28px;border-radius:50%;
   background:radial-gradient(circle at 34% 30%,#FF8A7A 0 12%,var(--red-hi) 34%,var(--red) 62%,var(--red-deep) 100%);box-shadow:0 2px 3px rgba(152,21,34,.35)}
 @media (prefers-reduced-motion:no-preference){ .tuto-balls i{animation:popin .45s var(--ease-out) var(--d) both} }
+
+/* -----------------------------------------------------------------------
+   Grand écran : le rail collé à gauche, le contenu qui prend la place,
+   une colonne d'infos à droite, et les matchs sur deux colonnes quand la
+   zone est assez large (requête de conteneur sur <main>).
+   ----------------------------------------------------------------------- */
+.side{display:none}
+@media (min-width:860px){
+  .shell{max-width:none}
+  .content > main,.content > .topbar{max-width:none}
+  main{container-type:inline-size}
+  main.tab-admin{max-width:940px}
+}
+@media (min-width:1360px){
+  .content{display:grid;grid-template-columns:minmax(0,1fr) 340px;column-gap:32px;align-items:start;padding:0 36px 64px 40px}
+  .content > .topbar{grid-column:1 / -1}
+  .content > main{grid-column:1;min-width:0}
+  .side{display:flex;flex-direction:column;gap:14px;grid-column:2;position:sticky;top:22px;padding-top:4px}
+}
+@media (min-width:1700px){ .content{grid-template-columns:minmax(0,1fr) 380px;padding-right:48px} }
+@container (min-width:940px){
+  .complist{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));column-gap:14px;align-items:start}
+  .complist .day{grid-column:1 / -1}
+  .hero,.recapnotice,.filters,.journeerow{max-width:none}
+}
+.sidecard{background:var(--surface);border-radius:16px;padding:16px 18px 14px;box-shadow:var(--lift)}
+.sidecard h3{margin:0 0 10px;font:700 19px/1.1 var(--f-head)}
+.sidecard .linkbtn{margin-top:8px;font-size:14px}
+.sidecard .hint{margin-top:8px}
+.sidelist{list-style:none;margin:0;padding:0}
+.sidelist li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:10px;padding:7px 6px;border-radius:10px}
+.sidelist li + li{border-top:1px solid var(--line-2)}
+.sidelist li.me{background:color-mix(in srgb,var(--table) 9%,var(--surface));border-top-color:transparent}
+.sidelist li.me + li{border-top-color:transparent}
+.sidelist .medal{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;font:700 italic 14px/1 var(--f-head);color:var(--ink);
+  background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9) 0 10%,var(--medal) 42%,color-mix(in srgb,var(--medal) 72%,black) 100%);box-shadow:0 2px 3px rgba(18,26,38,.25)}
+.sidelist .rk{text-align:center;font:700 italic 16px/1 var(--f-head);color:var(--ink-2)}
+.sidelist .who{font:600 16px/1.15 var(--f-head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sidelist .who small{font:600 11px/1 var(--f-text);color:#fff;background:var(--table);padding:2px 5px;border-radius:5px;margin-left:4px;vertical-align:2px}
+.sidelist b{font:700 italic 20px/1 var(--f-head)}
+.sidelist b small{font:500 11.5px/1 var(--f-text);font-style:normal;color:var(--ink-2);margin-left:2px}
+.sidestreak{display:flex;align-items:baseline;gap:10px}
+.sidestreak b{font:700 italic 44px/.9 var(--f-head);color:var(--red)}
+.sidestreak span{font:500 14px/1.25 var(--f-text);color:var(--ink-2)}
+.sideballs{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-top:12px}
+.sideballs i{aspect-ratio:1;border-radius:50%;background:var(--ground-2);box-shadow:inset 0 1px 2px rgba(18,26,38,.15)}
+.sideballs i.on{background:radial-gradient(circle at 34% 30%,#FF8A7A 0 12%,var(--red-hi) 34%,var(--red) 62%,var(--red-deep) 100%);box-shadow:0 2px 3px rgba(152,21,34,.3)}
+.sidebudget{list-style:none;margin:0;padding:0}
+.sidebudget li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0}
+.sidebudget li + li{border-top:1px solid var(--line-2)}
+.sidebudget .who{display:flex;align-items:center;gap:8px;min-width:0;font:600 15px/1.2 var(--f-head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sidebudget .who i{flex:none;width:11px;height:11px;border-radius:3px;background:var(--chip);box-shadow:inset 0 0 0 2px rgba(255,255,255,.55)}
+.sidebudget .dots{display:flex;gap:4px;flex:none}
+.sidebudget em{width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line)}
+.sidebudget em.on{background:radial-gradient(circle at 34% 30%,#fff 0 18%,#F1F2EE 46%,#C3C9CE 100%);box-shadow:0 1px 2px rgba(18,26,38,.3)}
+.sidescale{list-style:none;margin:0;padding:0}
+.sidescale li{display:grid;grid-template-columns:76px 1fr;align-items:baseline;gap:10px;padding:6px 0}
+.sidescale li + li{border-top:1px solid var(--line-2)}
+.sidescale b{font:700 italic 18px/1 var(--f-head)}
+.sidescale b.hot{color:var(--red)}
+.sidescale span{font:400 13.5px/1.3 var(--f-text);color:var(--ink-2)}
+
+/* Mon compte sur grand écran : les sections en deux colonnes. */
+@container (min-width:1000px){
+  .tab-account .acc-cols{column-count:2;column-gap:14px}
+  .tab-account .acc-cols > *{break-inside:avoid;display:inline-block;width:100%}
+}
+/* Bandeau récap sur grand écran : le bouton passe à droite du texte
+   au lieu de laisser une grande bande vide. */
+@container (min-width:640px){
+  .recapnotice{grid-template-columns:auto minmax(0,1fr) auto;align-items:center;padding:16px 64px 16px 18px}
+  .rn-ico{grid-row:1 / span 2}
+  .recapnotice-title{grid-column:2;align-self:end}
+  .recapnotice-sub{grid-column:2;align-self:start;max-width:none}
+  .recapnotice .btn{grid-column:3;grid-row:1 / span 2;margin-top:0;align-self:center}
+}
 </style>
 </head>
 <body>
@@ -1720,7 +1796,8 @@ function render() {
           </header>
           ${liveTicker()}
         </div>
-        <main class="${Date.now() - (S._tabAt || 0) < 1500 ? 'fresh' : ''}">${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
+        <main class="tab-${S.tab}${Date.now() - (S._tabAt || 0) < 1500 ? ' fresh' : ''}">${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
+        <aside class="side" aria-label="En un coup d'œil">${sideView()}</aside>
       </div>
     </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}`;
   document.documentElement.classList.toggle('noscroll', !!S.openRecap);
@@ -1853,6 +1930,69 @@ function segRow(items, cur, act) {
   SEG_PREV[act] = idx;
   return `<div class="pillrow seg" data-seg="${act}" data-i="${idx}" style="--n:${items.length};--i:${prev}" role="group" aria-label="${SEG_LABELS[act] || ''}">
     ${items.map(([k, l]) => `<button class="pillbtn" data-act="${act}" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div>`;
+}
+
+/* ---------- Colonne de droite (grand écran seulement) ----------
+   Sur un écran large, plutôt que des marges vides : ce qu'on vient chercher
+   d'un coup d'œil pendant qu'on pronostique. Le classement entre amis (sauf
+   sur l'onglet Amis, qui le montre déjà en entier), la série en cours, les
+   balles qu'il reste par tournoi, et le barème. Masquée sous 1360 px. */
+function sideView() {
+  if (!S.session) return '';
+  const out = [];
+  const uid = S.session.user.id;
+  if (S.tab !== 'board' && S.board && S.board.length) {
+    let prev = null, rank = 0;
+    const ranked = S.board.map((r, i) => { const k = r.total_points + '/' + r.exact_scores; if (k !== prev) { rank = i + 1; prev = k; } return { ...r, rank }; });
+    const meIdx = ranked.findIndex(r => r.user_id === uid);
+    const shown = ranked.slice(0, 5);
+    if (meIdx >= 5) shown.push(ranked[meIdx]);
+    const medal = r => r <= 3 ? `<span class="medal" style="--medal:${r === 1 ? 'var(--gold)' : r === 2 ? 'var(--silver)' : 'var(--bronze)'}">${r}</span>` : `<span class="rk">${r}</span>`;
+    out.push(`<section class="sidecard">
+      <h3>Entre amis</h3>
+      <ol class="sidelist">${shown.map(r => `<li class="${r.user_id === uid ? 'me' : ''}">${medal(r.rank)}<span class="who">${esc(r.pseudo)}${r.user_id === uid ? ' <small>toi</small>' : ''}</span><b>${r.total_points}<small>pts</small></b></li>`).join('')}</ol>
+      <button class="linkbtn" data-act="tab" data-tab="board">Tout le classement</button>
+    </section>`);
+  }
+  if (S.tab === 'matches') {
+    const now = myStreakInfo().now;
+    const pct = Math.round((streakMult(now) - 1) * 100);
+    const balls = Array.from({ length: 10 }, (_, i) => `<i class="${i < now ? 'on' : ''}"></i>`).join('');
+    out.push(`<section class="sidecard">
+      <h3>Ta série</h3>
+      <div class="sidestreak"><b>${now}</b><span>prono${now > 1 ? 's' : ''} gagnant${now > 1 ? 's' : ''} d'affilée</span></div>
+      <div class="sideballs" aria-hidden="true">${balls}</div>
+      <p class="hint">${pct > 0 ? `Ton prochain prono gagnant rapporte <b style="color:var(--ink)">+${pct} %</b>.` : `Encore ${Math.max(1, 3 - now)} prono${3 - now > 1 ? 's' : ''} gagnant${3 - now > 1 ? 's' : ''} pour débloquer le bonus.`}</p>
+    </section>`);
+    const scopes = new Map();
+    for (const m of S.matches) {
+      if (isLocked(m) || m.status !== 'scheduled') continue;
+      const k = ballesScopeKey(m);
+      if (!scopes.has(k)) scopes.set(k, m);
+    }
+    if (scopes.size) {
+      out.push(`<section class="sidecard">
+        <h3>Tes balles</h3>
+        <ul class="sidebudget">${[...scopes.values()].slice(0, 6).map(m => {
+          const stock = ballesStock(m), rem = ballesRemaining(m, null);
+          const label = m.circuit === 'PRO_A' ? (m.round || 'Pro A') : m.competition;
+          return `<li style="${themeVarsCss(themeKeyFor(m))}"><span class="who"><i aria-hidden="true"></i>${esc(label)}</span><span class="dots" role="img" aria-label="${rem} balle${rem > 1 ? 's' : ''} sur ${stock}">${Array.from({ length: stock }, (_, i) => `<em class="${i < rem ? 'on' : ''}"></em>`).join('')}</span></li>`;
+        }).join('')}</ul>
+      </section>`);
+    }
+  }
+  out.push(`<section class="sidecard">
+    <h3>Barème</h3>
+    <ul class="sidescale">
+      <li><b>1 pt</b><span>bon vainqueur</span></li>
+      <li><b class="hot">3 pts</b><span>score exact</span></li>
+      <li><b>×2 à ×4</b><span>avec 1 à 3 balles, si gagnant</span></li>
+      <li><b>+75 %</b><span>au plus, grâce à la série</span></li>
+      <li><b>+5 pts</b><span>au plus, avec l'outsider (WTT)</span></li>
+    </ul>
+    <button class="linkbtn" data-act="tuto">Revoir le tuto</button>
+  </section>`);
+  return out.join('');
 }
 
 function tabView() {
@@ -2914,6 +3054,7 @@ function accountView() {
     </div>
     <p>${n} prono${n > 1 ? 's' : ''} jugé${n > 1 ? 's' : ''}, dont ${exactN} score${exactN > 1 ? 's' : ''} exact${exactN > 1 ? 's' : ''}.</p>
   </section>
+  <div class="acc-cols">
   <section class="panel">
     <h3>Justesse</h3>
     <ul class="statlist">
@@ -2950,7 +3091,8 @@ function accountView() {
     <h3>Forme récente</h3>
     <ul class="cmlist" style="margin-top:8px">${recentRows}</ul>
   </section>
-  ${settingsPanel()}`;
+  ${settingsPanel()}
+  </div>`;
 }
 // Réglages et déconnexion (sur mobile, c'est ici qu'on se déconnecte).
 function settingsPanel() {
