@@ -858,6 +858,53 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .rx-actions{display:grid;gap:10px;margin-top:26px}
 .rx-actions .btn{margin:0;display:flex;align-items:center;justify-content:center;gap:8px}
 @media (min-width:860px){ .rx-head h2{font-size:48px} }
+
+/* -----------------------------------------------------------------------
+   Prise en main : un projecteur sur l'élément dont on parle, une carte qui
+   explique. Le projecteur glisse d'un élément à l'autre.
+   ----------------------------------------------------------------------- */
+.tuto{position:fixed;inset:0;z-index:80}
+@media (prefers-reduced-motion:no-preference){ .tuto{animation:fadeIn .3s ease-out both} .tuto.leaving{animation:fadeOut .25s ease-out both} }
+.tuto-spot{position:fixed;border-radius:16px;pointer-events:none;
+  box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 0 200vmax rgba(9,14,22,.66)}
+.tuto-spot.none{box-shadow:0 0 0 0 transparent,0 0 0 200vmax rgba(9,14,22,.66)}
+@media (prefers-reduced-motion:no-preference){
+  .tuto-spot{transition:left .5s var(--ease-out),top .5s var(--ease-out),width .5s var(--ease-out),height .5s var(--ease-out)}
+  .tuto.live .tuto-spot::after{content:"";position:absolute;inset:-3px;border-radius:18px;box-shadow:0 0 0 3px #fff;animation:spotpulse 1.6s ease-out infinite}
+}
+@keyframes spotpulse{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.06)}}
+.tuto-card{position:fixed;left:12px;top:12px;width:min(380px,calc(100vw - 24px));background:var(--surface);color:var(--ink);
+  border-radius:18px;padding:16px 18px 14px;box-shadow:var(--float)}
+@media (prefers-reduced-motion:no-preference){
+  .tuto-card{transition:left .5s var(--ease-out),top .5s var(--ease-out)}
+  .tuto-card.enter{animation:tutoIn .42s var(--ease-out) both}
+}
+@keyframes tutoIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.tuto-dots{display:flex;gap:7px;margin:0 0 10px}
+.tuto-dots i{width:10px;height:10px;border-radius:50%;background:var(--ground-2);box-shadow:inset 0 1px 1px rgba(18,26,38,.15)}
+.tuto-dots i.past{background:var(--ink-3)}
+.tuto-dots i.on{background:radial-gradient(circle at 34% 30%,#FF8A7A 0 14%,var(--red-hi) 36%,var(--red) 66%,var(--red-deep) 100%);box-shadow:0 1px 2px rgba(152,21,34,.4)}
+@media (prefers-reduced-motion:no-preference){ .tuto-card.enter .tuto-dots i.on{animation:bounceIn .7s var(--ease-out) both} }
+.tuto-card h2{margin:0;font:700 24px/1.08 var(--f-head);letter-spacing:-.005em}
+.tuto-card p{margin:8px 0 0;font:400 15px/1.45 var(--f-text);color:var(--ink-2)}
+.tuto-card p b{color:var(--ink);font-weight:700}
+.tuto-hint{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--red) 9%,var(--surface));
+  color:var(--ink)!important;font:600 14px/1.35 var(--f-text)!important}
+.tuto-hint i{flex:none;width:12px;height:12px;margin-top:3px;border-radius:50%;background:var(--red)}
+@media (prefers-reduced-motion:no-preference){ .tuto-hint i{animation:livepulse 1.2s ease-in-out infinite} }
+.tuto-hint.ok{background:color-mix(in srgb,var(--table) 12%,var(--surface))}
+.tuto-hint.ok i{background:var(--table);animation:none}
+.tuto-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px}
+.tuto-skip{background:none;border:0;color:var(--ink-2);font:600 14px/1 var(--f-text);padding:10px 2px}
+.tuto-foot .btn{margin:0}
+.tuto-art{margin:-2px -4px 14px;border-radius:12px;overflow:hidden;background:#13345B}
+.tuto-art .court{height:150px;min-height:0;margin:0}
+.tuto-art.streak{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 18px;background:var(--surface-2)}
+.tuto-art.streak b{font:700 italic 32px/1 var(--f-head);color:var(--red)}
+.tuto-balls{display:flex;gap:7px}
+.tuto-balls i{width:28px;height:28px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,#FF8A7A 0 12%,var(--red-hi) 34%,var(--red) 62%,var(--red-deep) 100%);box-shadow:0 2px 3px rgba(152,21,34,.35)}
+@media (prefers-reduced-motion:no-preference){ .tuto-balls i{animation:popin .45s var(--ease-out) var(--d) both} }
 </style>
 </head>
 <body>
@@ -1679,6 +1726,7 @@ function render() {
   document.documentElement.classList.toggle('noscroll', !!S.openRecap);
   if (S.openRecap && !S.recapAnimPlayed) { S.recapAnimPlayed = true; mountRecapAnimation(); }
   afterRender();
+  maybeStartTuto();
 }
 /* ---------- Mouvement (après chaque rendu) ----------
    Le DOM est reconstruit à chaque rendu : on rejoue donc ici, une fois
@@ -2218,6 +2266,7 @@ async function pick(id, a, b) {
   S.myPreds[id] = Object.assign({ balles_staked: 0 }, prev || {}, { match_id: id, pred_a: a, pred_b: b, _pending: true });
   // La balle tombe d'abord sur la tuile touchée ; à l'impact, la tuile bascule.
   dropBall(id, a, b);
+  tutoOnPick();
   setTimeout(() => { S._justPicked = { id, a, b }; keepRender(); S._justPicked = null; }, reducedMotion() ? 0 : 280);
   const { data, error } = await sb.from('predictions')
     .upsert({ user_id: S.session.user.id, match_id: id, pred_a: a, pred_b: b }, { onConflict: 'user_id,match_id' })
@@ -2910,6 +2959,8 @@ function settingsPanel() {
     <ul class="settings">
       <li><span class="k">Sons<small>Un petit bruit quand tu poses un prono ou débloques un badge.</small></span>
         <button class="toggle" role="switch" aria-checked="${S.soundOn}" aria-label="Sons" data-act="soundtoggle"></button></li>
+      <li><span class="k">Prise en main<small>Revoir le tuto : comment marquer des points.</small></span>
+        <button class="btn small sec" data-act="tuto">Revoir le tuto</button></li>
       <li><span class="k">Connecté en tant que <b>${esc(S.pseudo)}</b></span>
         <button class="btn small sec" data-act="logout">${ICONS.logout}Se déconnecter</button></li>
     </ul>
@@ -2993,6 +3044,169 @@ function recapNewBadges(key, circuit) {
   const after = badgesOf(finished.filter(h => h.matches.starts_at <= lastTs));
   return BADGE_DEFS.filter(d => after.has(d.id) && !before.has(d.id));
 }
+
+/* ---------- Prise en main (tuto) ----------
+   Six étapes sur les vrais écrans : un projecteur éclaire l'élément dont on
+   parle, une carte explique. À l'étape "Touche un score", on le fait pour de
+   vrai (c'est un vrai prono, modifiable). Lancé une fois automatiquement à
+   la première connexion sur cet appareil, puis à la demande depuis
+   Mon compte > Réglages. "Passer" ou Échap ferme tout. */
+const TUTO_KEY = 'spin_tuto_done';
+const TUTO_STEPS = [
+  { art: 'welcome', title: 'Bienvenue sur SPIN', next: 'Commencer',
+    text: "Le jeu de pronostics de ping-pong entre amis, sur le circuit WTT et la Pro A. Une minute pour voir comment marquer des points." },
+  { target: 'hero', title: 'Le match du moment',
+    text: "En haut, le match en direct, ou le prochain à pronostiquer avec son compte à rebours. « Pronostiquer » t'emmène directement dessus." },
+  { target: 'table', title: 'Touche un score', interactive: true,
+    text: "Chaque match a sa table, un joueur de chaque côté du filet. Touche le score que tu prévois : <b>1 point</b> pour le bon vainqueur, <b>3 points</b> pour le score exact." },
+  { target: 'balles', title: 'Tes balles',
+    text: "4 balles par tournoi WTT, 2 par journée de Pro A. Misées sur un prono (3 au plus), elles le font valoir <b>×2, ×3 ou ×4</b> s'il est gagnant. S'il est perdu, les balles aussi." },
+  { art: 'streak', title: 'Les bonus',
+    text: "Enchaîne les pronos gagnants : dès 3 d'affilée, chaque nouveau prono gagnant rapporte plus, jusqu'à <b>+75 %</b>. En WTT, gagner avec l'outsider rapporte aussi jusqu'à <b>+5 points</b>." },
+  { target: 'nav', title: "Le reste de l'appli", next: "C'est parti",
+    text: "<b>Amis</b> : le classement entre vous. <b>Classements</b> : le mondial WTT et la Pro A. <b>Mon compte</b> : tes stats, tes badges et le récap animé de chaque tournoi. Ce tuto s'y trouve aussi, dans Réglages." },
+];
+let TUTO = null; // { i, el, picked }
+function tutoTarget(name) {
+  if (name === 'hero') return document.querySelector('.hero');
+  if (name === 'table') { const b = document.querySelector('.mrow .scorebtn:not([disabled])'); return b ? b.closest('.table3d') : null; }
+  if (name === 'balles') return document.querySelector('.ballesbudget');
+  if (name === 'nav') return document.querySelector('.nav');
+  return null;
+}
+function tutoArt(kind) {
+  if (kind === 'welcome') return `<div class="tuto-art" aria-hidden="true"><div class="court"><div class="court-table"><div class="court-net"></div></div><div class="rally"><span class="shadow"></span><span class="ball"></span></div></div></div>`;
+  if (kind === 'streak') return `<div class="tuto-art streak" aria-hidden="true"><div class="tuto-balls">${[0, 1, 2, 3, 4].map(i => `<i style="--d:${150 + i * 120}ms"></i>`).join('')}</div><b>+28 %</b></div>`;
+  return '';
+}
+function maybeStartTuto() {
+  if (TUTO || S._tutoChecked || !S.session || S.bootError) return;
+  S._tutoChecked = true;
+  let done = false;
+  try { done = localStorage.getItem(TUTO_KEY) === '1'; } catch (e) { /* stockage bloqué : on propose le tuto */ }
+  if (!done) setTimeout(() => { if (!TUTO && S.session && !S.openRecap && !S.openCompetitor && !S.openBadge) startTuto(); }, 1200);
+}
+function startTuto() {
+  if (TUTO) return;
+  if (S.tab !== 'matches' || S.view !== 'upcoming' || S.circuit !== 'ALL') {
+    S.tab = 'matches'; S.view = 'upcoming'; S.circuit = 'ALL'; S.proJournee = null; S._freshMatches = true; S._tabAt = Date.now();
+    render();
+  }
+  window.scrollTo(0, 0);
+  const el = document.createElement('div');
+  el.className = 'tuto';
+  el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'tuto-title');
+  el.innerHTML = '<div class="tuto-spot none"></div><div class="tuto-card"></div>';
+  document.body.appendChild(el);
+  TUTO = { i: 0, el, picked: false };
+  el.addEventListener('click', onTutoClick);
+  window.addEventListener('scroll', onTutoMove, { passive: true });
+  window.addEventListener('resize', onTutoMove);
+  showTutoStep();
+}
+function endTuto() {
+  if (!TUTO) return;
+  try { localStorage.setItem(TUTO_KEY, '1'); } catch (e) { /* ignore */ }
+  const el = TUTO.el;
+  TUTO = null;
+  window.removeEventListener('scroll', onTutoMove);
+  window.removeEventListener('resize', onTutoMove);
+  el.classList.add('leaving');
+  setTimeout(() => el.remove(), reducedMotion() ? 0 : 260);
+}
+function tutoGo(delta) {
+  if (!TUTO) return;
+  const n = TUTO.i + delta;
+  if (n >= TUTO_STEPS.length) { endTuto(); playSound('confirm'); return; }
+  TUTO.i = Math.max(0, n); TUTO.picked = false;
+  playSound('tick');
+  showTutoStep();
+}
+function showTutoStep() {
+  if (!TUTO) return;
+  const step = TUTO_STEPS[TUTO.i], card = TUTO.el.querySelector('.tuto-card');
+  const target = step.target ? tutoTarget(step.target) : null;
+  const live = step.interactive && target;
+  card.innerHTML = `${step.art ? tutoArt(step.art) : ''}
+    <div class="tuto-dots" role="img" aria-label="Étape ${TUTO.i + 1} sur ${TUTO_STEPS.length}">${TUTO_STEPS.map((_, k) => `<i class="${k === TUTO.i ? 'on' : k < TUTO.i ? 'past' : ''}"></i>`).join('')}</div>
+    <h2 id="tuto-title">${step.title}</h2>
+    <p>${step.text}</p>
+    ${live ? `<p class="tuto-hint"><i aria-hidden="true"></i><span>À toi : touche un score sur cette table. C'est un vrai prono, modifiable jusqu'au début du match.</span></p>` : ''}
+    <div class="tuto-foot">
+      <button type="button" class="tuto-skip">${TUTO.i === TUTO_STEPS.length - 1 ? '' : 'Passer le tuto'}</button>
+      <button type="button" class="btn small tuto-next">${step.next || (live ? 'Plus tard' : 'Suivant')}</button>
+    </div>`;
+  card.classList.remove('enter'); void card.offsetWidth; card.classList.add('enter');
+  TUTO.el.classList.toggle('live', !!live);
+  if (target && step.target !== 'nav') {
+    const b = target.getBoundingClientRect();
+    if (b.top < 70 || b.bottom > window.innerHeight - 110) target.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
+  }
+  positionTuto();
+  setTimeout(positionTuto, 450); // après le défilement
+  const nextBtn = card.querySelector('.tuto-next');
+  if (nextBtn) nextBtn.focus({ preventScroll: true });
+}
+let tutoRaf = 0;
+function onTutoMove() { if (tutoRaf) return; tutoRaf = requestAnimationFrame(() => { tutoRaf = 0; positionTuto(); }); }
+function positionTuto() {
+  if (!TUTO) return;
+  const step = TUTO_STEPS[TUTO.i], spot = TUTO.el.querySelector('.tuto-spot'), card = TUTO.el.querySelector('.tuto-card');
+  const W = window.innerWidth, H = window.innerHeight, pad = 8, gap = 14;
+  const target = step.target ? tutoTarget(step.target) : null;
+  const cw = Math.min(380, W - 24), ch = card.offsetHeight;
+  let r = null;
+  if (target) { const b = target.getBoundingClientRect(); r = { x: b.left - pad, y: b.top - pad, w: b.width + 2 * pad, h: b.height + 2 * pad }; }
+  if (r) {
+    spot.classList.remove('none');
+    Object.assign(spot.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' });
+  } else {
+    spot.classList.add('none');
+    Object.assign(spot.style, { left: W / 2 + 'px', top: H / 2 + 'px', width: '0px', height: '0px' });
+  }
+  let left = (W - cw) / 2, top = (H - ch) / 2;
+  if (r) {
+    const below = H - (r.y + r.h) - gap, above = r.y - gap, right = W - (r.x + r.w) - gap;
+    if (r.h > H * 0.6 && right >= cw + 8) { left = r.x + r.w + gap; top = Math.min(Math.max(12, r.y + r.h / 2 - ch / 2), H - ch - 12); }
+    else {
+      left = Math.min(Math.max(12, r.x + r.w / 2 - cw / 2), W - cw - 12);
+      if (below >= ch + 4) top = r.y + r.h + gap;
+      else if (above >= ch + 4) top = r.y - gap - ch;
+      else top = Math.max(12, H - ch - 12);
+    }
+  }
+  card.style.width = cw + 'px'; card.style.left = left + 'px'; card.style.top = top + 'px';
+}
+function onTutoClick(e) {
+  if (!TUTO) return;
+  if (e.target.closest('.tuto-next')) { tutoGo(1); return; }
+  if (e.target.closest('.tuto-skip')) { endTuto(); return; }
+  if (e.target.closest('.tuto-card')) return;
+  // Étape interactive : un tap sur la table éclairée passe à travers.
+  const step = TUTO_STEPS[TUTO.i];
+  if (!step.interactive) return;
+  TUTO.el.style.pointerEvents = 'none';
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  TUTO.el.style.pointerEvents = '';
+  const btn = under && under.closest('.scorebtn');
+  const tgt = tutoTarget(step.target);
+  if (btn && tgt && tgt.contains(btn) && !btn.disabled) btn.click();
+}
+function tutoOnPick() {
+  if (!TUTO || TUTO.picked || !TUTO_STEPS[TUTO.i].interactive) return;
+  TUTO.picked = true;
+  const hint = TUTO.el.querySelector('.tuto-hint span'), next = TUTO.el.querySelector('.tuto-next');
+  if (hint) { hint.textContent = 'Bien joué, ton prono est posé.'; hint.parentElement.classList.add('ok'); }
+  if (next) next.textContent = 'Suivant';
+  const at = TUTO.i;
+  setTimeout(() => { if (TUTO && TUTO.i === at) tutoGo(1); }, 1500);
+}
+document.addEventListener('keydown', e => {
+  if (!TUTO) return;
+  if (e.key === 'Escape') { e.stopPropagation(); endTuto(); }
+  else if (e.key === 'ArrowRight') tutoGo(1);
+  else if (e.key === 'ArrowLeft') tutoGo(-1);
+}, true);
 
 /* ---------- Bilan de tournoi : le film ----------
    À l'ouverture : la table de la compétition, une balle qui arrive du fond
@@ -3705,6 +3919,7 @@ $app.addEventListener('click', async e => {
   else if (act === 'recapdismiss') { markRecapSeen(el.dataset.circuit, el.dataset.key); keepRender(); }
   else if (act === 'closerecap') { stopRecapRun(); S.openRecap = null; keepRender(); }
   else if (act === 'skiprecap') finishRecap();
+  else if (act === 'tuto') startTuto();
   else if (act === 'replayrecap') { stopRecapRun(); S.recapAnimPlayed = false; keepRender(); }
   else if (act === 'tab') {
     if (el.dataset.tab !== S.tab) playSound('tick'); // tap discret, seulement quand on change vraiment d'onglet
