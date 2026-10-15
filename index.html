@@ -789,6 +789,75 @@ details summary{list-style-position:outside;cursor:pointer}
 @keyframes vtOut{to{opacity:0}}
 @keyframes vtIn{from{opacity:0;transform:translateY(8px)}}
 
+
+/* -----------------------------------------------------------------------
+   Bilan de tournoi : le film (voir mountRecapAnimation).
+   La scène (table de la compétition, filet, balle) puis le blanc de la
+   balle, sur lequel les chiffres arrivent un par un.
+   ----------------------------------------------------------------------- */
+html.noscroll,html.noscroll body{overflow:hidden}
+.recapx{position:fixed;inset:0;z-index:70;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:#F7F7F3;color:var(--ink)}
+.rx-intro{position:fixed;inset:0;z-index:3;overflow:hidden;cursor:pointer;background:color-mix(in srgb,var(--table) 62%,#0B1220)}
+@media (prefers-reduced-motion:no-preference){ .rx-intro{animation:fadeIn .4s ease-out both} }
+.rx-court{position:absolute;inset:0;perspective:1000px}
+.rx-table{position:absolute;transform-origin:50% 0;transform-style:preserve-3d;border-radius:6px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--table) 78%,white),var(--table) 55%);box-shadow:inset 0 0 0 7px #fff}
+.rx-table::before{content:"";position:absolute;top:7px;bottom:7px;left:50%;width:4px;margin-left:-2px;background:rgba(255,255,255,.8)}
+.rx-net{position:absolute;left:-7%;right:-7%;transform-origin:50% 100%;transform:rotateX(-90deg);border-top:5px solid #fff;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.5) 0 1px,transparent 1px 7px),repeating-linear-gradient(0deg,rgba(255,255,255,.22) 0 1px,transparent 1px 7px)}
+.rx-title{position:absolute;z-index:2;left:24px;right:84px;top:calc(30px + env(safe-area-inset-top));color:#fff;pointer-events:none}
+.rx-title b{display:block;font:700 32px/1 var(--f-head);letter-spacing:-.01em}
+.rx-title span{display:block;margin-top:8px;font:600 14px/1 var(--f-text);color:var(--on-table-2)}
+@media (prefers-reduced-motion:no-preference){ .rx-title{animation:rowIn .6s var(--ease-out) .12s both} }
+.rx-ball{position:absolute;z-index:2;left:0;top:0;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;will-change:transform;
+  background:radial-gradient(circle at 34% 30%,#fff 0 16%,#F4F4F0 44%,#C9CED2 100%);transform:translate(-200px,-200px)}
+.rx-shadow{position:absolute;z-index:1;left:0;top:0;width:40px;height:13px;margin:-6px 0 0 -20px;border-radius:50%;background:rgba(0,0,0,.7);filter:blur(2px);opacity:0;will-change:transform,opacity}
+.rx-white{position:fixed;inset:0;z-index:4;background:#F7F7F3;opacity:0;pointer-events:none}
+.rx-skip{position:fixed;z-index:6;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translateX(-50%);border:0;border-radius:999px;padding:12px 22px;
+  font:600 15px/1 var(--f-text);color:#fff;background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,255,255,.32)}
+.rx-close{position:fixed;z-index:7;top:calc(14px + env(safe-area-inset-top));right:14px;width:42px;height:42px;border-radius:13px;border:0;display:grid;place-items:center;
+  background:rgba(18,26,38,.07);color:var(--ink)}
+.recapx.intro .rx-close{background:rgba(255,255,255,.16);color:#fff}
+.rx-close .ico{font-size:20px}
+.recapx:not(.intro) .rx-intro,.recapx:not(.intro) .rx-skip{display:none}
+.recapx.done .rx-white{display:none}
+.recapx.play .rx-white{animation:fadeOut .3s ease-out .2s both}
+@keyframes fadeOut{to{opacity:0}}
+.rx-body{max-width:520px;margin:0 auto;padding:calc(72px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom))}
+.rx-step{opacity:0}
+.recapx.play .rx-step{animation:rxIn .7s var(--ease-out) var(--d) both}
+.recapx.done .rx-step{opacity:1}
+@keyframes rxIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.rx-head h2{margin:0;font:700 40px/.98 var(--f-head);letter-spacing:-.015em;max-width:14ch}
+.rx-head p{margin:10px 0 0;font:500 14.5px/1.35 var(--f-text);color:var(--ink-2)}
+.rx-place{display:flex;align-items:center;gap:18px;margin:26px 0 0;padding:20px;border-radius:18px;color:#fff;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--table) 84%,white),var(--table) 72%);
+  box-shadow:inset 0 0 0 5px var(--table),inset 0 0 0 7px var(--table-line),0 16px 30px -18px color-mix(in srgb,var(--table) 80%,black)}
+.rx-place .medalball{width:78px;height:78px;font-size:36px;flex:none}
+.recapx.play .rx-medal{animation:bounceIn .9s var(--ease-out) calc(var(--d) + 120ms) both}
+.rx-place > div > b{display:block;font:700 italic 58px/.9 var(--f-head);letter-spacing:-.02em}
+.rx-place > div > span{display:block;margin-top:6px;font:500 14px/1.3 var(--f-text);color:var(--on-table-2)}
+.rx-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.rx-stat{padding:16px 16px 15px;border-radius:18px;background:var(--surface-2);box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+.rx-stat b{display:block;font:700 italic 52px/.9 var(--f-head);letter-spacing:-.02em}
+.rx-stat span{display:block;margin-top:7px;font:500 13.5px/1.2 var(--f-text);color:var(--ink-2)}
+.rx-streak{margin-top:10px;padding:16px;border-radius:18px;background:var(--surface-2);box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+.rx-streak-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font:600 15px/1 var(--f-text)}
+.rx-streak-top b{font:700 italic 36px/1 var(--f-head);color:var(--red)}
+.rx-balls{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.rx-balls i{width:26px;height:26px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,#FF8A7A 0 12%,var(--red-hi) 34%,var(--red) 62%,var(--red-deep) 100%);box-shadow:0 2px 3px rgba(152,21,34,.35)}
+.recapx.play .rx-balls i{animation:popin .45s var(--ease-out) var(--d) both}
+.rx-pod,.rx-badges{margin-top:24px}
+.rx-pod h3,.rx-badges h3{font:700 22px/1.1 var(--f-head);margin:0 0 10px}
+.rx-podium{margin:0}
+.recapx.play .rx-podium .podstep{animation:rise .7s var(--ease-out) var(--d) both;transform-origin:bottom}
+.recapx.play .rx-podium .medalball{animation:bounceIn .8s var(--ease-out) calc(var(--d) + 250ms) both}
+.recapx.play .rx-podium .who,.recapx.play .rx-podium .pts{animation:rxIn .5s var(--ease-out) calc(var(--d) + 350ms) both}
+.recapx.play .rx-badges .badgecell{animation:stickerIn .65s var(--ease-out) var(--d) both}
+.rx-actions{display:grid;gap:10px;margin-top:26px}
+.rx-actions .btn{margin:0;display:flex;align-items:center;justify-content:center;gap:8px}
+@media (min-width:860px){ .rx-head h2{font-size:48px} }
 </style>
 </head>
 <body>
@@ -1007,6 +1076,15 @@ const SOUNDS = {
   // discret, presque un murmure, pour rester agréable même répété vite.
   tick(ctx) {
     tone(ctx, { freq: 520, dur: 0.035, type: 'sine', gain: 0.035 });
+  },
+  // Rebond d'une balle sur la table : un "toc" sec, très court.
+  bounce(ctx) {
+    tone(ctx, { freq: 1900, freqEnd: 1100, dur: 0.035, type: 'triangle', gain: 0.07 });
+    tone(ctx, { freq: 300, dur: 0.025, type: 'sine', gain: 0.05 });
+  },
+  // La balle percute l'écran : un "pop" qui monte.
+  pop(ctx) {
+    tone(ctx, { freq: 700, freqEnd: 1600, dur: 0.12, type: 'sine', gain: 0.06 });
   },
   // Nouveau palier de série franchi (vert -> orange -> violet -> bleu) :
   // petite fanfare montante à 3 notes, un peu plus marquée (c'est rare).
@@ -1598,6 +1676,7 @@ function render() {
         <main class="${Date.now() - (S._tabAt || 0) < 1500 ? 'fresh' : ''}">${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
       </div>
     </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}`;
+  document.documentElement.classList.toggle('noscroll', !!S.openRecap);
   if (S.openRecap && !S.recapAnimPlayed) { S.recapAnimPlayed = true; mountRecapAnimation(); }
   afterRender();
 }
@@ -2915,84 +2994,196 @@ function recapNewBadges(key, circuit) {
   return BADGE_DEFS.filter(d => after.has(d.id) && !before.has(d.id));
 }
 
-function podiumColumn(row, place) {
-  if (!row) return '';
-  const H = { 1: 96, 2: 74, 3: 58 }, COL = { 1: 'var(--gold)', 2: 'var(--silver)', 3: 'var(--bronze)' };
-  return `<div class="podiumcol place${place}">
-    <div class="podiumname">${esc(row.pseudo)}</div>
-    <div class="podiumpts">${row.pts}<small>pts</small></div>
-    <div class="podiumbar" style="height:${H[place]}px;--pcol:${COL[place]}"><span>${place}</span></div>
-  </div>`;
-}
+/* ---------- Bilan de tournoi : le film ----------
+   À l'ouverture : la table de la compétition, une balle qui arrive du fond
+   de la salle et rebondit vers toi, de plus en plus près, jusqu'à percuter
+   l'écran, qui devient blanc (le blanc de la balle). Puis les chiffres
+   arrivent un par un. Environ 8 secondes ; "Passer" (ou un tap) va
+   directement à la fin ; rien de tout ça si la personne a demandé moins
+   d'animations (le bilan s'affiche directement, complet). */
+let RECAP_RUN = null; // { timers, anims } de la séquence en cours
 
 function recapModal(key, circuit) {
   const data = computeRecapData(key, circuit);
   if (!data || !data.me) return '';
-  const { me, podium, theme } = data;
+  const { me, rows, podium, theme } = data;
+  const themeKey = Object.keys(THEME).find(k => THEME[k] === theme) || 'ALL';
   const newBadges = recapNewBadges(key, circuit);
-  const order = [podium[1], podium[0], podium[2]], places = [2, 1, 3];
-  const podiumHtml = order.map((r, i) => podiumColumn(r, places[i])).join('');
   const circuitLabel = circuit === 'WTT' ? 'Circuit WTT' : 'Pro A';
+  const intro = !S.recapAnimPlayed && !reducedMotion();
+  const medal = r => r === 1 ? 'var(--gold)' : r === 2 ? 'var(--silver)' : r === 3 ? 'var(--bronze)' : '#F3F4F1';
+  const uid = S.session && S.session.user.id;
+  const streakN = Math.min(me.bestStreak, 12);
+  const balls = Array.from({ length: streakN }, (_, i) => `<i style="--d:${1750 + i * 90}ms"></i>`).join('');
+  const pcol = (r, place, d) => r ? `<div class="podcol p${place}${r.userId === uid ? ' me' : ''}" style="--d:${d}ms">
+      <span class="medalball">${r.rank}</span><span class="who">${esc(r.pseudo)}</span>
+      <span class="pts">${r.pts}<small>pts</small></span><div class="podstep"></div></div>` : '<div class="podcol"></div>';
+  const endAt = newBadges.length ? 4500 : 3900;
   return `
-  <div class="modalbackdrop" data-act="closerecap">
-    <div class="modal recapmodal" role="dialog" aria-modal="true" aria-label="Bilan — ${esc(key)}" data-act="stop" style="${themeVarsCss(Object.keys(THEME).find(k => THEME[k] === theme) || 'ALL')}">
-      <button class="modalclose" data-act="closerecap" aria-label="Fermer">${ico('x')}</button>
-      <div class="recapbanner recap-step" style="animation-delay:.02s">
-        <h2 class="recapname">${esc(key)}</h2>
-        <div class="recapsub">Bilan · ${circuitLabel} · ${me.n} prono${me.n > 1 ? 's' : ''} jugé${me.n > 1 ? 's' : ''}</div>
+  <div class="recapx ${intro ? 'intro' : 'done'}" role="dialog" aria-modal="true" aria-label="Bilan — ${esc(key)}" style="${themeVarsCss(themeKey)}">
+    ${intro ? `<div class="rx-intro" data-act="skiprecap" aria-hidden="true">
+      <div class="rx-court"><div class="rx-table"><div class="rx-net"></div></div></div>
+      <div class="rx-title"><b>${esc(key)}</b><span>Le bilan</span></div>
+      <span class="rx-shadow"></span><span class="rx-ball"></span>
+    </div>
+    <div class="rx-white" aria-hidden="true"></div>
+    <button class="rx-skip" data-act="skiprecap">Passer</button>` : ''}
+    <button class="rx-close" data-act="closerecap" aria-label="Fermer">${ico('x')}</button>
+    <div class="rx-body">
+      <header class="rx-step rx-head" style="--d:0ms">
+        <h2>${esc(key)}</h2>
+        <p>Bilan · ${circuitLabel} · ${me.n} prono${me.n > 1 ? 's' : ''} jugé${me.n > 1 ? 's' : ''}</p>
+      </header>
+      <section class="rx-step rx-place" style="--d:380ms">
+        <span class="medalball rx-medal" style="--medal:${medal(me.rank)}">${me.rank}</span>
+        <div><b>${me.rank}${me.rank === 1 ? 'er' : 'e'}</b><span>sur ${rows.length} joueur${rows.length > 1 ? 's' : ''}${me.rank === 1 ? ', tu gagnes le tournoi' : ''}</span></div>
+      </section>
+      <div class="rx-grid">
+        <div class="rx-step rx-stat" style="--d:950ms"><b data-to="${me.pts}" data-at="1000">${me.pts}</b><span>${me.pts === 1 ? 'point' : 'points'}</span></div>
+        <div class="rx-step rx-stat" style="--d:1200ms"><b data-to="${me.exact}" data-at="1250">${me.exact}</b><span>score${me.exact > 1 ? 's' : ''} exact${me.exact > 1 ? 's' : ''}</span></div>
       </div>
-      <div class="modalbody recapbody">
-        <div class="recap-step recapgrid" style="animation-delay:.16s">
-          <div><b class="hot recap-count" data-target="${me.rank}" data-suffix="${me.rank === 1 ? 'er' : 'e'}" data-delay="140">0</b><span>ta place</span></div>
-          <div><b class="recap-count" data-target="${me.pts}" data-delay="300">0</b><span>${me.pts === 1 ? 'point' : 'points'}</span></div>
-          <div><b class="recap-count" data-target="${me.bestStreak}" data-delay="480">0</b><span>meilleure série</span></div>
-          <div><b class="recap-count" data-target="${me.exact}" data-delay="600">0</b><span>score${me.exact > 1 ? 's' : ''} exact${me.exact > 1 ? 's' : ''}</span></div>
-        </div>
-        ${newBadges.length ? `
-        <div class="recap-step" style="animation-delay:.44s">
-          <h3 class="subh" style="margin-top:20px">Badge débloqué pendant ce tournoi</h3>
-          <div class="badgegrid">${newBadges.map(b => `
-            <div class="badgecell unlocked"><div class="badgeicon">${badgeIcon(b.id, b.name)}</div><span class="badgename">${esc(b.name)}</span></div>`).join('')}</div>
-        </div>` : ''}
-        ${podium.length ? `
-        <div class="recap-step" style="animation-delay:.58s">
-          <h3 class="subh" style="margin-top:20px">Podium du tournoi</h3>
-          <div class="recap-podium">${podiumHtml}</div>
-        </div>` : ''}
-        <button class="btn sec recap-step" style="animation-delay:.7s" data-act="exportrecap" data-key="${esc(key)}" data-circuit="${esc(circuit)}">Partager en image</button>
+      <section class="rx-step rx-streak" style="--d:1600ms">
+        <div class="rx-streak-top"><span>Meilleure série</span><b data-to="${me.bestStreak}" data-at="1700">${me.bestStreak}</b></div>
+        ${streakN ? `<div class="rx-balls" aria-hidden="true">${balls}</div>` : '<p class="hint">Pas de série gagnante sur ce tournoi.</p>'}
+      </section>
+      ${podium.length ? `<section class="rx-step rx-pod" style="--d:2800ms">
+        <h3>Podium du tournoi</h3>
+        <div class="podium rx-podium">${pcol(podium[1], 2, 3050)}${pcol(podium[0], 1, 2950)}${pcol(podium[2], 3, 3150)}</div>
+      </section>` : ''}
+      ${newBadges.length ? `<section class="rx-step rx-badges" style="--d:3800ms">
+        <h3>Débloqué pendant ce tournoi</h3>
+        <div class="badgegrid">${newBadges.map((b, i) => `<div class="badgecell unlocked" style="--d:${3950 + i * 150}ms"><div class="badgeicon">${badgeIcon(b.id, b.name)}</div><span class="badgename">${esc(b.name)}</span></div>`).join('')}</div>
+      </section>` : ''}
+      <div class="rx-step rx-actions" style="--d:${endAt}ms">
+        <button class="btn" data-act="exportrecap" data-key="${esc(key)}" data-circuit="${esc(circuit)}">${ico('share-network')}Partager en image</button>
+        <button class="btn sec" data-act="replayrecap">Revoir l'animation</button>
       </div>
     </div>
   </div>`;
 }
 
-// Fait "compter" les chiffres du bilan jusqu'à leur valeur réelle, avec un
-// décalage croissant par ligne (le vrai motion design de cette fonctionnalité
-// est ici, pas éparpillé ailleurs dans l'appli). Respecte scrupuleusement
-// prefers-reduced-motion : affiche directement la valeur finale, sans aucune
-// séquence ni délai, pour qui a demandé moins de mouvement.
+function stopRecapRun() {
+  if (!RECAP_RUN) return;
+  RECAP_RUN.timers.forEach(clearTimeout);
+  RECAP_RUN.anims.forEach(a => { try { a.cancel(); } catch (e) { /* déjà fini */ } });
+  RECAP_RUN = null;
+}
+// Va directement à la fin (bouton "Passer", tap sur la scène, ou échec).
+function finishRecap() {
+  stopRecapRun();
+  const root = document.querySelector('.recapx');
+  if (!root) return;
+  root.classList.remove('intro', 'play');
+  root.classList.add('done');
+  root.querySelectorAll('[data-to]').forEach(el => { el.textContent = el.dataset.to; });
+}
+function countTo(el, dur) {
+  const target = Number(el.dataset.to) || 0, start = performance.now();
+  if (!target) { el.textContent = '0'; return; }
+  const tick = now => {
+    if (!el.isConnected) return;
+    const p = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = String(Math.round(target * e));
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+// La séquence. Les positions de la balle sont calculées sur la table telle
+// qu'elle est réellement affichée (perspective comprise), puis jouées en une
+// seule animation (Web Animations API), image par image : chaque rebond est
+// une vraie parabole, la balle grossit en approchant, s'écrase un peu à
+// chaque contact, et son ombre glisse sur la table.
 function mountRecapAnimation() {
+  const root = document.querySelector('.recapx');
+  if (!root || !root.classList.contains('intro')) return;
   try {
-    const modal = document.querySelector('.recapmodal');
-    if (!modal) return;
-    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    modal.querySelectorAll('.recap-count[data-target]').forEach(el => {
-      const target = Number(el.dataset.target) || 0;
-      const prefix = el.dataset.prefix || '', suffix = el.dataset.suffix || '';
-      const delay = reduced ? 0 : (Number(el.dataset.delay) || 0);
-      if (reduced) { el.textContent = prefix + target + suffix; return; }
-      el.textContent = prefix + '0';
-      setTimeout(() => {
-        const dur = 850, start = performance.now();
-        const tick = now => {
-          const p = Math.min(1, (now - start) / dur);
-          const eased = 1 - Math.pow(1 - p, 3);
-          el.textContent = prefix + Math.round(target * eased) + (p >= 1 ? suffix : '');
-          if (p < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }, delay);
+    stopRecapRun();
+    const run = RECAP_RUN = { timers: [], anims: [] };
+    const at = (ms, fn) => run.timers.push(setTimeout(fn, ms));
+    const intro = root.querySelector('.rx-intro'), ball = root.querySelector('.rx-ball'), shadow = root.querySelector('.rx-shadow');
+    const white = root.querySelector('.rx-white'), table = root.querySelector('.rx-table'), net = root.querySelector('.rx-net');
+    if (!ball.animate) { finishRecap(); return; }
+    // Une vraie scène 3D : on place nous-mêmes la table (perspective, angle,
+    // taille) et on projette chaque position de la balle avec les mêmes
+    // nombres que le navigateur. La balle reste donc collée à la table.
+    const W = intro.clientWidth, H = intro.clientHeight;
+    const court = root.querySelector('.rx-court');
+    const P = 1000, ox = W / 2, oy = H * 0.04, deg = 55, th = deg * Math.PI / 180;
+    const tw = Math.min(W * 0.78, H * 0.46), tl = Math.min(tw * 1.8, 0.8 * P / Math.sin(th)), T = H * 0.24, left = (W - tw) / 2;
+    court.style.perspective = P + 'px'; court.style.perspectiveOrigin = `${ox}px ${oy}px`;
+    Object.assign(table.style, { left: left + 'px', width: tw + 'px', top: T + 'px', height: tl + 'px', transform: `rotateX(${deg}deg)` });
+    const netH = tw * 0.1;
+    Object.assign(net.style, { top: `calc(50% - ${netH}px)`, height: netH + 'px' });
+    const proj = (X, Y, Z) => { const k = P / (P - Z); return { x: ox + (X - ox) * k, y: oy + (Y - oy) * k, k }; };
+    const world = (u, v, h) => { const dd = v * tl; return { X: left + u * tw, Y: T + dd * Math.cos(th) - h * Math.sin(th), Z: dd * Math.sin(th) + h * Math.cos(th) }; };
+    const at3 = (u, v, h) => { const w = world(u, v, h || 0); return proj(w.X, w.Y, w.Z); };
+    const yOf = v => at3(0.5, v, 0).y;
+    const solveV = (target, lo, hi) => { for (let n = 0; n < 30; n++) { const m = (lo + hi) / 2; if (yOf(m) < target) lo = m; else hi = m; } return Math.min(0.97, (lo + hi) / 2); };
+    const netY = yOf(0.5), floorY = H * 0.97;
+    // Rebonds : un sur la moitié du fond, puis deux côté proche, de plus en plus près.
+    const C = [
+      { u: 0.62, v: 0.22 },
+      { u: 0.4, v: solveV(netY + (floorY - netY) * 0.38, 0.5, 1) },
+      { u: 0.56, v: solveV(netY + (floorY - netY) * 0.78, 0.5, 1) },
+    ];
+    const S0 = { u: 0.7, v: -0.3, h: tw * 0.6 };
+    const bw = tw * 0.09; // diamètre de la balle (un peu plus grosse que nature, pour l'œil)
+    const d = [620, 760, 560, 900], D = d.reduce((a, b) => a + b, 0), START = 450;
+    const contacts = [d[0], d[0] + d[1], d[0] + d[1] + d[2]];
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const frames = [], sframes = [];
+    for (let t = 0; t <= D; t += 16) {
+      let pos, ground, h = 0, fade = 1;
+      if (t <= contacts[0]) {
+        const q = t / d[0];
+        const u = lerp(S0.u, C[0].u, q), v = lerp(S0.v, C[0].v, q); h = S0.h * (1 - q * q);
+        pos = at3(u, v, h); ground = at3(u, Math.max(0, v), 0); fade = v < 0 ? 0 : 1;
+      } else if (t <= contacts[2]) {
+        const seg = t <= contacts[1] ? 0 : 1, t0 = seg ? contacts[1] : contacts[0], q = (t - t0) / d[seg + 1];
+        const A = C[seg], B = C[seg + 1], Hm = tw * (seg ? 0.22 : 0.42);
+        const u = lerp(A.u, B.u, q), v = lerp(A.v, B.v, q); h = Hm * 4 * q * (1 - q);
+        pos = at3(u, v, h); ground = at3(u, v, 0);
+      } else {
+        // Le dernier rebond : la balle remonte et fonce sur l'écran ; son
+        // diamètre à l'écran grandit de façon exponentielle jusqu'à le couvrir.
+        const q = (t - contacts[2]) / d[3], c3 = at3(C[2].u, C[2].v, 0);
+        const s0 = bw * c3.k, target = Math.hypot(W, H) * 1.35;
+        const diam = s0 * Math.pow(target / s0, Math.pow(q, 1.25));
+        const ease = 1 - Math.pow(1 - q, 2);
+        pos = { x: lerp(c3.x, W / 2, ease), y: lerp(c3.y, H * 0.48, ease) - H * 0.12 * Math.sin(Math.PI * q) * (1 - q), k: diam / bw };
+        ground = c3; h = tw * q; fade = Math.max(0, 1 - q * 3);
+      }
+      const s = bw * pos.k / 40;
+      let sx = s, sy = s;
+      const near = Math.min(...contacts.map(c => Math.abs(t - c)));
+      if (near < 48) { const k = 1 - near / 48; sx = s * (1 + 0.24 * k); sy = s * (1 - 0.24 * k); }
+      const off = t / D;
+      frames.push({ transform: `translate(${pos.x.toFixed(1)}px,${pos.y.toFixed(1)}px) scale(${sx.toFixed(3)},${sy.toFixed(3)})`, offset: off });
+      const hn = Math.min(1, h / (tw * 0.45));
+      const ss = bw * ground.k / 40;
+      sframes.push({ transform: `translate(${ground.x.toFixed(1)}px,${(ground.y + 2 * ss).toFixed(1)}px) scale(${(ss * (1 - 0.45 * hn)).toFixed(3)})`,
+        opacity: (0.6 * (1 - 0.7 * hn) * fade).toFixed(3), offset: off });
+    }
+    frames[frames.length - 1].offset = 1; sframes[sframes.length - 1].offset = 1;
+    run.anims.push(ball.animate(frames, { duration: D, delay: START, fill: 'both', easing: 'linear' }));
+    run.anims.push(shadow.animate(sframes, { duration: D, delay: START, fill: 'both', easing: 'linear' }));
+    contacts.forEach(c => at(START + c, () => playSound('bounce')));
+    const hit = START + D;
+    at(hit - 90, () => playSound('pop'));
+    run.anims.push(white.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 140, delay: hit - 70, fill: 'both', easing: 'ease-out' }));
+    // L'écran est blanc : on enlève la scène, les chiffres arrivent.
+    at(hit + 60, () => {
+      if (!root.isConnected) return;
+      root.classList.remove('intro'); root.classList.add('play');
+      white.style.display = 'none'; // même blanc que le fond du bilan : la transition est invisible
+      root.querySelectorAll('[data-to]').forEach(el => {
+        el.textContent = '0';
+        at(Number(el.dataset.at) || 0, () => countTo(el, 850));
+      });
+      [380, 950, 1600, 2800].forEach(ms => at(ms, () => playSound('tick')));
+      at(5200, () => { root.classList.remove('play'); root.classList.add('done'); RECAP_RUN = null; });
     });
-  } catch (e) { /* une animation ratée ne doit jamais empêcher d'ouvrir le bilan */ }
+  } catch (e) { finishRecap(); /* une animation ratée ne doit jamais empêcher d'ouvrir le bilan */ }
 }
 
 /* --- Fiche détail d'un joueur ou d'une équipe (clic sur son nom, où qu'il
@@ -3512,7 +3703,9 @@ $app.addEventListener('click', async e => {
   else if (act === 'exportrecap') exportRecapImage(el.dataset.key, el.dataset.circuit);
   else if (act === 'recap') { markRecapSeen(el.dataset.circuit, el.dataset.key); S.openRecap = { key: el.dataset.key, circuit: el.dataset.circuit }; S.recapAnimPlayed = false; navigate(render); }
   else if (act === 'recapdismiss') { markRecapSeen(el.dataset.circuit, el.dataset.key); keepRender(); }
-  else if (act === 'closerecap') { S.openRecap = null; keepRender(); }
+  else if (act === 'closerecap') { stopRecapRun(); S.openRecap = null; keepRender(); }
+  else if (act === 'skiprecap') finishRecap();
+  else if (act === 'replayrecap') { stopRecapRun(); S.recapAnimPlayed = false; keepRender(); }
   else if (act === 'tab') {
     if (el.dataset.tab !== S.tab) playSound('tick'); // tap discret, seulement quand on change vraiment d'onglet
     S.tab = el.dataset.tab;
@@ -3546,7 +3739,7 @@ $app.addEventListener('click', async e => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && S.openCompetitor) { S.openCompetitor = null; keepRender(); }
   if (e.key === 'Escape' && S.openBadge) { S.openBadge = null; keepRender(); }
-  if (e.key === 'Escape' && S.openRecap) { S.openRecap = null; keepRender(); }
+  if (e.key === 'Escape' && S.openRecap) { stopRecapRun(); S.openRecap = null; keepRender(); }
 });
 $app.addEventListener('submit', e => {
   e.preventDefault();
