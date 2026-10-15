@@ -14,124 +14,138 @@
 <meta name="apple-mobile-web-app-title" content="SPIN">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Barlow+Semi+Condensed:ital,wght@0,500;0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css">
 <style>
 /* =============================================================================
-   SPIN — identité "La table".
-   Chaque panneau de prono est une table de compétition vue de dessus : la
-   couleur de table de SA compétition (--table), ses lignes blanches de bord,
-   le filet entre les deux joueurs ; le score choisi est la balle blanche posée
-   dessus. Le reste de l'appli reste sobre et lisible : fond de salle gris-bleu
-   clair, surfaces "blanc de balle", encre bleu nuit, un seul rouge (celui de
-   la plaque de revêtement) pour l'action, le direct et le score exact.
+   SPIN — "La table, en relief".
+   Une salle de ping-pong éclairée : des tables de compétition en vraie
+   perspective (couleur de SA compétition, lignes blanches, filet tendu, épaisseur
+   de plateau), des balles qui rebondissent, des chiffres de marqueur qui
+   basculent, des boutons qui s'enfoncent sous le doigt.
    Règles du système :
-   - Une seule famille de police : Barlow (texte) et Barlow Semi Condensed
-     (titres, noms, chiffres). Casse normale partout, pas de capitales espacées.
-   - Coins à 4px partout ; rond seulement pour ce qui est une balle.
-   - Pas d'ombre au repos ; les surfaces se séparent par un pas de ton. Seul
-     ce qui flotte (fiche, message) a une ombre douce.
-   - Pas de dégradé, pas de trame de points, pas de halo.
-   - Couleur d'une compétition : sa table et sa pastille, jamais toute la page.
+   - Barlow (texte) et Barlow Semi Condensed (titres, noms) ; les grands
+     chiffres en Semi Condensed italique, comme sur un tableau de score.
+   - Relief réservé à ce qui est physique : la table (plateau + ombre portée),
+     les tuiles de score (épaisseur), les boutons (on appuie dessus), le dock et
+     les fiches (ils flottent). Le reste est posé à plat sur la salle.
+   - Couleur d'une compétition : sa table, son affiche, sa pastille. Jamais
+     toute la page.
+   - Mouvement : réponse immédiate au doigt (pression 0.97, 160ms), une balle
+     pour chaque geste qui compte, pas d'animation au survol.
    ========================================================================== */
 :root{
-  --ground:#E3E8ED;
-  --ground-2:#D5DCE3;
-  --surface:#F6F7F4;
-  --surface-2:#ECEFF0;
-  --ink:#141B24;
+  --ground:#E4E9EE;
+  --ground-2:#D3DAE2;
+  --surface:#FAFAF8;
+  --surface-2:#EEF1F3;
+  --ink:#121A26;
   --ink-2:#4A5563;
-  --ink-3:#5F6A78;
+  --ink-3:#5E6977;
   --line:#C9D1DA;
-  --line-2:#DCE2E8;
-  --red:#C41E2E;
-  --red-deep:#9F1724;
+  --line-2:#E1E6EB;
+  --red:#C8202F;
+  --red-hi:#DE3445;
+  --red-deep:#981522;
   --on-red:#FFFFFF;
   --table:#1D4F8C;
   --chip:#2F6DB5;
   --on-table:#FFFFFF;
-  --on-table-2:rgba(255,255,255,.82);
-  --table-line:rgba(255,255,255,.94);
-  --gold:#D9A92E;
-  --silver:#AEB8C4;
-  --bronze:#C3814F;
-  --r:4px;
-  --ease:cubic-bezier(.2,.7,.2,1);
+  --on-table-2:rgba(255,255,255,.84);
+  --table-line:rgba(255,255,255,.95);
+  --gold:#E2B13A;
+  --silver:#B7C1CC;
+  --bronze:#C98552;
+  --dock:#121A26;
+  --r:6px;
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --ease-in-out:cubic-bezier(.77,0,.175,1);
+  --ease-drawer:cubic-bezier(.32,.72,0,1);
   --f-text:'Barlow',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
   --f-head:'Barlow Semi Condensed','Barlow',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
-  /* Ombre réservée à ce qui flotte au-dessus de la page. */
-  --float:0 18px 40px -12px rgba(20,27,36,.32),0 2px 6px rgba(20,27,36,.12);
+  --float:0 22px 44px -16px rgba(18,26,38,.42),0 3px 8px rgba(18,26,38,.12);
+  --lift:0 1px 0 rgba(255,255,255,.9) inset,0 1px 2px rgba(18,26,38,.06);
 }
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;background:var(--ground)}
+html{-webkit-text-size-adjust:100%;background:var(--ground);scrollbar-color:var(--ink-3) var(--ground)}
 body{margin:0;min-height:100vh;color:var(--ink);background:var(--ground);
-  font:400 15.5px/1.5 var(--f-text);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+  font:400 15.5px/1.5 var(--f-text);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 a{color:inherit}
 ::selection{background:color-mix(in srgb,var(--table) 26%,transparent);color:var(--ink)}
-:focus-visible{outline:2.5px solid var(--table);outline-offset:2px;border-radius:2px}
+:focus-visible{outline:2.5px solid var(--table);outline-offset:2px;border-radius:3px}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .ico{width:1em;height:1em;flex:none;display:inline-block;vertical-align:-.14em;fill:currentColor}
-html{scrollbar-color:var(--ink-3) var(--ground)}
+.num{font-family:var(--f-head);font-style:italic;font-weight:700;letter-spacing:-.01em}
 
-/* Le logo (PNG détouré utilisé comme masque, recoloré par background-color). */
 .mark{flex:none;display:inline-block;background-color:var(--ink);
   -webkit-mask-image:var(--logo);mask-image:var(--logo);
   -webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}
 .mark.light{background-color:#fff}
 
-/* La balle : disque blanc cassé avec sa couture discrète. */
-.ball{display:inline-block;flex:none;border-radius:50%;background:var(--surface);
-  box-shadow:inset 0 0 0 1.5px rgba(20,27,36,.18)}
+/* La balle : une sphère éclairée par le haut. */
+.ball{display:inline-block;flex:none;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,#fff 0 18%,#F1F2EE 46%,#CBD0D4 100%);
+  box-shadow:0 2px 3px rgba(18,26,38,.25)}
+
+/* Pression : tout ce qui se touche s'enfonce un peu. */
+@media (prefers-reduced-motion:no-preference){
+  .btn,.pillbtn,.jchip,.scorebtn,.ballesbtn,.iconbtn,.navitem,.badgecell,.mystatus,.recapnotice-close,.modalclose,.toggle,.friendstoggle,.linkbtn{
+    transition:transform .16s var(--ease-out),background-color .2s ease,color .2s ease,box-shadow .2s ease,border-color .2s ease}
+  .btn:active,.pillbtn:active,.jchip:active,.ballesbtn:not(:disabled):active,.iconbtn:active,.navitem:active,.badgecell:active,.mystatus:active,
+  .recapnotice-close:active,.modalclose:active{transform:scale(.97)}
+}
 
 /* -----------------------------------------------------------------------
-   Ossature : barre d'onglets en bas sur mobile, rail à gauche sur grand écran.
+   Ossature : dock flottant en bas sur mobile, rail sombre sur grand écran.
    ----------------------------------------------------------------------- */
 .shell{max-width:1240px;margin:0 auto;min-height:100vh}
-.content{padding:0 16px 108px;min-width:0}
+.content{padding:0 16px 120px;min-width:0}
 @media (min-width:860px){
-  .shell{display:grid;grid-template-columns:88px minmax(0,1fr)}
+  .shell{display:grid;grid-template-columns:92px minmax(0,1fr);gap:0}
   .content{padding:0 40px 64px}
 }
-@media (min-width:1180px){ .shell{grid-template-columns:236px minmax(0,1fr)} }
-@media (prefers-reduced-motion:no-preference){
-  button,.btn,input,select,.lbrow td{transition:background-color .16s var(--ease),color .16s var(--ease),border-color .16s var(--ease)}
-}
+@media (min-width:1180px){ .shell{grid-template-columns:240px minmax(0,1fr)} }
 
-/* --- Navigation --- */
-.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);
-  box-shadow:0 -1px 0 var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));display:flex;justify-content:space-around}
+.nav{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:20;background:var(--dock);
+  border-radius:18px;box-shadow:var(--float);padding:7px 4px 15px;display:flex;justify-content:space-around}
 .navbrand,.navfoot{display:none}
-.navitem{flex:1;max-width:96px;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:6px 2px 4px;color:var(--ink-3);position:relative;border-radius:var(--r)}
+.navitem{flex:1;max-width:96px;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:7px 2px 6px;color:rgba(255,255,255,.58);position:relative;border-radius:12px}
 .navitem .ico{font-size:24px}
 .navitem .ico.on{display:none}
 .navitem span{font:500 11.5px/1 var(--f-text)}
-.navitem:hover{color:var(--ink)}
-.navitem[aria-current="page"]{color:var(--ink)}
+.navitem[aria-current="page"]{color:#fff}
 .navitem[aria-current="page"] .ico.off{display:none}
 .navitem[aria-current="page"] .ico.on{display:inline-block}
 .navitem[aria-current="page"] span{font-weight:700}
-.navdot{position:absolute;top:1px;left:calc(50% + 7px);min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--red);
-  color:#fff;font:700 12px/19px var(--f-head);text-align:center;box-shadow:0 0 0 2px var(--surface)}
+.navdot{position:absolute;top:2px;left:calc(50% + 7px);min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--red);
+  color:#fff;font:700 12px/19px var(--f-head);text-align:center;box-shadow:0 0 0 2px var(--dock)}
+/* La balle qui saute d'onglet en onglet (placée en JS, voir placeNavBall). */
+.navball{position:absolute;left:0;top:0;width:8px;height:8px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 35% 30%,#fff 0 20%,#EDEFEA 55%,#B9C0C6 100%);opacity:0}
+.navball.on{opacity:1}
+@media (hover:hover) and (pointer:fine){ .navitem:hover{color:#fff} }
 @media (min-width:860px){
   .nav{position:sticky;top:0;left:auto;right:auto;bottom:auto;height:100vh;flex-direction:column;justify-content:flex-start;
-    align-items:stretch;width:88px;padding:24px 10px;box-shadow:1px 0 0 var(--line);gap:4px}
-  .navbrand{display:flex;justify-content:center;align-items:center;margin:0 0 28px;color:var(--ink)}
-  .navitem{flex:none;max-width:none;padding:10px 4px 9px}
-  .navitem:hover{background:var(--surface-2)}
-  .navitem[aria-current="page"]{background:var(--ground)}
-  .navdot{left:calc(50% + 8px);top:4px}
-  .navfoot{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:auto;padding-top:16px}
-  .navfoot .avatar{width:34px;height:34px;border-radius:50%;background:var(--table);color:#fff;display:flex;align-items:center;
-    justify-content:center;font:700 16px/1 var(--f-head)}
+    align-items:stretch;width:92px;padding:26px 12px;border-radius:0;box-shadow:none;gap:6px}
+  .navbrand{display:flex;justify-content:center;align-items:center;margin:0 0 30px;color:#fff}
+  .navbrand .mark{background-color:#fff}
+  .navitem{flex:none;max-width:none;padding:12px 4px 10px}
+  .navitem[aria-current="page"]{background:rgba(255,255,255,.08)}
+  .navdot{left:calc(50% + 8px);top:5px}
+  .navfoot{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:auto;padding-top:16px}
+  .navfoot .iconbtn{color:rgba(255,255,255,.7)}
+  .navfoot .iconbtn:hover{background:rgba(255,255,255,.1);color:#fff}
+  .navfoot .avatar{width:36px;height:36px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;
+    justify-content:center;font:700 italic 17px/1 var(--f-head)}
 }
 @media (min-width:1180px){
-  .nav{width:236px;padding:28px 16px}
-  .navbrand{justify-content:flex-start;gap:10px;padding:0 10px;font:700 28px/1 var(--f-head);letter-spacing:-.01em}
+  .nav{width:240px;padding:30px 18px}
+  .navbrand{justify-content:flex-start;gap:12px;padding:0 10px;font:700 30px/1 var(--f-head);letter-spacing:-.01em}
   .navbrand::after{content:"SPIN"}
-  .navitem{flex-direction:row;justify-content:flex-start;gap:14px;padding:10px 12px}
+  .navitem{flex-direction:row;justify-content:flex-start;gap:14px;padding:11px 14px}
   .navitem span{font:500 16px/1 var(--f-text)}
   .navitem[aria-current="page"] span{font-weight:700}
   .navdot{position:static;margin-left:auto;box-shadow:none}
@@ -139,237 +153,332 @@ html{scrollbar-color:var(--ink-3) var(--ground)}
 }
 
 /* --- Barre du haut (mobile) --- */
-.topbar{position:sticky;top:0;z-index:10;background:var(--ground);padding-top:env(safe-area-inset-top)}
+.topbar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--ground) 94%,transparent);padding-top:env(safe-area-inset-top)}
 .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 12px}
-.brand{font:700 26px/1 var(--f-head);letter-spacing:-.01em;display:flex;align-items:center;gap:9px;color:var(--ink)}
-.mystatus{display:inline-flex;align-items:baseline;gap:6px;background:var(--surface);border-radius:var(--r);padding:7px 11px;
-  font:500 13px/1 var(--f-text);color:var(--ink-2);white-space:nowrap;border:0}
-.mystatus b{font:700 18px/1 var(--f-head);color:var(--ink)}
+.brand{font:700 27px/1 var(--f-head);letter-spacing:-.01em;display:flex;align-items:center;gap:9px;color:var(--ink)}
+.mystatus{display:inline-flex;align-items:baseline;gap:6px;background:var(--surface);border-radius:999px;padding:8px 14px 8px 12px;
+  font:500 13px/1 var(--f-text);color:var(--ink-2);white-space:nowrap;border:0;box-shadow:var(--lift)}
+.mystatus b{font:700 italic 19px/1 var(--f-head);color:var(--ink)}
 .linkbtn{background:none;border:0;padding:4px 2px;color:var(--table);font:600 inherit/1.2 var(--f-text);font-size:inherit;
   text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
-.linkbtn:hover{color:var(--ink)}
-.iconbtn{background:none;border:0;padding:6px;border-radius:var(--r);color:var(--ink-2);display:inline-flex;align-items:center;justify-content:center}
+.iconbtn{background:none;border:0;padding:7px;border-radius:10px;color:var(--ink-2);display:inline-flex;align-items:center;justify-content:center}
 .iconbtn .ico{font-size:20px}
-.iconbtn:hover{background:var(--surface-2);color:var(--ink)}
-@media (min-width:860px){ .topbar-row{display:none} .topbar{padding-top:22px} }
+@media (min-width:860px){ .topbar-row{display:none} .topbar{padding-top:22px;background:transparent;position:static} }
 .content > main{padding-top:4px}
 @media (min-width:860px){ .content > main,.content > .topbar{max-width:880px} }
 
-/* Bandeau du direct : les scores en cours, toujours visibles. */
+/* Bandeau du direct : un mini tableau de score par match en cours. */
 .ticker{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 12px;margin:0}
 .ticker::-webkit-scrollbar{display:none}
-.tickeritem{flex:0 0 auto;display:flex;align-items:center;gap:9px;background:var(--ink);color:#fff;border-radius:var(--r);
-  padding:8px 12px 8px 10px;font:600 15px/1 var(--f-head);white-space:nowrap}
-.tickerdot{width:8px;height:8px;border-radius:50%;background:var(--red);flex:none;box-shadow:0 0 0 2px rgba(196,30,46,.35)}
-@media (prefers-reduced-motion:no-preference){ .tickerdot{animation:pulse 1.6s ease-in-out infinite} }
-.tickerscore{font:700 17px/1 var(--f-head);background:#fff;color:var(--ink);border-radius:2px;padding:3px 6px}
+.tickeritem{flex:0 0 auto;display:flex;align-items:center;gap:9px;background:var(--ink);color:#fff;border-radius:10px;
+  padding:7px 12px 7px 10px;font:600 15px/1 var(--f-head);white-space:nowrap}
+.tickerdot{width:8px;height:8px;border-radius:50%;background:var(--red);flex:none}
+@media (prefers-reduced-motion:no-preference){ .tickerdot{animation:livepulse 1.6s ease-in-out infinite} }
+.tickerscore{display:inline-flex;gap:3px;align-items:center}
+.tickerscore .flipd{font-size:17px;min-width:20px;height:24px}
 
-/* --- "À toi de jouer" : ce qu'il reste à pronostiquer, en une ligne. --- */
-.todoline{display:flex;align-items:center;gap:12px;margin:2px 0 16px;padding:12px 14px;background:var(--surface);border-radius:var(--r)}
-.todoline .todon{font:700 34px/.9 var(--f-head);color:var(--red);min-width:.6em}
-.todoline.clear .todon{color:var(--table)}
-.todoline p{margin:0;font:500 15px/1.3 var(--f-text);color:var(--ink)}
-.todoline p small{display:block;font:400 13px/1.35 var(--f-text);color:var(--ink-2);margin-top:2px}
+/* -----------------------------------------------------------------------
+   Chiffres de marqueur : une carte en deux moitiés, avec sa fente au milieu.
+   ----------------------------------------------------------------------- */
+.flipd{position:relative;display:inline-grid;place-items:center;min-width:.82em;padding:0 .12em;height:1.24em;border-radius:.16em;
+  font-family:var(--f-head);font-style:italic;font-weight:700;color:var(--ink);line-height:1;
+  background:linear-gradient(#FFFFFF 0 50%,#EEF0F1 50% 100%);box-shadow:0 .06em 0 rgba(18,26,38,.22),0 .12em .2em rgba(18,26,38,.18)}
+.flipd::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(18,26,38,.16)}
+@media (prefers-reduced-motion:no-preference){ .flipd.go{animation:flipcard .5s var(--ease-out) both} }
 
-/* --- Récap prêt : un panneau-table aux couleurs du tournoi terminé. --- */
-.recapnotice{position:relative;margin:0 0 18px;padding:16px 52px 18px 18px;background:var(--table);color:var(--on-table);border-radius:var(--r);
-  box-shadow:inset 0 0 0 3px var(--table),inset 0 0 0 5px var(--table-line)}
-.recapnotice-kicker{margin:0 0 4px;font:600 13.5px/1.2 var(--f-text);color:var(--on-table-2)}
-.recapnotice-title{margin:0;font:700 24px/1.05 var(--f-head);letter-spacing:-.005em}
-.recapnotice-sub{margin:6px 0 0;font:400 14px/1.4 var(--f-text);color:var(--on-table-2);max-width:40ch}
-.recapnotice .btn{margin-top:14px;background:var(--surface);color:var(--ink)}
-.recapnotice .btn:hover{background:#fff}
-.recapnotice-close{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:var(--r);border:0;background:rgba(255,255,255,.14);
-  color:#fff;display:grid;place-items:center;padding:0}
-.recapnotice-close .ico{font-size:18px}
-.recapnotice-close:hover{background:rgba(255,255,255,.26)}
+/* -----------------------------------------------------------------------
+   À l'affiche : le match du moment, vu comme à la télé — la table de côté,
+   un joueur de chaque côté du filet, le compte à rebours posé sur le filet.
+   ----------------------------------------------------------------------- */
+.hero{position:relative;margin:2px 0 18px;padding:16px 14px 16px;border-radius:16px;color:#fff;
+  background:color-mix(in srgb,var(--table) 82%,#0B1220);
+  box-shadow:0 20px 36px -20px color-mix(in srgb,var(--table) 70%,black),inset 0 1px 0 rgba(255,255,255,.08)}
+.hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 4px;font:600 13.5px/1.2 var(--f-text);color:var(--on-table-2)}
+.hero-top .hero-comp{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hero-live{flex:none;display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;border-radius:999px;padding:4px 10px 4px 8px;font:700 13px/1 var(--f-text)}
+.hero-live i{width:7px;height:7px;border-radius:50%;background:#fff}
+@media (prefers-reduced-motion:no-preference){ .hero-live i{animation:livepulse 1.4s ease-in-out infinite} }
+.hero-stage{perspective:820px;perspective-origin:50% -30%;margin:18px 0 0;padding:0 0 18px}
+.hero-board{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;
+  padding:22px 16px 20px;border-radius:6px;transform:rotateX(18deg);transform-origin:50% 100%;transform-style:preserve-3d;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--table) 84%,white),var(--table) 70%);
+  box-shadow:inset 0 0 0 4px var(--table-line),0 28px 26px -16px rgba(0,0,0,.6)}
+/* Le filet vu de côté, et l'épaisseur du plateau. */
+.hero-board::before{content:"";position:absolute;left:50%;top:-18px;bottom:2px;width:5px;margin-left:-2.5px;border-radius:2px;
+  background:linear-gradient(#fff 0 5px,rgba(255,255,255,.55) 5px);box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.hero-board::after{content:"";position:absolute;left:0;right:0;bottom:0;height:9px;border-radius:0 0 5px 5px;
+  background:color-mix(in srgb,var(--table) 60%,black);transform-origin:50% 100%;transform:rotateX(-90deg)}
+.hero-side{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;position:relative;z-index:1}
+.hero-side.b{align-items:flex-end;text-align:right}
+.hero-side b{font:700 21px/1.04 var(--f-head);letter-spacing:-.005em;overflow-wrap:anywhere;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.hero-side .flag{font-size:19px;box-shadow:0 0 0 1px rgba(255,255,255,.45)}
+.hero-side small{font:500 12px/1.15 var(--f-text);color:var(--on-table-2)}
+.hero-clock{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:6px}
+.hero-clock .digits{display:flex;align-items:center;gap:3px;font-size:28px}
+.hero-clock .digits .sep{font:700 italic 22px/1 var(--f-head);color:#fff;padding:0 1px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.hero-clock small{font:600 11.5px/1.1 var(--f-text);color:#fff;text-align:center;background:rgba(0,0,0,.28);padding:3px 7px;border-radius:999px}
+.hero-when{font:700 italic 22px/1 var(--f-head);text-align:center;background:var(--surface);color:var(--ink);padding:6px 9px 5px;border-radius:7px;
+  box-shadow:0 2px 0 rgba(18,26,38,.25),0 4px 8px rgba(0,0,0,.25)}
+.hero-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 4px 0}
+.hero-foot p{margin:0;font:500 14px/1.25 var(--f-text);color:var(--on-table-2)}
+.hero-foot p b{display:block;font:700 italic 32px/1 var(--f-head);color:#fff}
+.hero .btn{margin:0;width:auto;flex:none}
 
-/* --- Filtres : contrôle segmenté standard. --- */
+/* --- Récap prêt --- */
+.recapnotice{position:relative;margin:0 0 18px;padding:16px 56px 18px 18px;background:var(--surface);color:var(--ink);border-radius:14px;
+  box-shadow:var(--lift);overflow:hidden;isolation:isolate}
+.recapnotice{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px}
+.rn-ico{grid-row:1 / span 3;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;color:#fff;font-size:24px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--table) 80%,white),var(--table));box-shadow:0 3px 0 color-mix(in srgb,var(--table) 60%,black)}
+.recapnotice .btn{justify-self:start}
+.recapnotice-title{margin:0;font:700 22px/1.05 var(--f-head)}
+.recapnotice-sub{margin:5px 0 0;font:400 14px/1.4 var(--f-text);color:var(--ink-2);max-width:42ch}
+.recapnotice .btn{margin-top:14px}
+.recapnotice-close{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:10px;border:0;background:var(--surface-2);
+  color:var(--ink);display:grid;place-items:center;padding:0}
+.recapnotice-close .ico{font-size:17px}
+
+/* --- Filtres : interrupteur physique, le curseur glisse d'une case à l'autre. --- */
 .filters{display:flex;flex-wrap:wrap;gap:8px 10px;margin:0 0 6px}
-.pillrow{display:inline-flex;gap:2px;padding:3px;margin:0 0 10px;background:var(--ground-2);border-radius:calc(var(--r) + 2px);max-width:100%}
+.pillrow{position:relative;display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:4px;margin:0 0 10px;max-width:100%;
+  background:var(--ground-2);border-radius:12px;box-shadow:inset 0 1px 2px rgba(18,26,38,.14),inset 0 0 0 1px rgba(18,26,38,.04);isolation:isolate}
 .filters .pillrow{margin:0}
-.pillbtn,.jchip{background:none;border:0;border-radius:var(--r);padding:8px 14px;font:500 15px/1 var(--f-text);color:var(--ink-2);
-  display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
-.pillbtn:hover,.jchip:hover{color:var(--ink)}
-.pillbtn[aria-pressed="true"],.jchip[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:700}
-.pillbtn .cnt{display:inline-grid;place-items:center;min-width:22px;height:20px;padding:0 6px;border-radius:10px;background:rgba(20,27,36,.08);
+.pillrow.seg::before{content:"";position:absolute;z-index:-1;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--n));
+  background:var(--surface);border-radius:9px;box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 2px 5px rgba(18,26,38,.16),0 1px 1px rgba(18,26,38,.08);
+  transform:translateX(calc(var(--i) * 100%))}
+@media (prefers-reduced-motion:no-preference){ .pillrow.seg::before{transition:transform .34s var(--ease-out)} }
+.pillbtn,.jchip{background:none;border:0;border-radius:9px;padding:9px 15px;font:500 15px/1 var(--f-text);color:var(--ink-2);
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+.pillbtn[aria-pressed="true"],.jchip[aria-pressed="true"]{color:var(--ink);font-weight:700}
+.pillbtn .cnt{display:inline-grid;place-items:center;min-width:22px;height:20px;padding:0 6px;border-radius:10px;background:rgba(18,26,38,.08);
   font:700 13px/1 var(--f-head);color:inherit}
-.pillbtn[aria-pressed="true"] .cnt{background:var(--ink);color:#fff}
-.journeerow{display:flex;gap:2px;padding:3px;margin:4px 0 6px;background:var(--ground-2);border-radius:calc(var(--r) + 2px);
+.pillbtn[aria-pressed="true"] .cnt{background:var(--red);color:#fff}
+.journeerow{display:flex;gap:4px;padding:4px;margin:4px 0 6px;background:var(--ground-2);border-radius:12px;box-shadow:inset 0 1px 2px rgba(18,26,38,.14);
   overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .journeerow::-webkit-scrollbar{display:none}
 .jchip{flex:0 0 auto}
+.jchip[aria-pressed="true"]{background:var(--surface);box-shadow:0 2px 5px rgba(18,26,38,.16)}
 
 /* -----------------------------------------------------------------------
-   Liste de matchs, groupée par compétition.
+   Liste des matchs, groupée par compétition.
    ----------------------------------------------------------------------- */
-.compgroup{margin:26px 0 0}
+.compgroup{margin:28px 0 0}
 .complabel{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:0 0 4px;padding:0 2px}
 .complabel > div{min-width:0}
-.complabel h2 b{display:block;font:700 22px/1.08 var(--f-head);letter-spacing:-.005em;color:var(--ink)}
-.complabel small{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:5px;font:500 13px/1.2 var(--f-text);color:var(--ink-2)}
+.complabel h2{margin:0;font:inherit}
+.complabel h2 b{display:block;font:700 24px/1.05 var(--f-head);letter-spacing:-.01em;color:var(--ink)}
+.complabel small{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;font:500 13px/1.2 var(--f-text);color:var(--ink-2)}
 .tier{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink)}
-.tier i{width:11px;height:11px;border-radius:2px;background:var(--chip);flex:none}
+.tier i{width:12px;height:12px;border-radius:3px;background:var(--chip);flex:none;box-shadow:inset 0 0 0 2px rgba(255,255,255,.55)}
 .compbar{display:none}
-.day{font:600 14px/1.2 var(--f-text);color:var(--ink-2);margin:0;padding:16px 2px 0}
+.day{font:600 14px/1.2 var(--f-text);color:var(--ink-2);margin:0;padding:18px 2px 0}
 .day::first-letter{text-transform:uppercase}
 
-/* Un match : une carte claire en haut (heure, joueurs, tour), la table en bas. */
-.mrow{position:relative;margin-top:8px;background:var(--surface);border-radius:var(--r);overflow:hidden}
-.day + .mrow{margin-top:8px}
-@media (prefers-reduced-motion:no-preference){ .mrow.enter{animation:rowIn .26s var(--ease) both} }
-.mrowhead{display:grid;grid-template-columns:64px minmax(0,1fr);grid-template-rows:auto 1fr;width:100%;text-align:left;color:inherit}
+/* Un match : la fiche du match, puis sa table. */
+.mrow{position:relative;margin-top:10px;background:var(--surface);border-radius:14px;box-shadow:var(--lift);overflow:hidden}
+.day + .mrow{margin-top:10px}
+.mrow.spot{box-shadow:0 0 0 3px var(--red),var(--lift)}
+@media (prefers-reduced-motion:no-preference){
+  .mrow.enter{animation:rowIn .5s var(--ease-out) both}
+  .mrow.spot{animation:spot 1.2s var(--ease-out)}
+}
+.mrowhead{display:grid;grid-template-columns:66px minmax(0,1fr);grid-template-rows:auto 1fr;width:100%;text-align:left;color:inherit}
 .mtime{grid-column:1;grid-row:1 / span 2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 4px;
-  font:700 17px/1 var(--f-head);color:var(--ink)}
-.mrow.islive .mtime{background:var(--red);color:#fff}
-.mtime .liv{display:flex;align-items:center;gap:6px;font:700 15px/1 var(--f-head)}
-.mtime .livedotsm{width:7px;height:7px;border-radius:50%;background:#fff}
-@media (prefers-reduced-motion:no-preference){ .mtime .livedotsm{animation:pulse 1.6s ease-in-out infinite} }
-.msides{grid-column:2;grid-row:2;min-width:0;padding:7px 12px 13px 10px;display:flex;flex-direction:column;gap:7px}
+  font:700 italic 19px/1 var(--f-head);color:var(--ink)}
+.mrow.islive .mtime{color:var(--red)}
+.mtime .liv{display:flex;flex-direction:column;align-items:center;gap:5px;font:700 italic 16px/1 var(--f-head)}
+.mtime .livedotsm{width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 22%,transparent)}
+@media (prefers-reduced-motion:no-preference){ .mtime .livedotsm{animation:livepulse 1.4s ease-in-out infinite} }
+.msides{grid-column:2;grid-row:2;min-width:0;padding:6px 14px 14px 8px;display:flex;flex-direction:column;gap:7px}
 .mside{display:flex;align-items:center;gap:8px;min-width:0}
 .mside.lose .mname,.mside.lose .msc{color:var(--ink-3)}
-.mname{flex:1;min-width:0;font:600 17px/1.1 var(--f-head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+.mname{flex:1;min-width:0;font:600 18px/1.1 var(--f-head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   display:flex;align-items:center;gap:8px;color:var(--ink)}
-.flag{width:1.25em;height:.9em;flex:none;border-radius:1.5px;box-shadow:0 0 0 1px rgba(20,27,36,.14)}
+.flag{width:1.3em;height:.94em;flex:none;border-radius:2px;box-shadow:0 0 0 1px rgba(18,26,38,.12)}
 .mname .flag{font-size:15px}
 .mrk{font:500 12.5px/1 var(--f-text);color:var(--ink-2);flex:none}
-.mrk strong{font:600 13.5px/1 var(--f-head);color:var(--ink-2)}
-.msc{flex:0 0 28px;text-align:right;font:700 24px/.9 var(--f-head);color:var(--ink)}
-.mright{grid-column:2;grid-row:1;min-width:0;padding:12px 12px 0 10px}
+.mrk strong{font:600 italic 14px/1 var(--f-head);color:var(--ink-2)}
+.msc{flex:0 0 30px;text-align:right;font:700 italic 26px/.9 var(--f-head);color:var(--ink)}
+.mright{grid-column:2;grid-row:1;min-width:0;padding:13px 14px 0 8px}
 .mround{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;font:500 13px/1.25 var(--f-text);color:var(--ink-2)}
 .mround b{font-weight:600;color:var(--ink)}
 .mround small{font-size:inherit}
 .mround small::before{content:"· "}
-.statuspill{font:600 12px/1 var(--f-text);color:var(--ink-2);background:var(--surface-2);border-radius:3px;padding:4px 6px;white-space:nowrap}
+.statuspill{font:600 12px/1 var(--f-text);color:var(--ink-2);background:var(--surface-2);border-radius:6px;padding:4px 7px;white-space:nowrap;font-style:normal}
 .statuspill.wait{color:var(--ink);background:var(--ground-2)}
 .namebtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-width:0;overflow:hidden;text-overflow:ellipsis}
-.namebtn:hover,.namebtn:focus-visible{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
+.namebtn:focus-visible{outline:2px solid var(--table);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){ .namebtn:hover{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px} }
 
-/* --- La table du prono : couleur de la compétition, ligne de bord blanche,
-   filet entre les deux joueurs, scores en tuiles ; le choisi est la balle. --- */
-.predpanel{position:relative;margin:0 8px 8px;padding:17px 17px 18px;background:var(--table);color:var(--on-table);border-radius:3px;
-  box-shadow:inset 0 0 0 5px var(--table),inset 0 0 0 7px var(--table-line)}
-.pickgrid{position:relative;display:flex;flex-direction:column;gap:17px;margin:0}
-/* Le filet : d'un bord blanc à l'autre, avec ses deux poteaux. */
-.pickgrid::before{content:"";position:absolute;left:-12px;right:-12px;top:50%;height:3px;margin-top:-1.5px;background:var(--table-line)}
-.pickside{position:relative;display:flex;align-items:center;gap:10px}
-.pickside .pslabel{flex:0 0 84px;min-width:0;font:600 15px/1.12 var(--f-head);color:var(--on-table);
-  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
-.pickside .pslabel .flag{margin-right:5px;vertical-align:-1px}
-@media (min-width:560px){ .pickside .pslabel{flex-basis:150px} .scorebtn{max-width:76px} }
-.pickside .pslabel .flag{font-size:13px;box-shadow:0 0 0 1px rgba(255,255,255,.4)}
-.scores{display:flex;gap:6px;flex:1;min-width:0}
-.scorebtn{flex:1;max-width:64px;height:42px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.5);border-radius:var(--r);
-  font:700 19px/1 var(--f-head);color:var(--on-table);padding:0}
-.scorebtn:not(:disabled):hover{background:rgba(255,255,255,.17);border-color:#fff}
-.scorebtn[aria-pressed="true"]{background:var(--surface);border-color:var(--surface);color:var(--table)}
+/* --- La table : vraie perspective, plateau éclairé, lignes blanches, filet tendu,
+   épaisseur du plateau et ombre portée sur la carte. Les deux joueurs se font face. */
+.predpanel{position:relative;padding:4px 12px 16px;background:var(--surface);color:var(--ink)}
+.stage3d{perspective:760px;perspective-origin:50% -40%;padding:6px 2px 18px}
+.table3d{position:relative;transform:rotateX(16deg);transform-origin:50% 100%;transform-style:preserve-3d;border-radius:5px;
+  padding:14px 14px 15px;color:var(--on-table);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--table) 86%,white) 0%,var(--table) 62%);
+  box-shadow:inset 0 0 0 4px var(--table-line),0 22px 22px -14px rgba(18,26,38,.55)}
+/* Épaisseur du plateau (le chant avant). */
+.table3d::after{content:"";position:absolute;left:0;right:0;bottom:0;height:8px;border-radius:0 0 4px 4px;
+  background:color-mix(in srgb,var(--table) 62%,black);transform-origin:50% 100%;transform:rotateX(-90deg)}
+/* Ligne médiane (du double), discrète. */
+.table3d::before{content:"";position:absolute;top:4px;bottom:4px;left:50%;width:2px;margin-left:-1px;background:rgba(255,255,255,.2);pointer-events:none}
+.net{position:relative;height:12px;margin:9px -20px 9px;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.42) 0 1px,transparent 1px 6px);
+  border-top:3px solid #fff;box-shadow:0 6px 6px -4px rgba(0,0,0,.35)}
+.net::before,.net::after{content:"";position:absolute;top:-6px;width:5px;height:17px;border-radius:2px;background:#20262E}
+.net::before{left:0}
+.net::after{right:0}
+.pickside{position:relative;display:flex;align-items:center;gap:10px;z-index:1}
+.pickside .pslabel{flex:0 0 84px;min-width:0;font:700 15px/1.12 var(--f-head);color:var(--on-table);
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.pickside .pslabel .flag{margin-right:5px;vertical-align:-1px;font-size:13px;box-shadow:0 0 0 1px rgba(255,255,255,.4)}
+@media (min-width:560px){ .pickside .pslabel{flex-basis:150px} .scorebtn{max-width:78px} }
+.scores{display:flex;gap:7px;flex:1;min-width:0}
+/* Tuile de score : une carte de marqueur avec son épaisseur. */
+.scorebtn{position:relative;flex:1;max-width:66px;height:44px;border:0;border-radius:7px;padding:0;
+  font:700 italic 20px/1 var(--f-head);color:#fff;
+  background:linear-gradient(rgba(255,255,255,.2) 0 50%,rgba(255,255,255,.12) 50% 100%);
+  box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.5),0 3px 0 rgba(0,0,0,.28)}
+.scorebtn::after{content:"";position:absolute;left:4px;right:4px;top:50%;height:1px;background:rgba(0,0,0,.18)}
+.scorebtn[aria-pressed="true"]{color:var(--table);
+  background:linear-gradient(#FFFFFF 0 50%,#ECEEEF 50% 100%);
+  box-shadow:0 3px 0 #B9C0C8,0 6px 10px -2px rgba(0,0,0,.35)}
 .scorebtn:disabled{opacity:.42;cursor:not-allowed}
 .scorebtn[aria-pressed="true"]:disabled{opacity:1}
-.scorebtn:not(:disabled):active{transform:translateY(1px)}
-@media (prefers-reduced-motion:no-preference){ .scorebtn.flip{animation:flip .26s var(--ease)} }
-.predstatus{font:400 14px/1.4 var(--f-text);color:var(--on-table-2);margin:14px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
-.predstatus b{font:700 17px/1 var(--f-head);color:var(--on-table)}
-.predpanel .hint{color:var(--on-table-2)}
+@media (prefers-reduced-motion:no-preference){
+  .scorebtn:not(:disabled):active{transform:translateY(2px);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.5),0 1px 0 rgba(0,0,0,.28)}
+  .scorebtn.flip{animation:flipcard .42s var(--ease-out) both}
+}
+@media (hover:hover) and (pointer:fine){ .scorebtn:not(:disabled):not([aria-pressed="true"]):hover{background:linear-gradient(rgba(255,255,255,.3) 0 50%,rgba(255,255,255,.2) 50% 100%)} }
+/* La balle qui tombe sur le score choisi (ajoutée en JS, voir dropBall). */
+.balldrop{position:fixed;width:16px;height:16px;margin:-8px 0 0 -8px;pointer-events:none;z-index:30}
+.balldrop i{position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,#fff 0 20%,#F1F2EE 50%,#C5CBD0 100%);animation:balldrop .62s cubic-bezier(.3,.0,.5,1) both}
+.balldrop b{position:absolute;left:-2px;right:-2px;top:16px;height:5px;border-radius:50%;background:rgba(0,0,0,.35);animation:ballshadow .62s linear both}
 
-/* Probabilité du score choisi. */
-.oddsgauge{display:flex;align-items:center;gap:10px;margin-top:10px}
-.oddsgauge .bar{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.2);overflow:hidden}
-.oddsgauge .bar i{display:block;height:100%;width:var(--w);background:#fff;border-radius:3px}
-@media (prefers-reduced-motion:no-preference){ .oddsgauge .bar i{animation:barfill .45s var(--ease)} }
-.oddsgauge b{font:700 17px/1 var(--f-head);color:#fff;flex:none;min-width:3ch;text-align:right}
+.predstatus{font:400 14px/1.4 var(--f-text);color:var(--ink-2);margin:2px 2px 0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.predstatus b{font:700 italic 18px/1 var(--f-head);color:var(--ink)}
+.predpanel .hint{color:var(--ink-2)}
 
-/* Résultat d'un match joué : la tuile des points, lisible d'un coup d'œil. */
-.ptsblock{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:76px;padding:9px 8px 8px;
-  background:var(--surface);color:var(--ink);border-radius:var(--r);text-align:center}
-.ptsblock b{font:700 30px/.95 var(--f-head);letter-spacing:-.01em}
-.ptsblock span{font:600 11.5px/1.15 var(--f-text);color:var(--ink-2);margin-top:3px}
-.ptsblock.p3 b{color:var(--red)}
-.ptsblock.p1 b{color:var(--table)}
-.ptsblock.p0{background:transparent;color:var(--on-table);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)}
-.ptsblock.p0 span{color:var(--on-table-2)}
-.predresult{display:flex;align-items:center;gap:14px}
-.predresult .rtext{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font:400 14px/1.4 var(--f-text);color:var(--on-table-2)}
-.predresult .rtext b{color:#fff;font:700 16px/1.2 var(--f-head)}
+.oddsgauge{display:flex;align-items:center;gap:10px;margin:10px 2px 0}
+.oddsgauge .bar{flex:1;height:8px;border-radius:4px;background:var(--surface-2);box-shadow:inset 0 1px 2px rgba(18,26,38,.12);overflow:hidden}
+.oddsgauge .bar i{display:block;height:100%;width:var(--w);background:var(--table);border-radius:4px}
+@media (prefers-reduced-motion:no-preference){ .oddsgauge .bar i{animation:barfill .7s var(--ease-out)} }
+.oddsgauge b{font:700 italic 18px/1 var(--f-head);color:var(--ink);flex:none;min-width:3ch;text-align:right}
+
+/* Résultat d'un match joué. */
+.predpanel.locked{padding-top:6px}
+.ptsblock{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:82px;padding:10px 8px 9px;
+  border-radius:10px;text-align:center;color:#fff;background:var(--table);
+  box-shadow:0 3px 0 color-mix(in srgb,var(--table) 60%,black),0 8px 14px -6px rgba(18,26,38,.4)}
+.ptsblock b{font:700 italic 32px/.95 var(--f-head);letter-spacing:-.01em}
+.ptsblock span{font:600 11.5px/1.15 var(--f-text);margin-top:4px;color:rgba(255,255,255,.88)}
+.ptsblock.p3{background:var(--red);box-shadow:0 3px 0 var(--red-deep),0 8px 14px -6px rgba(152,21,34,.55)}
+.ptsblock.p0{background:var(--surface-2);color:var(--ink-2);box-shadow:inset 0 0 0 1.5px var(--line)}
+.ptsblock.p0 span{color:var(--ink-2)}
+@media (prefers-reduced-motion:no-preference){ .mrow.enter .ptsblock{animation:popin .5s var(--ease-out) .15s both} }
+.predresult{display:flex;align-items:center;gap:14px;padding:4px 2px 0}
+.predresult .rtext{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font:400 14px/1.4 var(--f-text);color:var(--ink-2)}
+.predresult .rtext b{color:var(--ink);font:700 italic 17px/1.2 var(--f-head)}
 .predresult .rlinks{display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
 .friendstoggle{background:none;border:0;color:var(--table);font:600 13.5px/1.2 var(--f-text);padding:0;
   text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
-.predpanel .friendstoggle{color:#fff}
-.friendstoggle:hover{color:var(--ink)}
-.predpanel .friendstoggle:hover{color:var(--on-table-2)}
-.friends{list-style:none;margin:12px 0 0;padding:0;font:400 14px/1.3 var(--f-text);color:var(--on-table)}
-.friends li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.2)}
+.friends{list-style:none;margin:12px 2px 0;padding:0;font:400 14px/1.3 var(--f-text);color:var(--ink)}
+.friends li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line-2)}
 .friends li span:last-child{font:600 15px/1.2 var(--f-head)}
 
 /* --- Série (flamme) et balles --- */
-.streakrow{display:flex;flex-wrap:wrap;gap:6px}
-.streaktile{width:22px;height:22px;border-radius:50%;background:var(--ground-2);font-size:0;color:transparent;font-style:normal}
-.streaktile.hit{background:var(--red)}
-.streakbadge{display:inline-flex;align-items:center;gap:5px;font:700 14px/1 var(--f-head);
-  padding:4px 9px 4px 7px;border-radius:999px;background:var(--surface-2);color:var(--ink);vertical-align:middle}
-.predpanel .streakbadge{background:var(--surface)}
+.streakrow{display:flex;flex-wrap:wrap;gap:7px}
+.streaktile{width:24px;height:24px;border-radius:50%;font-size:0;color:transparent;font-style:normal;
+  background:var(--ground-2);box-shadow:inset 0 1px 2px rgba(18,26,38,.18)}
+.streaktile.hit{background:radial-gradient(circle at 34% 30%,#FF8A7A 0 12%,var(--red-hi) 34%,var(--red) 62%,var(--red-deep) 100%);
+  box-shadow:0 2px 3px rgba(152,21,34,.35)}
+@media (prefers-reduced-motion:no-preference){ .fresh .streaktile{animation:popin .45s var(--ease-out) both} }
+.streakbadge{display:inline-flex;align-items:center;gap:5px;font:700 italic 15px/1 var(--f-head);
+  padding:5px 10px 5px 8px;border-radius:999px;background:var(--surface-2);color:var(--ink);vertical-align:middle}
 .streakbadge.t1{color:#2D7F4E}
 .streakbadge.t2{color:#B85F12}
 .streakbadge.t3{color:#6A40B0}
 .streakbadge.t4{color:#2565AE}
-.streakbadge small{font:600 11px/1 var(--f-text);margin-left:1px}
+.streakbadge small{font:600 11px/1 var(--f-text);margin-left:1px;font-style:normal}
 .flameicon{flex:none;display:block}
 
-.ballesrow{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
-.balleslabel{display:inline-flex;align-items:center;gap:6px;font:500 13.5px/1 var(--f-text);color:var(--on-table-2)}
-.ballesstepper{display:inline-flex;align-items:center;gap:8px}
-.ballesstepper b{font:700 19px/1 var(--f-head);color:#fff;min-width:12px;text-align:center}
-.ballesbtn{flex:none;width:32px;height:32px;border-radius:var(--r);background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.55);
-  font:700 19px/1 var(--f-head);display:flex;align-items:center;justify-content:center;padding:0 0 1px}
-.ballesbtn:not(:disabled):hover{background:rgba(255,255,255,.22)}
+.ballesrow{display:flex;align-items:center;gap:10px;margin:12px 2px 0;flex-wrap:wrap}
+.balleslabel{display:inline-flex;align-items:center;gap:6px;font:500 13.5px/1 var(--f-text);color:var(--ink-2)}
+.ballesstepper{display:inline-flex;align-items:center;gap:8px;padding:4px;background:var(--surface-2);border-radius:12px;box-shadow:inset 0 1px 2px rgba(18,26,38,.12)}
+.ballesbtn{flex:none;width:32px;height:32px;border-radius:9px;background:var(--surface);color:var(--ink);border:0;
+  font:700 19px/1 var(--f-head);display:flex;align-items:center;justify-content:center;padding:0 0 1px;box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 2px 4px rgba(18,26,38,.16)}
 .ballesbtn:disabled{opacity:.35;cursor:not-allowed}
-.ballespct{font:500 13px/1.2 var(--f-text);color:var(--on-table-2)}
-.ballesdots{display:inline-flex;gap:4px}
-.ballesdots i{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6)}
-.ballesdots i.on{background:#fff;box-shadow:none}
+.ballespct{font:500 13px/1.2 var(--f-text);color:var(--ink-2)}
+.ballesdots{display:inline-flex;gap:5px;padding:0 2px}
+.ballesdots i{width:14px;height:14px;border-radius:50%;background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
+.ballesdots i.on{background:radial-gradient(circle at 34% 30%,#fff 0 18%,#F1F2EE 46%,#C3C9CE 100%);box-shadow:0 1px 2px rgba(18,26,38,.3)}
+@media (prefers-reduced-motion:no-preference){ .ballesdots i.on{animation:popin .35s var(--ease-out)} }
 .ballesbudget{flex:none;display:inline-flex;align-items:center;gap:6px;font:600 13px/1 var(--f-text);color:var(--ink-2);white-space:nowrap;
-  background:var(--surface);border-radius:var(--r);padding:6px 9px}
-.ballesbudget b{font:700 15px/1 var(--f-head);color:var(--ink)}
+  background:var(--surface);border-radius:999px;padding:7px 11px;box-shadow:var(--lift)}
+.ballesbudget b{font:700 italic 16px/1 var(--f-head);color:var(--ink)}
 .ballesbudget .ico{font-size:14px;color:var(--ink-2)}
 
 /* --- Panneaux, sections --- */
-.panel{position:relative;background:var(--surface);border-radius:var(--r);padding:18px 18px 20px;margin:0 0 14px}
-.panel h2{font:700 28px/1.05 var(--f-head);letter-spacing:-.01em;margin:0 0 6px;color:var(--ink)}
-.panel h3{font:700 20px/1.1 var(--f-head);margin:0;color:var(--ink)}
+.panel{position:relative;background:var(--surface);border-radius:14px;padding:18px 18px 20px;margin:0 0 14px;box-shadow:var(--lift)}
+.panel h2{font:700 30px/1.05 var(--f-head);letter-spacing:-.01em;margin:0 0 6px;color:var(--ink)}
+.panel h3{font:700 21px/1.1 var(--f-head);margin:0;color:var(--ink)}
 .pagehead{margin:6px 0 16px}
-.pagehead h1{font:700 30px/1.05 var(--f-head);letter-spacing:-.01em;margin:0;color:var(--ink)}
+.pagehead h1{font:700 34px/1 var(--f-head);letter-spacing:-.015em;margin:0;color:var(--ink)}
 .pagehead p{margin:6px 0 0;color:var(--ink-2);font:400 14.5px/1.45 var(--f-text);max-width:60ch}
 .hint{color:var(--ink-2);font:400 13.5px/1.45 var(--f-text);margin:5px 0 0}
 .subh{font:600 14px/1.2 var(--f-text);color:var(--ink-2);margin:18px 0 6px}
 .subh:first-of-type{margin-top:8px}
+@media (prefers-reduced-motion:no-preference){
+  .fresh > .panel,.fresh > .pagehead,.fresh > .acchero,.fresh > .podium,.fresh > .boardtools,.fresh > .standings{animation:rowIn .5s var(--ease-out) both}
+  .fresh > :nth-child(2){animation-delay:.05s}.fresh > :nth-child(3){animation-delay:.1s}.fresh > :nth-child(4){animation-delay:.15s}
+  .fresh > :nth-child(5){animation-delay:.2s}.fresh > :nth-child(n+6){animation-delay:.25s}
+}
 
-/* Statistiques du compte : une liste de valeurs, pas des tuiles. */
+/* Mon compte : l'affiche du joueur. */
+.acchero,.modalhead,.recapbanner{background:linear-gradient(180deg,color-mix(in srgb,var(--table) 84%,white),var(--table) 72%);
+  box-shadow:inset 0 0 0 5px var(--table),inset 0 0 0 7px var(--table-line)}
+.acchero{position:relative;margin:0 0 14px;padding:20px 20px 22px;border-radius:14px;color:#fff;
+  box-shadow:inset 0 0 0 5px var(--table),inset 0 0 0 7px var(--table-line),0 18px 34px -18px color-mix(in srgb,var(--table) 80%,black)}
+.acchero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.acchero .big{font:700 italic 64px/.85 var(--f-head);letter-spacing:-.02em}
+.acchero .big small{font:600 16px/1 var(--f-text);font-style:normal;margin-left:6px;color:var(--on-table-2)}
+.acchero .rank{display:flex;align-items:center;gap:10px;font:500 14px/1.2 var(--f-text);color:var(--on-table-2);text-align:right}
+.acchero .rank .medalball{width:52px;height:52px;font-size:24px}
+.acchero p{margin:12px 0 0;font:500 14px/1.4 var(--f-text);color:var(--on-table-2)}
+.medalball{display:inline-grid;place-items:center;border-radius:50%;color:var(--ink);font:700 italic 17px/1 var(--f-head);
+  background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9) 0 10%,var(--medal,#fff) 42%,color-mix(in srgb,var(--medal,#ccc) 72%,black) 100%);
+  box-shadow:0 3px 6px rgba(18,26,38,.3)}
+
 .statlist{list-style:none;margin:12px 0 0;padding:0}
-.statlist li{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:4px 14px;padding:11px 0;border-top:1px solid var(--line-2)}
+.statlist li{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:6px 14px;padding:12px 0;border-top:1px solid var(--line-2)}
 .statlist li:first-child{border-top:0;padding-top:4px}
 .statlist .k{font:500 15px/1.3 var(--f-text);color:var(--ink)}
 .statlist .k small{display:block;font:400 13px/1.3 var(--f-text);color:var(--ink-2)}
-.statlist .v{font:700 28px/1 var(--f-head);color:var(--ink);text-align:right}
+.statlist .v{font:700 italic 30px/1 var(--f-head);color:var(--ink);text-align:right}
 .statlist .v.hot{color:var(--red)}
-.statlist .bar{grid-column:1 / -1;height:6px;border-radius:3px;background:var(--ground-2);overflow:hidden}
-.statlist .bar i{display:block;height:100%;border-radius:3px;background:var(--table)}
+.statlist .bar{grid-column:1 / -1;height:8px;border-radius:4px;background:var(--surface-2);box-shadow:inset 0 1px 2px rgba(18,26,38,.12);overflow:hidden}
+.statlist .bar i{display:block;height:100%;border-radius:4px;background:var(--table)}
 .statlist .bar.hot i{background:var(--red)}
+@media (prefers-reduced-motion:no-preference){ .fresh .statlist .bar i,.fresh .laddbar i{animation:growx .9s var(--ease-out) .2s both;transform-origin:left} }
 
-.spark{width:100%;height:64px;display:block;margin-top:12px}
+.spark{width:100%;height:72px;display:block;margin-top:12px}
+@media (prefers-reduced-motion:no-preference){ .fresh .spark rect{animation:growy .6s var(--ease-out) both;transform-box:fill-box;transform-origin:bottom} }
 .sparklegend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font:500 12.5px/1 var(--f-text);color:var(--ink-2)}
 .sparklegend span{display:flex;align-items:center;gap:6px}
-.sparklegend .dot{width:10px;height:10px;border-radius:2px;display:inline-block}
+.sparklegend .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
 
-/* Lignes de répartition (circuit, tournoi, journée). */
 .laddwrap{margin-top:6px}
 .laddrow{padding:12px 0;border-top:1px solid var(--line-2)}
 .laddwrap .laddrow:first-child{border-top:0}
 .laddhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .laddname{display:flex;align-items:center;gap:8px;font:600 17px/1.15 var(--f-head);color:var(--ink);min-width:0}
-.laddname::before{content:"";width:10px;height:10px;border-radius:2px;background:var(--ladcol);flex:none}
-.laddpts{font:700 22px/1 var(--f-head);color:var(--ink);white-space:nowrap}
-.laddpts small{font:500 12px/1 var(--f-text);color:var(--ink-2);margin-left:3px}
-.laddbar{margin-top:8px;height:6px;border-radius:3px;background:var(--ground-2);overflow:hidden}
-.laddbar i{display:block;height:100%;border-radius:3px;background:var(--ladcol)}
+.laddname::before{content:"";width:11px;height:11px;border-radius:3px;background:var(--ladcol);flex:none}
+.laddpts{font:700 italic 24px/1 var(--f-head);color:var(--ink);white-space:nowrap}
+.laddpts small{font:500 12px/1 var(--f-text);font-style:normal;color:var(--ink-2);margin-left:3px}
+.laddbar{margin-top:8px;height:8px;border-radius:4px;background:var(--surface-2);box-shadow:inset 0 1px 2px rgba(18,26,38,.12);overflow:hidden}
+.laddbar i{display:block;height:100%;border-radius:4px;background:var(--ladcol)}
 .laddsub{margin-top:5px;font:400 13px/1.3 var(--f-text);color:var(--ink-2)}
 .recapbtn{margin-top:6px;font-size:13.5px}
 
@@ -380,245 +489,306 @@ html{scrollbar-color:var(--ink-3) var(--ground)}
 .cmmeta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:3px}
 .cmdate{font:400 13px/1.3 var(--f-text);color:var(--ink-2)}
 .cmdate::first-letter{text-transform:uppercase}
-.cmres{flex:0 0 auto;font:700 13.5px/1 var(--f-head);padding:4px 7px;border-radius:3px;background:var(--surface-2);color:var(--ink-2)}
-.cmres.win{background:color-mix(in srgb,var(--table) 13%,var(--surface));color:var(--table)}
-.cmres.exact{background:var(--red);color:#fff}
+.cmres{flex:0 0 auto;font:700 italic 14px/1 var(--f-head);padding:5px 8px;border-radius:7px;background:var(--surface-2);color:var(--ink-2)}
+.cmres.win{background:color-mix(in srgb,var(--table) 14%,var(--surface));color:var(--table)}
+.cmres.exact{background:var(--red);color:#fff;box-shadow:0 2px 0 var(--red-deep)}
 .cmres.loss{background:var(--surface-2);color:var(--ink-2)}
-.bestshot{display:flex;align-items:center;gap:14px;margin-top:10px}
-.bestshot .ptsblock{background:var(--table);color:#fff}
-.bestshot .ptsblock b{color:#fff}
-.bestshot .ptsblock span{color:var(--on-table-2)}
+.bestshot{display:flex;align-items:center;gap:14px;margin-top:12px}
 .adm-title{font:600 17px/1.2 var(--f-head);color:var(--ink)}
 
-/* Réglages (dans Mon compte). */
 .settings{list-style:none;margin:8px 0 0;padding:0}
 .settings li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line-2)}
 .settings li:first-child{border-top:0}
 .settings .k{font:500 15px/1.3 var(--f-text)}
 .settings .k small{display:block;color:var(--ink-2);font-size:13px}
-.toggle{position:relative;width:46px;height:28px;border-radius:14px;border:0;background:var(--ground-2);padding:0;flex:none}
-.toggle::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--surface);
-  box-shadow:0 1px 2px rgba(20,27,36,.25);transition:transform .16s var(--ease)}
+.toggle{position:relative;width:50px;height:30px;border-radius:15px;border:0;background:var(--ground-2);padding:0;flex:none;box-shadow:inset 0 1px 3px rgba(18,26,38,.2)}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,#fff 0 22%,#F1F2EE 52%,#CDD2D6 100%);box-shadow:0 2px 4px rgba(18,26,38,.3);transition:transform .3s var(--ease-out)}
 .toggle[aria-checked="true"]{background:var(--table)}
-.toggle[aria-checked="true"]::after{transform:translateX(18px)}
+.toggle[aria-checked="true"]::after{transform:translateX(20px)}
 
 /* -----------------------------------------------------------------------
-   Classements : tableaux standard, podium en pastilles de médaille.
+   Classements : podium en relief, puis le tableau.
    ----------------------------------------------------------------------- */
-.standings{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--r);overflow:hidden}
-.standings thead th{text-align:left;font:600 13px/1 var(--f-text);color:var(--ink-2);padding:12px 12px 10px;background:var(--surface-2)}
+.podium{display:grid;grid-template-columns:1fr 1.12fr 1fr;align-items:end;gap:8px;margin:4px 0 16px;padding:18px 12px 0;background:var(--surface);
+  border-radius:14px;box-shadow:var(--lift);overflow:hidden}
+.podcol{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.podcol .who{font:700 17px/1.1 var(--f-head);color:var(--ink);text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.podcol .pts{font:700 italic 22px/1 var(--f-head);color:var(--ink)}
+.podcol .pts small{font:500 12px/1 var(--f-text);font-style:normal;color:var(--ink-2);margin-left:2px}
+.podcol .medalball{width:44px;height:44px;font-size:21px;margin-bottom:2px}
+.podcol.p1 .medalball{width:54px;height:54px;font-size:25px}
+.podstep{width:100%;border-radius:8px 8px 0 0;position:relative;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--medal) 70%,white) 0 10px,color-mix(in srgb,var(--medal) 55%,var(--surface)) 10px 100%)}
+.podcol.p1 .podstep{height:92px}
+.podcol.p2 .podstep{height:66px}
+.podcol.p3 .podstep{height:48px}
+.podcol.me .who::after{content:" (toi)";font-weight:500;color:var(--ink-2)}
+@media (prefers-reduced-motion:no-preference){
+  .fresh .podstep{animation:rise .7s var(--ease-out) both;transform-origin:bottom}
+  .fresh .podcol.p2 .podstep{animation-delay:.08s}.fresh .podcol.p3 .podstep{animation-delay:.16s}
+  .fresh .podcol .medalball{animation:bounceIn .8s var(--ease-out) .35s both}
+}
+.standings{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--lift)}
+.standings thead th{text-align:left;font:600 13px/1 var(--f-text);color:var(--ink-2);padding:13px 12px 11px;background:var(--surface-2)}
 .standings thead th.num{text-align:right}
 .standings tbody tr + tr td{border-top:1px solid var(--line-2)}
 .standings tbody tr.lbrow{cursor:pointer}
-.standings tbody tr.lbrow:hover td{background:var(--surface-2)}
 .standings tbody tr.me td{background:color-mix(in srgb,var(--table) 9%,var(--surface))}
+@media (hover:hover) and (pointer:fine){ .standings tbody tr.lbrow:hover td{background:var(--surface-2)} }
 .standings td{padding:11px 12px;vertical-align:middle}
-.rankcell{width:54px;text-align:center;font:700 19px/1 var(--f-head);color:var(--ink-2)}
-.rankcell.top1,.rankcell.top2,.rankcell.top3{color:var(--ink)}
-.rankcell .medal{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--medal)}
+.rankcell{width:56px;text-align:center;font:700 italic 20px/1 var(--f-head);color:var(--ink-2)}
+.rankcell .medal{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;color:var(--ink);
+  background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9) 0 10%,var(--medal) 42%,color-mix(in srgb,var(--medal) 72%,black) 100%);box-shadow:0 2px 4px rgba(18,26,38,.28)}
 .rankcell.top1{--medal:var(--gold)}
 .rankcell.top2{--medal:var(--silver)}
 .rankcell.top3{--medal:var(--bronze)}
+.podcol.p1{--medal:var(--gold)}
+.podcol.p2{--medal:var(--silver)}
+.podcol.p3{--medal:var(--bronze)}
 .namecell{min-width:0}
 .lbname{font:600 17px/1.15 var(--f-head);color:var(--ink);display:flex;align-items:center;gap:8px;overflow-wrap:anywhere}
-.lbname .me-tag{font:600 12px/1 var(--f-text);color:var(--table);background:color-mix(in srgb,var(--table) 13%,var(--surface));padding:3px 6px;border-radius:3px}
+.lbname .me-tag{font:600 12px/1 var(--f-text);color:#fff;background:var(--table);padding:4px 7px;border-radius:6px}
 .lbsub{font:400 13px/1.35 var(--f-text);color:var(--ink-2);margin-top:3px}
 .lbfollow{color:var(--table);font-weight:600}
-.ptscell{text-align:right;font:700 22px/1 var(--f-head);color:var(--ink);white-space:nowrap}
-.ptscell small{font:500 12px/1 var(--f-text);color:var(--ink-2);margin-left:3px}
+.ptscell{text-align:right;font:700 italic 24px/1 var(--f-head);color:var(--ink);white-space:nowrap}
+.ptscell small{font:500 12px/1 var(--f-text);font-style:normal;color:var(--ink-2);margin-left:3px}
 .rules{color:var(--ink-2);font:400 13.5px/1.6 var(--f-text);margin:18px 2px 4px;max-width:68ch}
 .boardtools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
 .boardtools .pillrow{margin:0}
+.pillrow + .pillrow{margin-left:8px}
+.filters .pillrow + .pillrow{margin-left:0}
 
 /* -----------------------------------------------------------------------
-   Fiches (joueur, badge, récap) : feuille qui monte du bas sur mobile,
-   fenêtre centrée sur grand écran. Seul élément avec une ombre : il flotte.
+   Fiches : feuille qui monte du bas (mobile), fenêtre (grand écran).
    ----------------------------------------------------------------------- */
-.modalbackdrop{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(20,27,36,.48)}
-@media (prefers-reduced-motion:no-preference){ .modalbackdrop{animation:fadeIn .16s var(--ease)} }
+.modalbackdrop{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(18,26,38,.5)}
+@media (prefers-reduced-motion:no-preference){ .modalbackdrop{animation:fadeIn .25s var(--ease-out)} }
 @media (min-width:640px){ .modalbackdrop{align-items:center;padding:24px} }
 .modal{position:relative;width:100%;max-width:470px;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--surface);color:var(--ink);
-  border-radius:8px 8px 0 0;box-shadow:var(--float)}
-@media (prefers-reduced-motion:no-preference){ .modal{animation:sheetIn .24s var(--ease)} }
-@media (min-width:640px){ .modal{border-radius:8px} }
-.modalclose{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:var(--r);border:0;background:rgba(255,255,255,.16);
-  color:#fff;cursor:pointer;z-index:2;display:grid;place-items:center;padding:0}
+  border-radius:20px 20px 0 0;box-shadow:var(--float)}
+@media (prefers-reduced-motion:no-preference){ .modal{animation:sheetUp .48s var(--ease-drawer)} }
+@media (min-width:640px){
+  .modal{border-radius:18px}
+  @media (prefers-reduced-motion:no-preference){ .modal{animation:modalIn .26s var(--ease-out)} }
+}
+.modal::before{content:"";position:absolute;z-index:3;top:8px;left:50%;width:38px;height:5px;margin-left:-19px;border-radius:3px;background:rgba(255,255,255,.55)}
+@media (min-width:640px){ .modal::before{display:none} }
+.modalclose{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:11px;border:0;background:rgba(255,255,255,.18);
+  color:#fff;cursor:pointer;z-index:4;display:grid;place-items:center;padding:0}
 .modalclose .ico{font-size:19px}
-.modalclose:hover{background:rgba(255,255,255,.3)}
-.modalclose.dark{background:var(--surface-2);color:var(--ink)}
-.modalclose.dark:hover{background:var(--ground-2)}
-.modalhead{position:relative;padding:24px 58px 22px 22px;background:var(--table);color:var(--on-table);
-  box-shadow:inset 0 0 0 4px var(--table),inset 0 0 0 6px var(--table-line)}
-.modalname{font:700 30px/1.02 var(--f-head);letter-spacing:-.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.modalname .flag{font-size:21px;box-shadow:0 0 0 1px rgba(255,255,255,.45)}
+.modalclose.dark{background:rgba(18,26,38,.08);color:var(--ink)}
+.modalhead{position:relative;padding:30px 60px 24px 22px;color:var(--on-table);border-radius:20px 20px 0 0}
+@media (min-width:640px){ .modalhead,.recapbanner{border-radius:18px 18px 0 0} }
+.modalname{font:700 32px/1 var(--f-head);letter-spacing:-.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.modalname .flag{font-size:22px;box-shadow:0 0 0 1px rgba(255,255,255,.45)}
 .modalsub{font:500 14px/1.35 var(--f-text);color:var(--on-table-2);margin-top:6px}
 .modalstats{display:flex;gap:26px;margin-top:18px}
-.statbox{display:flex;flex-direction:column;gap:3px}
-.statbox b{font:700 30px/.95 var(--f-head)}
+.statbox{display:flex;flex-direction:column;gap:4px}
+.statbox b{font:700 italic 34px/.95 var(--f-head)}
 .statbox span{font:500 12.5px/1.2 var(--f-text);color:var(--on-table-2)}
-.modalbody{padding:6px 22px 26px}
+.modalbody{padding:6px 22px 28px}
 .modalsec{padding:16px 0 0}
-.modalsec h3{font:700 18px/1.1 var(--f-head);color:var(--ink);margin:0 0 6px}
+.modalsec h3{font:700 19px/1.1 var(--f-head);color:var(--ink);margin:0 0 6px}
 .secdot{display:none}
 .sec-empty{color:var(--ink-2);font-size:14px;text-align:center;padding:18px 0}
 .roster{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
-.roster li{background:var(--surface-2);border-radius:var(--r);padding:9px 10px;font:600 15px/1.15 var(--f-head);color:var(--ink)}
+.roster li{background:var(--surface-2);border-radius:9px;padding:9px 10px;font:600 15px/1.15 var(--f-head);color:var(--ink)}
 
-/* Badge en grand. */
+/* Badge en grand : il atterrit comme un autocollant. */
 .badgemodal{max-width:400px;text-align:center}
-.badgezoom{display:grid;place-items:center;padding:36px 20px 28px;background:var(--ba,var(--surface-2))}
+.badgemodal::before{background:rgba(18,26,38,.18)}
+.badgezoom{display:grid;place-items:center;padding:40px 20px 30px;background:var(--ba,var(--surface-2))}
 .badgezoom.locked{background:var(--surface-2)}
-.badgezoom-img{position:relative;width:200px;height:200px}
+.badgezoom-img{position:relative;width:200px;height:200px;filter:drop-shadow(0 14px 14px rgba(18,26,38,.28))}
 .badgezoom-img img{width:100%;height:100%;display:block;object-fit:contain}
 .badgezoom.locked .badgezoom-img img{filter:grayscale(1) contrast(.85) brightness(.95);opacity:.55}
 .badgezoom-img .badgelock{width:46px;height:46px;right:8px;bottom:8px}
 .badgezoom-img .badgelock .ico{font-size:22px}
-@media (prefers-reduced-motion:no-preference){ .badgezoom-img{animation:badgeIn .32s var(--ease) both} }
-.badgemodal-body{padding:18px 22px 26px}
-.badgestatus{display:inline-block;font:600 13px/1 var(--f-text);padding:5px 9px;border-radius:3px;background:var(--surface-2);color:var(--ink-2)}
+@media (prefers-reduced-motion:no-preference){ .badgezoom-img{animation:stickerIn .7s var(--ease-out) .08s both} }
+.badgemodal-body{padding:18px 22px 28px}
+.badgestatus{display:inline-block;font:600 13px/1 var(--f-text);padding:6px 10px;border-radius:999px;background:var(--surface-2);color:var(--ink-2)}
 .badgestatus.on{background:var(--table);color:#fff}
-.badgetitle{margin:12px 0 0;font:700 32px/1 var(--f-head);letter-spacing:-.01em;color:var(--ink)}
+.badgetitle{margin:12px 0 0;font:700 34px/1 var(--f-head);letter-spacing:-.01em;color:var(--ink)}
 .badgehow{margin:16px 0 4px;font:600 13.5px/1.2 var(--f-text);color:var(--ink-2)}
 .badgedesc{margin:0 auto;font:500 17px/1.45 var(--f-text);color:var(--ink);max-width:30ch}
-
-/* Grille de badges (illustrations fournies, posées telles quelles). */
 .badgegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:14px 10px;margin-top:14px}
 .badgecell{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;background:none;border:0;padding:8px 2px 6px;margin:0;
-  font:inherit;color:inherit;cursor:pointer;border-radius:var(--r)}
-button.badgecell:hover{background:var(--surface-2)}
-.badgeicon{width:62px;height:62px;position:relative}
+  font:inherit;color:inherit;cursor:pointer;border-radius:12px}
+.badgeicon{width:64px;height:64px;position:relative}
+.badgecell.unlocked .badgeicon{filter:drop-shadow(0 4px 5px rgba(18,26,38,.22))}
 .badgeicon img{width:100%;height:100%;display:block;object-fit:contain}
-.badgecell.locked .badgeicon img{filter:grayscale(1) contrast(.85) brightness(.95);opacity:.5}
+.badgecell.locked .badgeicon img{filter:grayscale(1) contrast(.85) brightness(.95);opacity:.45}
+@media (prefers-reduced-motion:no-preference){
+  .fresh .badgecell{animation:popin .45s var(--ease-out) both}
+  .fresh .badgecell:nth-child(2){animation-delay:.03s}.fresh .badgecell:nth-child(3){animation-delay:.06s}.fresh .badgecell:nth-child(4){animation-delay:.09s}
+  .fresh .badgecell:nth-child(5){animation-delay:.12s}.fresh .badgecell:nth-child(6){animation-delay:.15s}.fresh .badgecell:nth-child(n+7){animation-delay:.18s}
+}
 .badgelock{position:absolute;right:-3px;bottom:-3px;width:22px;height:22px;background:var(--ink);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;
   box-shadow:0 0 0 2px var(--surface)}
 .badgelock .ico{font-size:12px}
 .badgename{font:600 14px/1.1 var(--f-head);color:var(--ink-2)}
 .badgecell.unlocked .badgename{color:var(--ink)}
 
-/* --- Formulaires, boutons, admin --- */
+/* --- Formulaires et boutons : on appuie vraiment dessus. --- */
 label{display:block;font:600 14px/1.2 var(--f-text);margin:16px 0 7px;color:var(--ink)}
-input,select,textarea{width:100%;background:#FBFBFA;border:1.5px solid var(--line);border-radius:var(--r);padding:12px 13px;font:400 16px/1.3 var(--f-text);color:var(--ink)}
+input,select,textarea{width:100%;background:#fff;border:0;border-radius:10px;padding:13px 14px;font:400 16px/1.3 var(--f-text);color:var(--ink);
+  box-shadow:inset 0 0 0 1.5px var(--line),inset 0 2px 3px rgba(18,26,38,.06)}
 input::placeholder,textarea::placeholder{color:var(--ink-3)}
-input:hover,select:hover,textarea:hover{border-color:var(--ink-3)}
-input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:var(--table);box-shadow:0 0 0 3px color-mix(in srgb,var(--table) 22%,transparent)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--table),0 0 0 4px color-mix(in srgb,var(--table) 18%,transparent)}
 textarea{resize:vertical}
-.btn{position:relative;display:block;background:var(--red);color:var(--on-red);border:0;border-radius:var(--r);
-  padding:14px 18px;font:700 18px/1 var(--f-head);letter-spacing:.005em;margin-top:20px;width:100%}
-.btn:hover{background:var(--red-deep)}
-.btn:active{transform:translateY(1px)}
+.btn{position:relative;display:block;border:0;border-radius:12px;padding:15px 20px;margin-top:20px;width:100%;
+  font:700 18px/1 var(--f-head);letter-spacing:.005em;color:var(--on-red);
+  background:linear-gradient(180deg,var(--red-hi),var(--red) 60%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 3px 0 var(--red-deep),0 10px 18px -8px rgba(152,21,34,.6)}
 .btn:disabled{opacity:.6;cursor:progress}
-.btn.sec{background:var(--surface-2);color:var(--ink)}
-.btn.sec:hover{background:var(--ground-2)}
-.btn.small{display:inline-flex;align-items:center;gap:7px;width:auto;margin-top:0;padding:10px 14px;font-size:16px}
-.btn .ico{font-size:17px}
+@media (prefers-reduced-motion:no-preference){ .btn:active{transform:translateY(2px) scale(.99);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 1px 0 var(--red-deep),0 4px 8px -6px rgba(152,21,34,.6)} }
+.btn.sec{color:var(--ink);background:linear-gradient(180deg,#fff,#F2F4F5);box-shadow:inset 0 0 0 1px rgba(18,26,38,.1),0 2px 0 #CBD2D9,0 6px 12px -8px rgba(18,26,38,.35)}
+@media (prefers-reduced-motion:no-preference){ .btn.sec:active{box-shadow:inset 0 0 0 1px rgba(18,26,38,.1),0 0 0 #CBD2D9} }
+.btn.light{color:var(--ink);background:linear-gradient(180deg,#fff,#EEF1F2);box-shadow:0 3px 0 rgba(0,0,0,.25),0 10px 18px -8px rgba(0,0,0,.45)}
+.btn.small{display:inline-flex;align-items:center;gap:8px;width:auto;margin-top:0;padding:11px 16px;font-size:16px}
+.btn .ico{font-size:18px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .adm-item{padding:14px 0;border-top:1px solid var(--line-2)}
 .adm-item:first-of-type{border-top:0}
 .adm-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
-.scorein{width:58px;text-align:center;font:700 21px/1 var(--f-head);padding:8px 5px}
-.vs{font:700 19px/1 var(--f-head);color:var(--ink-2)}
+.scorein{width:60px;text-align:center;font:700 italic 22px/1 var(--f-head);padding:9px 5px}
+.vs{font:700 italic 20px/1 var(--f-head);color:var(--ink-2)}
 details summary{list-style-position:outside;cursor:pointer}
 
 /* -----------------------------------------------------------------------
-   Connexion : la table de compétition vue de dessus, le nom du jeu posé
-   dessus, la balle qui passe le filet.
+   Connexion : la salle, une table en perspective et un échange qui se joue.
    ----------------------------------------------------------------------- */
 .authshell{min-height:100vh;display:flex;flex-direction:column}
-.authtable{position:relative;overflow:hidden;margin:12px 12px 0;padding:30px 26px 34px;color:#fff;background:#1D4F8C;border-radius:6px;
-  box-shadow:inset 0 0 0 7px #1D4F8C,inset 0 0 0 10px var(--table-line);min-height:340px;display:flex;flex-direction:column}
-/* Ligne médiane (le double) et filet. */
-.authtable::after{content:"";position:absolute;left:0;right:0;top:58%;height:4px;background:var(--table-line)}
-.authtable-in{position:relative;z-index:1;max-width:440px}
+.authstage{position:relative;overflow:hidden;margin:10px 10px 0;border-radius:20px;color:#fff;background:#13345B;
+  display:flex;flex-direction:column;padding:26px 24px 0}
+.authstage-in{position:relative;z-index:2;max-width:460px}
 .authlogo{display:flex;align-items:center;gap:10px;font:600 14px/1.2 var(--f-text);color:var(--on-table-2)}
-.authtitle{font:700 104px/.86 var(--f-head);letter-spacing:-.025em;margin:18px 0 0 -4px}
-.authtable p{position:relative;z-index:1;font:500 16.5px/1.45 var(--f-text);margin:auto 0 0;max-width:30ch;padding-top:40px;color:#fff}
-.authball{position:absolute;z-index:1;width:28px;height:28px;left:70%;top:calc(58% - 40px);box-shadow:none;background:#F6F7F4}
-@media (prefers-reduced-motion:no-preference){ .authball{animation:rally 2.6s cubic-bezier(.45,0,.55,1) .3s 1 both} }
-.authform-col{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:26px 16px 56px}
+.authtitle{font:700 italic 104px/.84 var(--f-head);letter-spacing:-.03em;margin:16px 0 0 -6px}
+.authstage p{font:500 16.5px/1.45 var(--f-text);margin:12px 0 0;max-width:30ch;color:#fff}
+.court{position:relative;height:210px;margin:6px -24px 0;perspective:520px;perspective-origin:50% -20%;overflow:hidden}
+.court-table{position:absolute;left:12%;right:12%;top:20%;bottom:-60%;transform:rotateX(52deg);transform-origin:50% 0;transform-style:preserve-3d;border-radius:4px;
+  background:linear-gradient(180deg,#2A62A6,#1D4F8C 60%);box-shadow:inset 0 0 0 5px var(--table-line)}
+.court-table::before{content:"";position:absolute;top:5px;bottom:5px;left:50%;width:3px;margin-left:-1.5px;background:rgba(255,255,255,.75)}
+.court-net{position:absolute;left:-6%;right:-6%;top:34%;height:30px;transform-origin:50% 100%;transform:rotateX(-90deg);
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.5) 0 1px,transparent 1px 6px);border-top:4px solid #fff}
+.rally{position:absolute;inset:0;z-index:3;pointer-events:none}
+.rally .ball{position:absolute;left:62%;top:44%;width:20px;height:20px;margin:-10px 0 0 -10px}
+.rally .shadow{position:absolute;left:62%;top:44%;width:20px;height:6px;margin:8px 0 0 -10px;border-radius:50%;background:rgba(0,0,0,.4);filter:blur(1px)}
+@media (prefers-reduced-motion:no-preference){
+  .rally .ball{animation:rallyBall 3.4s linear .6s infinite both}
+  .rally .shadow{animation:rallyShadow 3.4s linear .6s infinite both}
+}
+@keyframes rallyBall{
+  0%{left:8%;top:112%;transform:scale(1.25);opacity:0;animation-timing-function:cubic-bezier(.25,.6,.5,1)}
+  8%{opacity:1}
+  22%{left:30%;top:82%;transform:scale(1.15);animation-timing-function:cubic-bezier(.15,.75,.4,1)}
+  38%{left:46%;top:16%;transform:scale(1);animation-timing-function:cubic-bezier(.6,0,.85,.35)}
+  52%{left:60%;top:40%;transform:scale(.85);animation-timing-function:cubic-bezier(.15,.75,.4,1)}
+  66%{left:72%;top:6%;transform:scale(.78);opacity:1}
+  72%{left:76%;top:-4%;opacity:0}
+  100%{left:76%;top:-4%;opacity:0}
+}
+@keyframes rallyShadow{
+  0%{left:8%;top:112%;opacity:0;transform:scale(1.25)}
+  8%{opacity:.4}
+  22%{left:30%;top:82%;opacity:.95;transform:scale(1.15)}
+  38%{left:46%;top:56%;opacity:.3;transform:scale(.9)}
+  52%{left:60%;top:40%;opacity:.95;transform:scale(.85)}
+  66%{left:72%;top:28%;opacity:.3;transform:scale(.75)}
+  72%{opacity:0}
+  100%{opacity:0}
+}
+.authform-col{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:22px 16px 56px}
 @media (min-width:900px){
   .authshell{flex-direction:row;align-items:stretch}
-  .authtable{flex:1 1 50%;margin:16px 0 16px 16px;padding:48px 52px;min-height:auto}
-  .authtable::after{left:68%;right:auto;top:0;bottom:0;width:4px;height:auto}
-  .authtitle{font-size:168px}
-  .authtable p{font-size:18px}
-  .authball{left:calc(68% + 70px);top:46%}
-  .authform-col{flex:1 1 50%;align-items:center}
+  .authstage{flex:1 1 54%;margin:16px 0 16px 16px;padding:52px 56px 0;justify-content:space-between}
+  .authtitle{font-size:172px}
+  .authstage p{font-size:18px}
+  .court{height:46%;min-height:300px;margin:20px -56px 0}
+  .authform-col{flex:1 1 46%;align-items:center}
 }
 .auth{max-width:400px;width:100%}
 .auth .panel{padding:22px 22px 24px}
 .auth h1{font:700 40px/1 var(--f-head)}
-.authhead{font:700 26px/1.1 var(--f-head);margin:0 0 2px}
+.authhead{font:700 28px/1.1 var(--f-head);margin:0 0 2px}
 .lead{color:var(--ink-2);margin:0 0 20px;font-size:15.5px}
 .ferr{color:var(--red);font:600 14px/1.4 var(--f-text);margin-top:12px;min-height:1.2em}
 .fok{color:var(--table)}
 .switch{text-align:center;color:var(--ink-2);font:400 14.5px/1.4 var(--f-text);margin-top:16px}
 
-/* --- Messages éphémères, états vides et chargement --- */
-.toast{position:fixed;left:50%;bottom:94px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 16px;border-radius:var(--r);
-  font:600 15px/1.25 var(--f-text);z-index:60;max-width:90vw;text-align:center;box-shadow:var(--float)}
+/* --- Messages éphémères, états vides, chargement --- */
+.toast{position:fixed;left:50%;bottom:calc(98px + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;gap:10px;
+  background:var(--ink);color:#fff;padding:11px 16px 11px 12px;border-radius:14px;
+  font:600 15px/1.25 var(--f-text);z-index:60;width:max-content;max-width:min(90vw,440px);text-align:left;box-shadow:var(--float)}
+.toast::before{content:"";flex:none;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0 20%,#EEF0EC 52%,#BFC6CB 100%)}
+.toast.err::before{background:#fff}
 @media (min-width:860px){ .toast{bottom:28px} }
-@media (prefers-reduced-motion:no-preference){ .toast{animation:toastIn .2s var(--ease)} }
-.toast.leaving{animation:toastOut .16s ease-in forwards}
+@media (prefers-reduced-motion:no-preference){ .toast{animation:toastIn .5s var(--ease-out)} }
+.toast.leaving{animation:toastOut .2s ease-out forwards}
 .toast.err{background:var(--red)}
 .empty{display:flex;flex-direction:column;align-items:center;gap:14px;padding:38px 16px 34px;text-align:center;color:var(--ink-2);font:400 15px/1.45 var(--f-text);
   max-width:36ch;margin:12px auto 0}
-.empty::before{content:"";width:40px;height:40px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line)}
-.loading{padding:84px 0;text-align:center;color:var(--ink-2);display:flex;flex-direction:column;align-items:center;gap:16px;font:600 15px/1 var(--f-text)}
-.loading::before{content:"";width:28px;height:28px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line)}
-@media (prefers-reduced-motion:no-preference){ .loading::before{animation:bounce .5s cubic-bezier(.5,0,.5,1) infinite alternate} }
+.empty::before{content:"";width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0 18%,#F1F2EE 46%,#C3C9CE 100%);
+  box-shadow:0 10px 10px -6px rgba(18,26,38,.3)}
+@media (prefers-reduced-motion:no-preference){ .empty::before{animation:hop 1.6s var(--ease-in-out) infinite} }
+.loading{padding:84px 0;text-align:center;color:var(--ink-2);display:flex;flex-direction:column;align-items:center;gap:18px;font:600 15px/1 var(--f-text)}
+.loading::before{content:"";width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0 18%,#F1F2EE 46%,#C3C9CE 100%);
+  box-shadow:0 2px 3px rgba(18,26,38,.25)}
+@media (prefers-reduced-motion:no-preference){ .loading::before{animation:bounce .46s cubic-bezier(.5,0,.5,1) infinite alternate} }
 
 /* -----------------------------------------------------------------------
-   Bilan de tournoi ("récap") : la table du tournoi en tête, puis les
-   chiffres qui comptent jusqu'à leur valeur (le seul moment chorégraphié).
+   Bilan de tournoi.
    ----------------------------------------------------------------------- */
 .recapmodal{overflow-x:hidden}
-.recapbanner{position:relative;padding:26px 58px 24px 22px;color:var(--on-table);background:var(--table);
-  box-shadow:inset 0 0 0 4px var(--table),inset 0 0 0 6px var(--table-line)}
-.recapkicker{font:600 13.5px/1 var(--f-text);color:var(--on-table-2);margin:0 0 8px}
-.recapname{font:700 32px/1 var(--f-head);letter-spacing:-.01em;margin:0;max-width:16ch}
+.recapbanner{position:relative;padding:34px 60px 28px 22px;color:var(--on-table);border-radius:20px 20px 0 0}
+.recapname{font:700 34px/1 var(--f-head);letter-spacing:-.01em;margin:0;max-width:16ch}
 .recapsub{font:500 14px/1.3 var(--f-text);color:var(--on-table-2);margin-top:10px}
 .recapgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0 0}
-.recapgrid div{background:var(--surface-2);border-radius:var(--r);padding:12px 14px}
-.recapgrid b{display:block;font:700 34px/1 var(--f-head);color:var(--ink)}
+.recapgrid div{background:var(--surface-2);border-radius:12px;padding:13px 14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.recapgrid b{display:block;font:700 italic 38px/1 var(--f-head);color:var(--ink)}
 .recapgrid b.hot{color:var(--red)}
 .recapgrid span{display:block;margin-top:4px;font:500 13px/1.2 var(--f-text);color:var(--ink-2)}
-@media (prefers-reduced-motion:no-preference){ .recap-step{animation:recapIn .4s var(--ease) both} }
-.recap-podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-top:8px;padding-bottom:0;border-bottom:3px solid var(--ink)}
+@media (prefers-reduced-motion:no-preference){ .recap-step{animation:rowIn .55s var(--ease-out) both} }
+.recap-podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-top:8px;padding-bottom:0}
 .podiumcol{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:116px;min-width:0}
 .podiumname{font:600 16px/1.1 var(--f-head);color:var(--ink);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-.podiumpts{font:700 19px/1 var(--f-head);color:var(--ink)}
-.podiumpts small{font:500 11px/1 var(--f-text);margin-left:2px;color:var(--ink-2)}
-.podiumbar{width:100%;border-radius:3px 3px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:8px;background:var(--pcol)}
-.podiumbar span{font:700 24px/1 var(--f-head);color:var(--ink)}
+.podiumpts{font:700 italic 20px/1 var(--f-head);color:var(--ink)}
+.podiumpts small{font:500 11px/1 var(--f-text);font-style:normal;margin-left:2px;color:var(--ink-2)}
+.podiumbar{width:100%;border-radius:8px 8px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:8px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--pcol) 70%,white) 0 9px,color-mix(in srgb,var(--pcol) 60%,var(--surface)) 9px 100%)}
+.podiumbar span{font:700 italic 24px/1 var(--f-head);color:var(--ink)}
+@media (prefers-reduced-motion:no-preference){ .podiumbar{animation:rise .7s var(--ease-out) .6s both;transform-origin:bottom} }
 
-@keyframes rowIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes rowIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes sheetIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 @keyframes barfill{from{width:0}to{width:var(--w)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-@keyframes flip{0%{transform:perspective(240px) rotateX(-90deg)}100%{transform:perspective(240px) rotateX(0)}}
-@keyframes toastIn{from{opacity:0;transform:translate(-50%,6px)}to{opacity:1;transform:translate(-50%,0)}}
-@keyframes toastOut{to{opacity:0;transform:translate(-50%,6px)}}
-@keyframes bounce{from{transform:translateY(-16px)}to{transform:translateY(0)}}
-@keyframes badgeIn{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
-@keyframes recapIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-/* La balle traverse la table : rebond d'un côté, passe le filet, rebond de l'autre. */
-@keyframes rally{
-  0%{transform:translate(-150px,-120px) scale(.9)}
-  32%{transform:translate(-90px,0) scale(1)}
-  58%{transform:translate(-20px,-70px) scale(1.06)}
-  82%{transform:translate(0,0) scale(1)}
-  100%{transform:translate(0,0)}
-}
+@keyframes growx{from{transform:scaleX(0)}to{transform:none}}
+@keyframes growy{from{transform:scaleY(0)}to{transform:none}}
+@keyframes rise{from{transform:scaleY(.1);opacity:0}to{transform:none;opacity:1}}
+@keyframes popin{from{opacity:0;transform:scale(.6)}60%{opacity:1;transform:scale(1.08)}to{transform:none}}
+@keyframes bounceIn{0%{opacity:0;transform:translateY(-60px)}45%{opacity:1;transform:translateY(0) scale(1.06,.92)}65%{transform:translateY(-14px)}82%{transform:translateY(0) scale(1.02,.98)}92%{transform:translateY(-3px)}100%{transform:none}}
+@keyframes stickerIn{0%{opacity:0;transform:scale(1.4) rotate(-12deg)}55%{opacity:1;transform:scale(.94) rotate(3deg)}100%{transform:none}}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes flipcard{0%{transform:perspective(260px) rotateX(-95deg);opacity:.4}70%{transform:perspective(260px) rotateX(12deg);opacity:1}100%{transform:perspective(260px) rotateX(0)}}
+@keyframes balldrop{0%{transform:translateY(-110px) scale(.85);opacity:0}12%{opacity:1}48%{transform:translateY(0) scale(1.15,.85)}62%{transform:translateY(-22px) scale(1)}78%{transform:translateY(0) scale(1.06,.94)}88%{transform:translateY(-5px)}100%{transform:translateY(0);opacity:0}}
+@keyframes ballshadow{0%{transform:scale(.3);opacity:0}48%{transform:scale(1);opacity:1}62%{transform:scale(.7);opacity:.6}78%{transform:scale(1);opacity:1}100%{opacity:0}}
+@keyframes toastIn{0%{opacity:0;transform:translate(-50%,24px) scale(.96)}60%{opacity:1;transform:translate(-50%,-3px)}100%{transform:translate(-50%,0)}}
+@keyframes toastOut{to{opacity:0;transform:translate(-50%,10px) scale(.97)}}
+@keyframes bounce{from{transform:translateY(-22px)}to{transform:translateY(0) scale(1.08,.92)}}
+@keyframes hop{0%,100%{transform:translateY(0)}45%{transform:translateY(-16px)}}
+@keyframes spot{0%{box-shadow:0 0 0 0 var(--red),var(--lift)}30%{box-shadow:0 0 0 6px color-mix(in srgb,var(--red) 50%,transparent),var(--lift)}100%{box-shadow:0 0 0 3px var(--red),var(--lift)}}
 @media (prefers-reduced-motion:reduce){
   *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
   ::view-transition-old(root),::view-transition-new(root){animation:none!important}
 }
-::view-transition-old(root),::view-transition-new(root){animation-duration:.16s;animation-timing-function:var(--ease)}
-.complabel h2{margin:0;font:inherit}
-.pillrow + .pillrow{margin-left:8px}
-.filters .pillrow + .pillrow{margin-left:0}
-.recapnotice .btn{margin-top:16px}
+::view-transition-old(root){animation:.18s var(--ease-out) both vtOut}
+::view-transition-new(root){animation:.28s var(--ease-out) both vtIn}
+@keyframes vtOut{to{opacity:0}}
+@keyframes vtIn{from{opacity:0;transform:translateY(8px)}}
+
 </style>
 </head>
 <body>
@@ -667,7 +837,7 @@ let sb = null;
 
 /* Icônes : jeu Phosphor (phosphor-icons/core, licence MIT), version
    "regular" au repos et "fill" pour l'onglet actif. viewBox 256. */
-const PH = {"ping-pong":"<path d=\"M240,196a16,16,0,0,0-6.65-11.7l-38-27.15,17-16.95a39.67,39.67,0,0,0,11-35.79,99.52,99.52,0,0,0-35.4-57.89A101.93,101.93,0,0,0,122.58,24,100.29,100.29,0,0,0,24,122.58a102.12,102.12,0,0,0,22.55,65.28,99.52,99.52,0,0,0,57.89,35.4,39.68,39.68,0,0,0,35.79-11l16.95-17,27.15,38A16,16,0,0,0,196,240c.44,0,.88.05,1.32.05a16,16,0,0,0,11.31-4.69l26.64-26.64A16,16,0,0,0,240,196ZM59,177.83a86.09,86.09,0,0,1-19-55A84.27,84.27,0,0,1,122.8,40a86.28,86.28,0,0,1,55,19A85.08,85.08,0,0,1,196.58,80.1L80.1,196.58A85.08,85.08,0,0,1,59,177.83ZM197.35,224l-32.63-45.69a8,8,0,0,0-5.85-3.32q-.33,0-.66,0a8,8,0,0,0-5.66,2.34l-23.63,23.63a23.68,23.68,0,0,1-21.36,6.63,80.3,80.3,0,0,1-12.3-3.5l108.8-108.8a80.63,80.63,0,0,1,3.5,12.3,23.67,23.67,0,0,1-6.63,21.36L177.3,152.55a8,8,0,0,0,1,12.17L224,197.35Z\"/>","users-three":"<path d=\"M244.8,150.4a8,8,0,0,1-11.2-1.6A51.6,51.6,0,0,0,192,128a8,8,0,0,1-7.37-4.89,8,8,0,0,1,0-6.22A8,8,0,0,1,192,112a24,24,0,1,0-23.24-30,8,8,0,1,1-15.5-4A40,40,0,1,1,219,117.51a67.94,67.94,0,0,1,27.43,21.68A8,8,0,0,1,244.8,150.4ZM190.92,212a8,8,0,1,1-13.84,8,57,57,0,0,0-98.16,0,8,8,0,1,1-13.84-8,72.06,72.06,0,0,1,33.74-29.92,48,48,0,1,1,58.36,0A72.06,72.06,0,0,1,190.92,212ZM128,176a32,32,0,1,0-32-32A32,32,0,0,0,128,176ZM72,120a8,8,0,0,0-8-8A24,24,0,1,1,87.24,82a8,8,0,1,0,15.5-4A40,40,0,1,0,37,117.51,67.94,67.94,0,0,0,9.6,139.19a8,8,0,1,0,12.8,9.61A51.6,51.6,0,0,1,64,128,8,8,0,0,0,72,120Z\"/>","ranking":"<path d=\"M112.41,102.53a8,8,0,0,1,5.06-10.12l12-4A8,8,0,0,1,140,96v40a8,8,0,0,1-16,0V107.1l-1.47.49A8,8,0,0,1,112.41,102.53ZM248,208a8,8,0,0,1-8,8H16a8,8,0,0,1,0-16h8V104A16,16,0,0,1,40,88H80V56A16,16,0,0,1,96,40h64a16,16,0,0,1,16,16v72h40a16,16,0,0,1,16,16v56h8A8,8,0,0,1,248,208Zm-72-64v56h40V144ZM96,200h64V56H96Zm-56,0H80V104H40Z\"/>","user-circle":"<path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-59.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,131.52,0Z\"/>","gear-six":"<path d=\"M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A112.1,112.1,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.62a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Zm-15,34.91-28.57,16.25a8,8,0,0,0-3,3c-.58,1-1.19,2.06-1.81,3.06a7.94,7.94,0,0,0-1.22,4.21l-.15,32.25a95.89,95.89,0,0,1-25.37,14.3L134,199.13a8,8,0,0,0-3.91-1h-.19c-1.21,0-2.43,0-3.64,0a8.08,8.08,0,0,0-4.1,1l-28.84,16.1A96,96,0,0,1,67.88,201l-.11-32.2a8,8,0,0,0-1.22-4.22c-.62-1-1.23-2-1.8-3.06a8.09,8.09,0,0,0-3-3.06l-28.6-16.29a90.49,90.49,0,0,1,0-28.26L61.67,97.63a8,8,0,0,0,3-3c.58-1,1.19-2.06,1.81-3.06a7.94,7.94,0,0,0,1.22-4.21l.15-32.25a95.89,95.89,0,0,1,25.37-14.3L122,56.87a8,8,0,0,0,4.1,1c1.21,0,2.43,0,3.64,0a8.08,8.08,0,0,0,4.1-1l28.84-16.1A96,96,0,0,1,188.12,55l.11,32.2a8,8,0,0,0,1.22,4.22c.62,1,1.23,2,1.8,3.06a8.09,8.09,0,0,0,3,3.06l28.6,16.29A90.49,90.49,0,0,1,222.9,142.12Z\"/>","sign-out":"<path d=\"M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z\"/>","speaker-high":"<path d=\"M155.51,24.81a8,8,0,0,0-8.42.88L77.25,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V32A8,8,0,0,0,155.51,24.81ZM32,96H72v64H32ZM144,207.64,88,164.09V91.91l56-43.55Zm54-106.08a40,40,0,0,1,0,52.88,8,8,0,0,1-12-10.58,24,24,0,0,0,0-31.72,8,8,0,0,1,12-10.58ZM248,128a79.9,79.9,0,0,1-20.37,53.34,8,8,0,0,1-11.92-10.67,64,64,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67A79.83,79.83,0,0,1,248,128Z\"/>","speaker-slash":"<path d=\"M53.92,34.62A8,8,0,1,0,42.08,45.38L73.55,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V175.09l42.08,46.29a8,8,0,1,0,11.84-10.76ZM32,96H72v64H32ZM144,207.64,88,164.09V95.89l56,61.6Zm42-63.77a24,24,0,0,0,0-31.72,8,8,0,1,1,12-10.57,40,40,0,0,1,0,52.88,8,8,0,0,1-12-10.59Zm-80.16-76a8,8,0,0,1,1.4-11.23l39.85-31A8,8,0,0,1,160,32v74.83a8,8,0,0,1-16,0V48.36l-26.94,21A8,8,0,0,1,105.84,67.91ZM248,128a79.9,79.9,0,0,1-20.37,53.34,8,8,0,0,1-11.92-10.67,64,64,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67A79.83,79.83,0,0,1,248,128Z\"/>","share-network":"<path d=\"M176,160a39.89,39.89,0,0,0-28.62,12.09l-46.1-29.63a39.8,39.8,0,0,0,0-28.92l46.1-29.63a40,40,0,1,0-8.66-13.45l-46.1,29.63a40,40,0,1,0,0,55.82l46.1,29.63A40,40,0,1,0,176,160Zm0-128a24,24,0,1,1-24,24A24,24,0,0,1,176,32ZM64,152a24,24,0,1,1,24-24A24,24,0,0,1,64,152Zm112,72a24,24,0,1,1,24-24A24,24,0,0,1,176,224Z\"/>","x":"<path d=\"M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z\"/>","lock-simple":"<path d=\"M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z\"/>","circle":"<path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Z\"/>","ping-pong.f":"<path d=\"M240,196a16,16,0,0,0-6.65-11.7l-38-27.15,17-16.95a39.67,39.67,0,0,0,11-35.79,99.52,99.52,0,0,0-35.4-57.89A101.93,101.93,0,0,0,122.58,24,100.29,100.29,0,0,0,24,122.58a102.12,102.12,0,0,0,22.55,65.28,99.52,99.52,0,0,0,57.89,35.4,39.68,39.68,0,0,0,35.79-11l16.95-17,27.15,38A16,16,0,0,0,196,240c.44,0,.88.05,1.32.05a16,16,0,0,0,11.31-4.69l26.64-26.64A16,16,0,0,0,240,196Zm-42.6,28-32.63-45.69a8,8,0,0,0-5.85-3.32q-.33,0-.66,0a8,8,0,0,0-5.66,2.34l-23.63,23.63a23.68,23.68,0,0,1-21.36,6.63,80.3,80.3,0,0,1-12.3-3.5l108.8-108.8a80.63,80.63,0,0,1,3.5,12.3,23.67,23.67,0,0,1-6.63,21.36L177.3,152.55a8,8,0,0,0,1,12.17L224,197.36Z\"/>","users-three.f":"<path d=\"M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z\"/>","ranking.f":"<path d=\"M240,200h-8V144a16,16,0,0,0-16-16H176V56a16,16,0,0,0-16-16H96A16,16,0,0,0,80,56V88H40a16,16,0,0,0-16,16v96H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM80,200H40V104H80Zm60-64a8,8,0,0,1-16,0V107.1l-1.47.49a8,8,0,0,1-5.06-15.18l12-4A8,8,0,0,1,140,96Zm76,64H176V144h40Z\"/>","user-circle.f":"<path d=\"M172,120a44,44,0,1,1-44-44A44.05,44.05,0,0,1,172,120Zm60,8A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.09,88.09,0,0,0-91.47-87.93C77.43,41.89,39.87,81.12,40,128.25a87.65,87.65,0,0,0,22.24,58.16A79.71,79.71,0,0,1,84,165.1a4,4,0,0,1,4.83.32,59.83,59.83,0,0,0,78.28,0,4,4,0,0,1,4.83-.32,79.71,79.71,0,0,1,21.79,21.31A87.62,87.62,0,0,0,216,128Z\"/>","gear-six.f":"<path d=\"M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z\"/>","lock-simple.f":"<path d=\"M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96Z\"/>"};
+const PH = {"ping-pong":"<path d=\"M240,196a16,16,0,0,0-6.65-11.7l-38-27.15,17-16.95a39.67,39.67,0,0,0,11-35.79,99.52,99.52,0,0,0-35.4-57.89A101.93,101.93,0,0,0,122.58,24,100.29,100.29,0,0,0,24,122.58a102.12,102.12,0,0,0,22.55,65.28,99.52,99.52,0,0,0,57.89,35.4,39.68,39.68,0,0,0,35.79-11l16.95-17,27.15,38A16,16,0,0,0,196,240c.44,0,.88.05,1.32.05a16,16,0,0,0,11.31-4.69l26.64-26.64A16,16,0,0,0,240,196ZM59,177.83a86.09,86.09,0,0,1-19-55A84.27,84.27,0,0,1,122.8,40a86.28,86.28,0,0,1,55,19A85.08,85.08,0,0,1,196.58,80.1L80.1,196.58A85.08,85.08,0,0,1,59,177.83ZM197.35,224l-32.63-45.69a8,8,0,0,0-5.85-3.32q-.33,0-.66,0a8,8,0,0,0-5.66,2.34l-23.63,23.63a23.68,23.68,0,0,1-21.36,6.63,80.3,80.3,0,0,1-12.3-3.5l108.8-108.8a80.63,80.63,0,0,1,3.5,12.3,23.67,23.67,0,0,1-6.63,21.36L177.3,152.55a8,8,0,0,0,1,12.17L224,197.35Z\"/>","users-three":"<path d=\"M244.8,150.4a8,8,0,0,1-11.2-1.6A51.6,51.6,0,0,0,192,128a8,8,0,0,1-7.37-4.89,8,8,0,0,1,0-6.22A8,8,0,0,1,192,112a24,24,0,1,0-23.24-30,8,8,0,1,1-15.5-4A40,40,0,1,1,219,117.51a67.94,67.94,0,0,1,27.43,21.68A8,8,0,0,1,244.8,150.4ZM190.92,212a8,8,0,1,1-13.84,8,57,57,0,0,0-98.16,0,8,8,0,1,1-13.84-8,72.06,72.06,0,0,1,33.74-29.92,48,48,0,1,1,58.36,0A72.06,72.06,0,0,1,190.92,212ZM128,176a32,32,0,1,0-32-32A32,32,0,0,0,128,176ZM72,120a8,8,0,0,0-8-8A24,24,0,1,1,87.24,82a8,8,0,1,0,15.5-4A40,40,0,1,0,37,117.51,67.94,67.94,0,0,0,9.6,139.19a8,8,0,1,0,12.8,9.61A51.6,51.6,0,0,1,64,128,8,8,0,0,0,72,120Z\"/>","ranking":"<path d=\"M112.41,102.53a8,8,0,0,1,5.06-10.12l12-4A8,8,0,0,1,140,96v40a8,8,0,0,1-16,0V107.1l-1.47.49A8,8,0,0,1,112.41,102.53ZM248,208a8,8,0,0,1-8,8H16a8,8,0,0,1,0-16h8V104A16,16,0,0,1,40,88H80V56A16,16,0,0,1,96,40h64a16,16,0,0,1,16,16v72h40a16,16,0,0,1,16,16v56h8A8,8,0,0,1,248,208Zm-72-64v56h40V144ZM96,200h64V56H96Zm-56,0H80V104H40Z\"/>","user-circle":"<path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-59.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,131.52,0Z\"/>","gear-six":"<path d=\"M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A112.1,112.1,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.62a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Zm-15,34.91-28.57,16.25a8,8,0,0,0-3,3c-.58,1-1.19,2.06-1.81,3.06a7.94,7.94,0,0,0-1.22,4.21l-.15,32.25a95.89,95.89,0,0,1-25.37,14.3L134,199.13a8,8,0,0,0-3.91-1h-.19c-1.21,0-2.43,0-3.64,0a8.08,8.08,0,0,0-4.1,1l-28.84,16.1A96,96,0,0,1,67.88,201l-.11-32.2a8,8,0,0,0-1.22-4.22c-.62-1-1.23-2-1.8-3.06a8.09,8.09,0,0,0-3-3.06l-28.6-16.29a90.49,90.49,0,0,1,0-28.26L61.67,97.63a8,8,0,0,0,3-3c.58-1,1.19-2.06,1.81-3.06a7.94,7.94,0,0,0,1.22-4.21l.15-32.25a95.89,95.89,0,0,1,25.37-14.3L122,56.87a8,8,0,0,0,4.1,1c1.21,0,2.43,0,3.64,0a8.08,8.08,0,0,0,4.1-1l28.84-16.1A96,96,0,0,1,188.12,55l.11,32.2a8,8,0,0,0,1.22,4.22c.62,1,1.23,2,1.8,3.06a8.09,8.09,0,0,0,3,3.06l28.6,16.29A90.49,90.49,0,0,1,222.9,142.12Z\"/>","sign-out":"<path d=\"M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z\"/>","speaker-high":"<path d=\"M155.51,24.81a8,8,0,0,0-8.42.88L77.25,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V32A8,8,0,0,0,155.51,24.81ZM32,96H72v64H32ZM144,207.64,88,164.09V91.91l56-43.55Zm54-106.08a40,40,0,0,1,0,52.88,8,8,0,0,1-12-10.58,24,24,0,0,0,0-31.72,8,8,0,0,1,12-10.58ZM248,128a79.9,79.9,0,0,1-20.37,53.34,8,8,0,0,1-11.92-10.67,64,64,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67A79.83,79.83,0,0,1,248,128Z\"/>","speaker-slash":"<path d=\"M53.92,34.62A8,8,0,1,0,42.08,45.38L73.55,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V175.09l42.08,46.29a8,8,0,1,0,11.84-10.76ZM32,96H72v64H32ZM144,207.64,88,164.09V95.89l56,61.6Zm42-63.77a24,24,0,0,0,0-31.72,8,8,0,1,1,12-10.57,40,40,0,0,1,0,52.88,8,8,0,0,1-12-10.59Zm-80.16-76a8,8,0,0,1,1.4-11.23l39.85-31A8,8,0,0,1,160,32v74.83a8,8,0,0,1-16,0V48.36l-26.94,21A8,8,0,0,1,105.84,67.91ZM248,128a79.9,79.9,0,0,1-20.37,53.34,8,8,0,0,1-11.92-10.67,64,64,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67A79.83,79.83,0,0,1,248,128Z\"/>","share-network":"<path d=\"M176,160a39.89,39.89,0,0,0-28.62,12.09l-46.1-29.63a39.8,39.8,0,0,0,0-28.92l46.1-29.63a40,40,0,1,0-8.66-13.45l-46.1,29.63a40,40,0,1,0,0,55.82l46.1,29.63A40,40,0,1,0,176,160Zm0-128a24,24,0,1,1-24,24A24,24,0,0,1,176,32ZM64,152a24,24,0,1,1,24-24A24,24,0,0,1,64,152Zm112,72a24,24,0,1,1,24-24A24,24,0,0,1,176,224Z\"/>","x":"<path d=\"M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z\"/>","lock-simple":"<path d=\"M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z\"/>","circle":"<path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Z\"/>","trophy":"<path d=\"M232,64H208V48a8,8,0,0,0-8-8H56a8,8,0,0,0-8,8V64H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8Zm144-8.9c0,35.52-29,64.64-64,64.9a64,64,0,0,1-64-64V56H192ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z\"/>","ping-pong.f":"<path d=\"M240,196a16,16,0,0,0-6.65-11.7l-38-27.15,17-16.95a39.67,39.67,0,0,0,11-35.79,99.52,99.52,0,0,0-35.4-57.89A101.93,101.93,0,0,0,122.58,24,100.29,100.29,0,0,0,24,122.58a102.12,102.12,0,0,0,22.55,65.28,99.52,99.52,0,0,0,57.89,35.4,39.68,39.68,0,0,0,35.79-11l16.95-17,27.15,38A16,16,0,0,0,196,240c.44,0,.88.05,1.32.05a16,16,0,0,0,11.31-4.69l26.64-26.64A16,16,0,0,0,240,196Zm-42.6,28-32.63-45.69a8,8,0,0,0-5.85-3.32q-.33,0-.66,0a8,8,0,0,0-5.66,2.34l-23.63,23.63a23.68,23.68,0,0,1-21.36,6.63,80.3,80.3,0,0,1-12.3-3.5l108.8-108.8a80.63,80.63,0,0,1,3.5,12.3,23.67,23.67,0,0,1-6.63,21.36L177.3,152.55a8,8,0,0,0,1,12.17L224,197.36Z\"/>","users-three.f":"<path d=\"M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z\"/>","ranking.f":"<path d=\"M240,200h-8V144a16,16,0,0,0-16-16H176V56a16,16,0,0,0-16-16H96A16,16,0,0,0,80,56V88H40a16,16,0,0,0-16,16v96H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM80,200H40V104H80Zm60-64a8,8,0,0,1-16,0V107.1l-1.47.49a8,8,0,0,1-5.06-15.18l12-4A8,8,0,0,1,140,96Zm76,64H176V144h40Z\"/>","user-circle.f":"<path d=\"M172,120a44,44,0,1,1-44-44A44.05,44.05,0,0,1,172,120Zm60,8A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.09,88.09,0,0,0-91.47-87.93C77.43,41.89,39.87,81.12,40,128.25a87.65,87.65,0,0,0,22.24,58.16A79.71,79.71,0,0,1,84,165.1a4,4,0,0,1,4.83.32,59.83,59.83,0,0,0,78.28,0,4,4,0,0,1,4.83-.32,79.71,79.71,0,0,1,21.79,21.31A87.62,87.62,0,0,0,216,128Z\"/>","gear-six.f":"<path d=\"M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z\"/>","lock-simple.f":"<path d=\"M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96Z\"/>","trophy.f":"<path d=\"M232,64H208V48a8,8,0,0,0-8-8H56a8,8,0,0,0-8,8V64H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z\"/>"};
 const ico = (name, cls) => `<svg class="ico${cls ? ' ' + cls : ''}" viewBox="0 0 256 256" aria-hidden="true">${PH[name] || ''}</svg>`;
 const NAV_ICON = { matches: 'ping-pong', board: 'users-three', rankings: 'ranking', account: 'user-circle', admin: 'gear-six' };
 const navIcon = k => ico(NAV_ICON[k], 'off') + ico(NAV_ICON[k] + '.f', 'on');
@@ -1393,6 +1563,7 @@ async function handleSession(session) {
   $app.innerHTML = '<div class="loading">Chargement…</div>';
   try { await loadAll(); S.bootError = ''; }
   catch (e) { S.bootError = friendlyError(e); }
+  S._tabAt = Date.now();
   render();
 }
 
@@ -1403,7 +1574,7 @@ function render() {
   // pastilles de score, cachet ailé, lattes du classement...) s'appliquent
   // partout, y compris sur une carte de match au thème WTT_*/PRO_A dont les
   // couleurs, elles, ne doivent jamais bouger.
-  if (!S.session) { $app.innerHTML = authView(); return; }
+  if (!S.session) { $app.innerHTML = authView(); afterRender(); return; }
   const todo = S.matches.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
   const tabs = [['matches', 'Matchs'], ['board', 'Amis'], ['rankings', 'Classements'], ['account', 'Mon compte']];
   if (S.isAdmin) tabs.push(['admin', 'Admin']);
@@ -1413,6 +1584,7 @@ function render() {
       <nav class="nav" aria-label="Navigation principale">
         <div class="navbrand">${MARK(30)}</div>
         ${tabs.map(([k, label]) => `<button class="navitem" data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${navIcon(k)}<span>${label}</span>${k === 'matches' && todo ? `<span class="navdot" title="Pronos à faire">${todo}</span>` : ''}</button>`).join('')}
+        <span class="navball" aria-hidden="true"></span>
         <div class="navfoot">${soundToggleBtn()}<span class="avatar" title="${esc(S.pseudo)}">${esc(initial)}</span><button class="iconbtn" data-act="logout" aria-label="Se déconnecter" title="Se déconnecter">${ICONS.logout}</button></div>
       </nav>
       <div class="content">
@@ -1423,10 +1595,101 @@ function render() {
           </header>
           ${liveTicker()}
         </div>
-        <main>${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
+        <main class="${Date.now() - (S._tabAt || 0) < 1500 ? 'fresh' : ''}">${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
       </div>
     </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}`;
   if (S.openRecap && !S.recapAnimPlayed) { S.recapAnimPlayed = true; mountRecapAnimation(); }
+  afterRender();
+}
+/* ---------- Mouvement (après chaque rendu) ----------
+   Le DOM est reconstruit à chaque rendu : on rejoue donc ici, une fois
+   l'écran en place, les quelques mouvements qui montrent un changement
+   d'état (curseur des filtres qui glisse, balle du dock qui saute d'onglet,
+   chiffres qui montent à l'ouverture d'un écran). Rien ne bloque un geste. */
+const SEG_PREV = {};
+let NAV_LAST = null;
+function reducedMotion() { try { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } }
+function afterRender() {
+  try {
+    document.querySelectorAll('.pillrow.seg[data-i]').forEach(el => {
+      const i = el.dataset.i;
+      requestAnimationFrame(() => requestAnimationFrame(() => el.style.setProperty('--i', i)));
+    });
+    placeNavBall();
+    if (!reducedMotion() && document.querySelector('main.fresh')) document.querySelectorAll('main [data-count]').forEach(countUp);
+  } catch (e) { /* un mouvement raté ne doit jamais casser l'écran */ }
+}
+function countUp(el) {
+  const target = Number(el.dataset.count) || 0;
+  if (target <= 0) return;
+  const start = performance.now(), dur = 900;
+  el.textContent = '0';
+  const tick = now => {
+    const p = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = String(Math.round(target * e));
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+// La balle du dock : sous l'onglet actif ; quand on change d'onglet, elle
+// fait un petit lob jusqu'au nouveau.
+function placeNavBall() {
+  const nav = document.querySelector('.nav');
+  if (!nav) return;
+  const ball = nav.querySelector('.navball'), act = nav.querySelector('.navitem[aria-current="page"]');
+  if (!ball || !act) return;
+  const nr = nav.getBoundingClientRect(), ar = act.getBoundingClientRect();
+  const vertical = nr.height > nr.width;
+  const x = vertical ? 3 : Math.round(ar.left - nr.left + ar.width / 2 - 4);
+  const y = vertical ? Math.round(ar.top - nr.top + ar.height / 2 - 4) : Math.round(ar.bottom - nr.top + 1);
+  ball.style.transform = `translate(${x}px,${y}px)`;
+  ball.classList.add('on');
+  const last = NAV_LAST;
+  NAV_LAST = { tab: S.tab, x, y, vertical };
+  if (!last || last.tab === S.tab || last.vertical !== vertical || reducedMotion() || !ball.animate) return;
+  const midX = vertical ? 16 : (last.x + x) / 2, midY = vertical ? (last.y + y) / 2 : Math.min(last.y, y) - 30;
+  ball.animate([
+    { transform: `translate(${last.x}px,${last.y}px)`, easing: 'cubic-bezier(.2,.65,.35,1)' },
+    { transform: `translate(${midX}px,${midY}px)`, offset: 0.5, easing: 'cubic-bezier(.6,0,.85,.45)' },
+    { transform: `translate(${x}px,${y}px) scale(1.3,.7)`, offset: 0.88 },
+    { transform: `translate(${x}px,${y}px)` },
+  ], { duration: 480 });
+}
+// Décor : une table de compétition vue en perspective (fond des affiches).
+const heroScene = () => '<div class="hero-scene" aria-hidden="true"><div class="hero-table"></div></div>';
+// Compte à rebours en chiffres de marqueur.
+function clockInner(startsAt) {
+  const t = new Date(startsAt), diff = t - Date.now();
+  if (diff <= 0) return `<span class="hero-when">C'est parti</span><small>le match a commencé</small>`;
+  if (diff < 24 * 3600e3) {
+    const hh = String(Math.floor(diff / 3600e3)).padStart(2, '0'), mm = String(Math.floor(diff % 3600e3 / 60e3)).padStart(2, '0');
+    return `<div class="digits" role="img" aria-label="Début dans ${+hh} h ${+mm} min"><span class="flipd">${hh[0]}</span><span class="flipd">${hh[1]}</span><span class="sep">:</span><span class="flipd">${mm[0]}</span><span class="flipd">${mm[1]}</span></div><small>avant le début</small>`;
+  }
+  const day = t.toLocaleDateString('fr-FR', { weekday: 'long' });
+  return `<span class="hero-when">${esc(day.charAt(0).toUpperCase() + day.slice(1))}</span><small>${esc(t.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))}</small>`;
+}
+function updateClocks() {
+  document.querySelectorAll('.hero-clock[data-start]').forEach(el => {
+    const before = [...el.querySelectorAll('.flipd')].map(d => d.textContent);
+    const html = clockInner(el.dataset.start);
+    if (el.innerHTML === html) return;
+    el.innerHTML = html;
+    [...el.querySelectorAll('.flipd')].forEach((d, i) => { if (before[i] !== undefined && before[i] !== d.textContent) d.classList.add('go'); });
+  });
+}
+setInterval(updateClocks, 15000);
+// La balle qui tombe sur le score qu'on vient de choisir.
+// Posée par-dessus la page (pas dans la tuile) pour survivre au rendu qui suit.
+function dropBall(id, a, b) {
+  if (reducedMotion()) return;
+  const btn = document.querySelector(`.scorebtn[data-id="${id}"][data-a="${a}"][data-b="${b}"]`);
+  if (!btn) return;
+  const rc = btn.getBoundingClientRect();
+  const s = document.createElement('span');
+  s.className = 'balldrop'; s.setAttribute('aria-hidden', 'true'); s.innerHTML = '<b></b><i></i>';
+  s.style.left = (rc.left + rc.width / 2) + 'px'; s.style.top = (rc.top + rc.height / 2) + 'px';
+  document.body.appendChild(s);
+  setTimeout(() => s.remove(), 700);
 }
 // Bouton clair/sombre/Halloween : préférence globale de la personne,
 // indépendante du THEME par tournoi (voir resolveThemeKey). Un seul bouton
@@ -1458,7 +1721,10 @@ function navigate(fn) {
 // Rangée de pastilles de filtre (style app de scores, pas des onglets soulignés).
 const SEG_LABELS = { view: 'Période', circuit: 'Circuit', boardscope: 'Classement', rankview: 'Circuit' };
 function segRow(items, cur, act) {
-  return `<div class="pillrow" data-seg="${act}" role="group" aria-label="${SEG_LABELS[act] || ''}">
+  const idx = Math.max(0, items.findIndex(([k]) => k === cur));
+  const prev = SEG_PREV[act] === undefined ? idx : SEG_PREV[act];
+  SEG_PREV[act] = idx;
+  return `<div class="pillrow seg" data-seg="${act}" data-i="${idx}" style="--n:${items.length};--i:${prev}" role="group" aria-label="${SEG_LABELS[act] || ''}">
     ${items.map(([k, l]) => `<button class="pillbtn" data-act="${act}" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div>`;
 }
 
@@ -1479,7 +1745,7 @@ function liveTicker() {
   if (!live.length) return '';
   return `<div class="ticker" role="list" aria-label="Matchs en direct">
     ${live.map(m => `<span class="tickeritem" role="listitem"><span class="tickerdot" aria-hidden="true"></span>
-      <span>${esc(m.side_a)}</span><span class="tickerscore">${m.score_a ?? 0}–${m.score_b ?? 0}</span><span>${esc(m.side_b)}</span></span>`).join('')}
+      <span>${esc(m.side_a)}</span><span class="tickerscore"><span class="flipd">${m.score_a ?? 0}</span><span class="flipd">${m.score_b ?? 0}</span></span><span>${esc(m.side_b)}</span></span>`).join('')}
   </div>`;
 }
 
@@ -1488,13 +1754,16 @@ function authView() {
   const su = S.authMode === 'signup';
   return `
   <div class="authshell">
-    <section class="authtable" aria-label="${esc(APP_NAME)}">
-      <span class="ball authball" aria-hidden="true"></span>
-      <div class="authtable-in">
+    <section class="authstage" aria-label="${esc(APP_NAME)}">
+      <div class="authstage-in">
         <div class="authlogo">${MARK(28, true)}Pronostics de tennis de table</div>
         <h1 class="authtitle">${esc(APP_NAME)}</h1>
+        <p>Entre amis, sur le WTT et la Pro A. Trouve le vainqueur, vise le score exact, et prends un bonus quand l'outsider passe.</p>
       </div>
-      <p>Entre amis, sur le WTT et la Pro A. Trouve le vainqueur, vise le score exact, et prends un bonus quand l'outsider passe.</p>
+      <div class="court" aria-hidden="true">
+        <div class="court-table"><div class="court-net"></div></div>
+        <div class="rally"><span class="shadow"></span><span class="ball"></span></div>
+      </div>
     </section>
     <div class="authform-col">
       <div class="auth">
@@ -1597,7 +1866,7 @@ function matchesView() {
     }).join('');
   }
   const cnt = n => `<span class="cnt">${n}</span>`;
-  return statRow(up) + recapNotice() + `<div class="filters">`
+  return heroCard(up) + recapNotice() + `<div class="filters">`
     + segRow([['upcoming', `À venir ${cnt(up.length)}`], ['done', `Terminés ${cnt(doneAll.length)}`]], S.view, 'view')
     + segRow([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit')
     + `</div>` + journeeRow + body;
@@ -1645,6 +1914,7 @@ function recapNotice() {
   const themeKey = Object.keys(THEME).find(k => THEME[k] === data.theme) || 'ALL';
   return `<section class="recapnotice" style="${themeVarsCss(themeKey)}" aria-label="Récap disponible">
     <button class="recapnotice-close" data-act="recapdismiss" data-key="${esc(g.key)}" data-circuit="${esc(g.circuit)}" aria-label="Masquer ce bandeau">${ico('x')}</button>
+    <span class="rn-ico" aria-hidden="true">${ico('trophy.f')}</span>
     <h2 class="recapnotice-title">${esc(g.key)}</h2>
     <p class="recapnotice-sub">Le récap est prêt : ton rang, tes points et le podium entre amis.</p>
     <button class="btn small" data-act="recap" data-key="${esc(g.key)}" data-circuit="${esc(g.circuit)}">Voir le récap</button>
@@ -1661,6 +1931,35 @@ function statRow(upcoming) {
   const next = todo.slice().sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at))[0];
   const when = new Date(next.starts_at).toLocaleString('fr-FR', { weekday: 'long', hour: '2-digit', minute: '2-digit' });
   return `<div class="todoline"><span class="todon">${todo.length}</span><p>${todo.length > 1 ? 'matchs attendent' : 'match attend'} ton prono<small>Le prochain commence ${esc(when)}.</small></p></div>`;
+}
+// À l'affiche : le match du moment (en direct, sinon le prochain à pronostiquer,
+// sinon le prochain tout court), sur la table de sa compétition.
+function heroCard(up) {
+  if (S.view !== 'upcoming' || !up.length) return '';
+  const byDate = (x, y) => new Date(x.starts_at) - new Date(y.starts_at);
+  const live = up.filter(m => m.status === 'live' && !isAwaitingResult(m));
+  const todo = up.filter(m => !isLocked(m) && !S.myPreds[m.id]).sort(byDate);
+  const m = live[0] || todo[0] || up.slice().sort(byDate)[0];
+  const ca = S.competitors[m.competitor_a_id], cb = S.competitors[m.competitor_b_id];
+  const isLive = m.status === 'live' && !isAwaitingResult(m);
+  const mine = S.myPreds[m.id];
+  const seed = c => (c && c.ranking) ? `<small>${c.circuit === 'WTT' ? 'tête de série ' + c.ranking : c.ranking + 'e de Pro A'}</small>` : '';
+  const mid = isLive
+    ? `<div class="hero-clock"><div class="digits" role="img" aria-label="Score ${m.score_a ?? 0} à ${m.score_b ?? 0}"><span class="flipd">${m.score_a ?? 0}</span><span class="sep">–</span><span class="flipd">${m.score_b ?? 0}</span></div><small>en direct</small></div>`
+    : `<div class="hero-clock" data-start="${esc(m.starts_at)}">${clockInner(m.starts_at)}</div>`;
+  const cta = isLive ? 'Voir le match' : (mine ? `Mon prono ${mine.pred_a}–${mine.pred_b}` : 'Pronostiquer');
+  const left = todo.length
+    ? `<b data-count="${todo.length}">${todo.length}</b>${todo.length > 1 ? 'matchs attendent' : 'match attend'} ton prono`
+    : `<b>0</b>prono à faire, tu es à jour`;
+  return `<section class="hero" style="${themeVarsCss(themeKeyFor(m))}" aria-label="À l'affiche">
+    <div class="hero-top"><span class="hero-comp">${esc(m.competition)}${m.round ? ` · ${esc(m.round)}` : ''}</span>${isLive ? '<span class="hero-live"><i></i>En direct</span>' : ''}</div>
+    <div class="hero-stage"><div class="hero-board">
+      <div class="hero-side">${flagHtml(ca)}<b>${esc(m.side_a)}</b>${seed(ca)}</div>
+      ${mid}
+      <div class="hero-side b">${flagHtml(cb)}<b>${esc(m.side_b)}</b>${seed(cb)}</div>
+    </div></div>
+    <div class="hero-foot"><p>${left}</p><button class="btn small light" data-act="gotomatch" data-id="${m.id}">${cta}</button></div>
+  </section>`;
 }
 function ordinalRank(board, mine) {
   let rank = 1, prev = null;
@@ -1749,10 +2048,11 @@ function matchRow(m, fresh, i, streakInfo) {
     const streakTeaser = (!locked && streakInfo.now >= 3)
       ? `<span>${streakBadgeHtml(streakInfo.now, true)} si gagnant</span>` : '';
     panel = `<div class="predpanel${locked ? ' locked' : ''}">
-      <div class="pickgrid">
+      <div class="stage3d"><div class="table3d">
         <div class="pickside"><span class="pslabel">${flag(ca)}${esc(m.side_a)}</span>${chips(m, 'A', mine, locked)}</div>
+        <div class="net" aria-hidden="true"></div>
         <div class="pickside"><span class="pslabel">${flag(cb)}${esc(m.side_b)}</span>${chips(m, 'B', mine, locked)}</div>
-      </div>
+      </div></div>
       <div class="predstatus">${status}${streakTeaser}</div>
       ${gauge}
       ${ballesStepperHtml(m)}
@@ -1799,7 +2099,7 @@ function matchRow(m, fresh, i, streakInfo) {
   }
 
   return `
-  <div class="mrow${live ? ' islive' : ''}${fresh ? ' enter' : ''}" style="${rowStyle}">
+  <div class="mrow${live ? ' islive' : ''}${fresh ? ' enter' : ''}" data-mid="${m.id}" style="${rowStyle}">
     <div class="mrowhead">
       <div class="mtime">${timeCol}${!live ? statusPill : ''}</div>
       <div class="msides">
@@ -1832,15 +2132,25 @@ async function pick(id, a, b) {
   const m = S.matches.find(x => x.id === id);
   if (!m || isLocked(m)) { toast('Trop tard : le match a commencé.', true); keepRender(); return; }
   playSound('tick'); // retour tactile immédiat au tap, sans attendre la réponse réseau (toast() jouera le "confirm"/"error" une fois enregistré)
+  const prev = S.myPreds[id];
+  if (prev && !prev._pending && prev.pred_a === a && prev.pred_b === b) return;
+  // Affiché tout de suite (la balle tombe sur le score), enregistré derrière ;
+  // en cas d'échec, on remet l'ancien prono et on le dit.
+  S.myPreds[id] = Object.assign({ balles_staked: 0 }, prev || {}, { match_id: id, pred_a: a, pred_b: b, _pending: true });
+  // La balle tombe d'abord sur la tuile touchée ; à l'impact, la tuile bascule.
+  dropBall(id, a, b);
+  setTimeout(() => { S._justPicked = { id, a, b }; keepRender(); S._justPicked = null; }, reducedMotion() ? 0 : 280);
   const { data, error } = await sb.from('predictions')
     .upsert({ user_id: S.session.user.id, match_id: id, pred_a: a, pred_b: b }, { onConflict: 'user_id,match_id' })
     .select().single();
-  if (error) { toast(friendlyError(error), true); return; }
+  if (error) {
+    if (prev) S.myPreds[id] = prev; else delete S.myPreds[id];
+    toast(friendlyError(error), true); keepRender(); return;
+  }
+  const cur = S.myPreds[id];
+  if (cur && cur._pending && (cur.pred_a !== a || cur.pred_b !== b)) return; // un autre score a été touché entre-temps : il gagne
   S.myPreds[id] = data;
-  S._justPicked = { id, a, b };
   toast(`Prono enregistré : ${a}–${b}`);
-  keepRender();
-  S._justPicked = null;
 }
 // Change la mise de balles sur un pronostic déjà posé (voir ballesStepperHtml
 // / ballesStock). newVal est la valeur ABSOLUE visée (pas un delta) ; elle
@@ -1853,6 +2163,7 @@ async function setBalles(id, newVal) {
   const mine = S.myPreds[id];
   if (!m || isLocked(m)) { toast('Trop tard : le match a commencé.', true); keepRender(); return; }
   if (!mine) { toast('Fais d’abord un prono sur ce match.', true); keepRender(); return; }
+  if (mine._pending || !mine.id) { toast('Ton prono s’enregistre, réessaie dans une seconde.', true); return; }
   const cap = Math.min(BALLES_MAX_PER_MATCH, ballesRemaining(m, id));
   const v = Math.max(0, Math.min(newVal, cap));
   if (v === (mine.balles_staked || 0)) { keepRender(); return; }
@@ -1888,10 +2199,28 @@ function boardView() {
         <div class="lbsub">${r.good_winners}/${r.matches_played} bon${r.good_winners > 1 ? 's' : ''} vainqueur${r.good_winners > 1 ? 's' : ''} · ${r.exact_scores} exact${r.exact_scores > 1 ? 's' : ''}</div></td>
       <td class="ptscell">${r.total_points}<small>pts</small></td></tr>`;
   }).join('');
-  return `<div class="boardtools">${seg}${exportBtn}</div><table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>` + rules();
+  return `<div class="boardtools">${seg}${exportBtn}</div>${boardPodium(S.board)}<table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>` + rules();
 }
 // Rang dans un tableau : pastille de médaille pour le podium.
 const rankInner = r => (r >= 1 && r <= 3) ? `<span class="medal">${r}</span>` : r;
+// Podium des trois premiers : marches en relief, médailles qui tombent en place.
+function boardPodium(board) {
+  if (!board || board.length < 3) return '';
+  const uid = S.session && S.session.user.id;
+  let prev = null, rank = 0;
+  const top = board.slice(0, 3).map((r, i) => {
+    const k = r.total_points + '/' + r.exact_scores;
+    if (k !== prev) { rank = i + 1; prev = k; }
+    return { ...r, rank };
+  });
+  const col = (r, place) => `<div class="podcol p${place}${r.user_id === uid ? ' me' : ''}">
+    <span class="medalball" aria-label="${r.rank}${r.rank === 1 ? 'er' : 'e'}">${r.rank}</span>
+    <span class="who">${esc(r.pseudo)}</span>
+    <span class="pts"><span data-count="${r.total_points}">${r.total_points}</span><small>pts</small></span>
+    <div class="podstep"></div>
+  </div>`;
+  return `<div class="podium" aria-label="Podium">${col(top[1], 2)}${col(top[0], 1)}${col(top[2], 3)}</div>`;
+}
 const rules = () => `<p class="rules">Barème : 1 point pour le bon vainqueur, 3 points pour le score exact. En WTT, un pronostic gagnant sur l'outsider (moins bien classé au tirage au sort) rapporte un bonus, d'autant plus grand que l'écart de tête de série est important (jusqu'à +5 points). Bonus de série : plus tu enchaînes les pronos gagnants d'affilée, plus le prochain rapporte gros (jusqu'à +75 % à partir d'une grosse série) — vois l'onglet "Mon compte" pour ta série en cours. Balles : à chaque tournoi WTT tu reçois 4 balles (2 par journée de Pro A) à miser sur tes pronos, 3 au maximum sur un même match ; si le prono est gagnant, chaque balle ajoute ×1 (1 balle = ×2, 2 = ×3, 3 = ×4), sinon elles sont perdues. Le bonus de série et les balles s'additionnent. En cas d'égalité au classement, le plus de scores exacts passe devant.</p>`;
 
 /* --- Classements WTT (mondial, messieurs/dames séparés) et Pro A
@@ -2450,11 +2779,16 @@ function accountView() {
   const ordinal = r => r + (r === 1 ? 'er' : 'e');
   return `
   <header class="pagehead"><h1>Mon compte</h1><p>Tes statistiques de pronostics, sur toute la durée du jeu.</p></header>
+  <section class="acchero" style="${themeVarsCss('ALL')}">
+    <div class="acchero-row">
+      <div class="big"><span data-count="${total}">${total}</span><small>points</small></div>
+      ${myRank ? `<div class="rank"><span>au classement<br>général</span><span class="medalball" style="--medal:${myRank === 1 ? 'var(--gold)' : myRank === 2 ? 'var(--silver)' : myRank === 3 ? 'var(--bronze)' : '#F3F4F1'}">${myRank}</span></div>` : ''}
+    </div>
+    <p>${n} prono${n > 1 ? 's' : ''} jugé${n > 1 ? 's' : ''}, dont ${exactN} score${exactN > 1 ? 's' : ''} exact${exactN > 1 ? 's' : ''}.</p>
+  </section>
   <section class="panel">
-    <h3>Bilan</h3>
+    <h3>Justesse</h3>
     <ul class="statlist">
-      <li><span class="k">Points au total</span><span class="v">${total}</span></li>
-      <li><span class="k">Rang au classement général</span><span class="v">${myRank ? ordinal(myRank) : '—'}</span></li>
       <li><span class="k">Bons vainqueurs<small>${goodN} sur ${n} pronos jugés</small></span><span class="v">${pctGood} %</span><div class="bar"><i style="width:${pctGood}%"></i></div></li>
       <li><span class="k">Scores exacts<small>${exactN} sur ${n} pronos jugés</small></span><span class="v hot">${pctExact} %</span><div class="bar hot"><i style="width:${pctExact}%"></i></div></li>
     </ul>
@@ -3164,6 +3498,15 @@ $app.addEventListener('click', async e => {
     if (S.soundOn) playSound('tick'); // petit retour immédiat pour confirmer que le son est bien réactivé
     navigate(render);
   }
+  else if (act === 'gotomatch') {
+    const find = () => document.querySelector(`.mrow[data-mid="${id}"]`);
+    let row = find();
+    if (!row) { S.view = 'upcoming'; S.circuit = 'ALL'; S.proJournee = null; render(); row = find(); }
+    if (row) {
+      row.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
+      row.classList.remove('spot'); void row.offsetWidth; row.classList.add('spot');
+    }
+  }
   else if (act === 'exportmatch') exportMatchImage(id);
   else if (act === 'exportboard') exportBoardImage();
   else if (act === 'exportrecap') exportRecapImage(el.dataset.key, el.dataset.circuit);
@@ -3173,6 +3516,7 @@ $app.addEventListener('click', async e => {
   else if (act === 'tab') {
     if (el.dataset.tab !== S.tab) playSound('tick'); // tap discret, seulement quand on change vraiment d'onglet
     S.tab = el.dataset.tab;
+    S._tabAt = Date.now();
     if (S.tab === 'matches') S._freshMatches = true;
     if (S.tab === 'board') { S.board = null; navigate(render); await loadBoard(); }
     if (S.tab === 'account') { S.myHistory = null; navigate(render); await loadAccount(); }
