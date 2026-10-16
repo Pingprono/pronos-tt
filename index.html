@@ -1304,6 +1304,20 @@ html.halloween .hwnotice .rn-ico svg{width:30px;height:30px;fill:currentColor}
 html.halloween .badgezoom{background:radial-gradient(circle at 50% 52%,color-mix(in srgb,var(--ba) 58%,#1A222B) 0,color-mix(in srgb,var(--ba) 26%,#151C24) 62%,#141A21 100%)}
 html.halloween .badgezoom.locked{background:var(--surface-2)}
 html.halloween .badgezoom-img{filter:drop-shadow(0 14px 16px rgba(0,0,0,.55))}
+/* --- La médaille 3D dans la fiche d'un badge (voir "La médaille en 3D") --- */
+.badgezoom.has3d{display:block;padding:12px 0 12px;text-align:center}
+.medalslot{position:relative;width:100%;height:clamp(250px,36vh,320px)}
+.medalslot .badgezoom-img{position:absolute;left:50%;top:50%;margin:-100px 0 0 -100px}
+.medalslot.ready .badgezoom-img{display:none}
+.medalcanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab;outline:none;-webkit-tap-highlight-color:transparent}
+.medalcanvas:active{cursor:grabbing}
+.medalcanvas:focus-visible{box-shadow:inset 0 0 0 3px var(--table);border-radius:12px}
+.medalslot:not(.ready) .medalcanvas{opacity:0}
+.medalslot.flat .medalcanvas{display:none}
+.medalhint{margin:0;padding:0 16px;font:500 13px/1.3 var(--f-text);color:color-mix(in srgb,var(--ink) 72%,transparent);transition:opacity .5s}
+.medalhint.gone{opacity:0}
+.medalslot.flat + .medalhint{display:none}
+@media (prefers-reduced-motion:reduce){ .medalhint{transition:none} }
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -1321,6 +1335,7 @@ html.halloween .badgezoom-img{filter:drop-shadow(0 14px 16px rgba(0,0,0,.55))}
   if (t) t.content = '#11171E';
 })();
 </script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
 <body>
 <div id="app"><div class="loading">Chargement…</div></div>
@@ -1841,6 +1856,12 @@ const SOUNDS = {
   bounce(ctx) {
     tone(ctx, { freq: 1900, freqEnd: 1100, dur: 0.035, type: 'triangle', gain: 0.07 });
     tone(ctx, { freq: 300, dur: 0.025, type: 'sine', gain: 0.05 });
+  },
+  // Une médaille qui se pose : un tintement de métal, deux harmoniques aiguës.
+  clink(ctx) {
+    tone(ctx, { freq: 2350, dur: 0.22, type: 'sine', gain: 0.035 });
+    tone(ctx, { freq: 3520, dur: 0.16, type: 'sine', gain: 0.02, delay: 0.005 });
+    tone(ctx, { freq: 2350, dur: 0.12, type: 'sine', gain: 0.02, delay: 0.09 });
   },
   // La balle percute l'écran : un "pop" qui monte.
   pop(ctx) {
@@ -2501,6 +2522,7 @@ function afterRender() {
     placeNavBall();
     if (!reducedMotion() && document.querySelector('main.fresh')) document.querySelectorAll('main [data-count]').forEach(countUp);
   } catch (e) { /* un mouvement raté ne doit jamais casser l'écran */ }
+  try { mountMedal(); } catch (e) { /* la médaille reste à plat */ }
 }
 function countUp(el) {
   const target = Number(el.dataset.count) || 0;
@@ -3483,9 +3505,26 @@ function checkNewBadges() {
     } catch (e) { /* stockage indisponible : pas de mémoire d'une session à l'autre, tant pis */ }
     if (newlyUnlocked.length) {
       playSound('milestone'); releaseBats();
-      newlyUnlocked.forEach(b => toast(`Nouveau badge débloqué : ${b.name} \u{1F3AF}`));
+      const show = () => {
+        // Une autre fenêtre est déjà ouverte : un simple message suffit.
+        if (S.openBadge || S.openRecap || S.openCompetitor || TUTO) { newlyUnlocked.forEach(b => toast(`Nouveau badge débloqué : ${b.name}`)); return; }
+        S.badgeQueue = newlyUnlocked.map(b => b.id);
+        openNextNewBadge();
+      };
+      afterSplash(() => setTimeout(show, 400));
     }
   } catch (e) { /* un souci de badge ne doit jamais casser l'appli */ }
+}
+function openNextNewBadge() {
+  const id = (S.badgeQueue || []).shift();
+  if (!id) return;
+  S.openBadge = id; S._newBadge = id; S._medalDrop = id;
+  keepRender();
+}
+function closeBadge() {
+  S.openBadge = null; S._newBadge = null;
+  keepRender();
+  if (S.badgeQueue && S.badgeQueue.length) setTimeout(openNextNewBadge, 450);
 }
 // Grille de badges de l'onglet "Mon compte" : en couleur et détaillés une
 // fois débloqués, désaturés avec un petit cadenas tant qu'ils ne le sont
@@ -3510,6 +3549,376 @@ function badgesPanel() {
 // Un badge en grand (ouvert d'un appui dans "Mon compte") : il "saute" à
 // l'écran comme un autocollant qu'on plaque, sur une explosion de points
 // à ses propres couleurs, avec son nom et ce qu'il faut faire pour l'avoir.
+/* =============================================================================
+   La médaille en 3D (fiche d'un badge).
+   Chaque badge est une vraie pièce : corps en métal tourné (or si débloqué,
+   étain sinon), tranche cannelée, émail du badge devant, revers gravé
+   (logo SPIN en relief, nom, condition, légende tout autour). On la fait
+   tourner au doigt : elle garde son élan, ralentit, puis retombe à plat sur
+   la face la plus proche. Un toucher la retourne. Un badge tout juste
+   débloqué tombe d'en haut en tournant avant de se poser.
+   Three.js (r160) n'est chargé qu'à la première ouverture d'une fiche, depuis
+   le même CDN que Supabase. Sans WebGL, hors ligne, ou si le chargement
+   échoue : l'image du badge reste à plat, comme avant.
+   La toile 3D est créée une seule fois et déplacée d'un rendu à l'autre
+   (l'appli reconstruit l'écran à chaque rendu) : la pièce ne saute pas
+   quand l'écran se redessine derrière elle.
+   ========================================================================== */
+// Le logo SPIN en tracés (le même que l'écran d'ouverture), pour le revers.
+const MEDAL_LOGO = {"ring": "M534 771C526.8 771.6 518.3 772 510 771.9C501 771.9 490.7 771.3 482 770.4C474.4 769.5 468.1 768.5 460.6 767C452.2 765.3 442.6 762.9 434 760.2C425.7 757.7 418 754.7 410 751.3C401.7 747.7 393.1 743.6 385 739C377 734.5 368.8 729 361.7 724C355.3 719.5 350 715.4 344 710.3C337.3 704.6 330.2 697.8 323.7 691C317.2 684.1 310.7 676.4 305 669.2C299.8 662.6 295.3 656.4 291 649.7C286.7 642.9 282.8 636.2 279 628.9C275 621 271 611.9 267.8 604C265.1 597 263 590.8 261 584C259 577.1 257.4 570.5 255.9 563C254.3 554.4 252.8 544.1 252 535C251.2 526.5 250.8 518.6 250.9 510C251 500.7 251.7 489.8 252.7 481C253.5 473.5 254.6 467.4 256 460.2C257.6 452.4 259.6 443.6 261.9 436C264 429 266.1 423 268.9 416C272.2 407.8 276.6 398.3 281 390C285.3 382 289.9 374.4 294.9 367C299.9 359.6 305.3 352.3 311 345.5C316.6 338.7 322.8 331.9 328.8 326C334.4 320.5 339.7 315.9 345.7 311C352 305.8 358.6 300.6 366 295.7C374.1 290.3 383.5 284.6 392.2 280C400.5 275.7 408.5 272.1 417 268.8C425.7 265.4 435.3 262.3 444 259.9C451.9 257.8 459.2 256.2 467 254.9C474.9 253.6 482.7 252.6 491.2 252C500.3 251.3 510.5 251.1 520 251.4C529.4 251.7 538.5 252.5 548 253.8C558.1 255.2 569.6 257.4 579 259.9C587.1 262 601.3 266.3 601.2 267C601.2 267.3 599.4 267.2 598 267.1C595.6 266.8 591.9 265.5 588 264.7C582.7 263.7 575.9 262.5 569 261.8C560.8 260.9 550.1 260.2 542 260C535.4 259.9 529.6 260.1 524 260.4C519 260.7 515.3 260.9 510 261.6C502.9 262.4 492.2 264.2 485 265.7C479.3 266.9 475.1 268.1 470 269.5C464.7 271.1 460 272.5 454 274.7C446.1 277.7 433.8 283.1 427 286.4C422.8 288.4 420.8 289.5 417 291.7C411.8 294.6 405.1 298.5 399 302.7C392.2 307.4 384.6 313.2 378 318.7C371.7 324 365.8 329.4 360.2 335C354.8 340.5 349.2 346.9 344.9 352C341.5 356 339.5 358.5 336.3 363C331.7 369.4 325.2 379 320.5 387C316.1 394.6 311.9 403.1 308.7 410C306.2 415.5 304.5 420 302.6 425C300.8 430 299.2 434.7 297.6 440C295.9 445.7 294 452.7 292.8 458C291.9 462.1 291.4 465.1 290.7 469C290 473.4 289.2 478 288.7 483C288.1 488.6 287.5 494.2 287.4 501C287.1 509.7 287.3 521.5 288.1 531C288.9 539.7 290.3 548.2 291.8 556C293.2 563.1 295 569.8 296.7 576C298.3 581.4 299.4 585.4 301.6 591C304.4 598.5 308.6 608.6 312.8 617C317 625.3 322.2 634.2 326.6 641C330 646.4 332.9 650.3 336.5 655C340.2 660 344 664.8 348.6 670C354 676.1 360.6 683.1 367 689.2C373.4 695.2 380.2 701 387 706.3C393.5 711.4 401.6 716.8 407 720.3C410.5 722.6 412.1 723.6 416 725.7C422.5 729.3 433.8 735.3 443 739.2C452.1 743.2 461.8 746.7 471 749.4C479.7 752 488.1 753.9 497 755.4C506.1 757 515.7 758.2 525 758.7C534.3 759.3 543.8 759.1 553 758.6C562.1 758 571.5 756.8 580 755.3C587.7 754 594.9 752.3 602 750.2C608.9 748.2 616 745.6 622 743.3C627.1 741.3 634 737.8 636 737.3C636.5 737.1 636.7 737 637 737.1C637.4 737.2 638 737.6 638.1 738C638.1 738.5 637.1 739.2 636 740C633 742.2 624 746.4 618 749.1C612.3 751.7 606.2 754.2 601 756.1C596.7 757.7 593.6 758.7 589 760.1C582.8 762 573.9 764.5 567 766.1C561 767.4 555.6 768.3 550 769.1C544.6 769.9 539.9 770.6 534 771Z", "swoosh": "M617 316.8C616.3 317.2 616 316.8 615 316.5C611.4 315.5 599 308.8 591 305.6C583.3 302.5 575.6 299.8 568 297.7C560.6 295.5 553.7 294 546 292.6C537.5 291.1 527.8 289.8 519 289.2C510.8 288.6 501.8 288.7 495 288.9C490 289 486.4 289.3 482 289.8C477.4 290.2 473 290.8 468 291.7C462.1 292.7 454.7 294.3 449 295.7C444.2 296.9 440.5 298.1 436 299.5C431.2 301.1 423.7 304.2 421 305.1C420 305.4 419.4 305.7 419 305.6C418.8 305.5 418.5 305.3 418.5 305C418.8 303.6 431.3 297.7 437 294.8C441.7 292.4 445.5 290.6 450 288.7C454.8 286.6 459.6 284.8 465 283C471.2 280.9 478.4 278.7 485 277C491.3 275.3 497.7 274.1 503.6 273C509 272.1 513.7 271.4 519 270.8C524.8 270.2 530.6 269.8 537 269.6C544.2 269.4 552.3 269.4 560 269.8C567.7 270.2 576.2 271 583.1 272C588.9 272.8 593.1 273.5 599 274.8C606.6 276.5 617.6 279.4 625 281.8C630.7 283.6 638.5 285.9 640 287.5C640.5 288 640.6 288.4 640.4 289C639.8 290.6 633.9 293.6 631.3 296C629.1 298 627.3 299.9 625.7 302C624.2 303.9 623 305.8 621.6 308C620.1 310.6 618.5 316.1 617 316.8Z", "arc": "M712 676.6C711.2 676.8 710.6 676.4 710.2 676C709.8 675.6 709.6 674.9 709.8 674C710.3 670.9 717.7 662 721.2 656C724.6 650.3 727.6 644.6 730.3 639C732.9 633.6 735.1 628.3 737.2 623C739.2 618 740.8 613.3 742.4 608C744.2 602.3 745.9 595.8 747.2 590C748.5 584.5 749.5 579.5 750.3 574C751.2 568.2 751.8 561.5 752.2 556C752.6 551.3 752.8 547.8 752.8 543C752.9 537 752.9 529.7 752.5 523C752 516.1 751.4 508.9 750.3 502C749.3 495.2 747.9 488.9 746.2 482C744.4 474.6 742.1 466.7 739.4 459C736.5 451 733 442.5 729.4 435C726.2 428.2 722.8 422 719.3 416C716.1 410.4 713 405.4 709.3 400C705.2 394.1 696.2 384.5 695.7 382C695.6 381.4 695.7 381.3 696 380.8C696.8 379.5 700.8 377.2 703 375.2C705.2 373.3 707 371.7 709 369C711.9 365.2 714.6 354 718 353.8C721.6 353.6 726.1 364.1 730 370C734.5 376.7 739.5 385.3 743.1 392C745.9 397.4 747.8 401.4 750.2 407C753.2 413.8 756.6 422.5 759.1 430C761.5 437.1 763.5 443.9 765.1 451C766.8 458.2 768.1 465.2 769.2 473C770.4 481.8 771.5 492.7 772 501C772.4 507.7 772.4 512.5 772.2 519C771.9 526.9 771.2 536.6 770.1 545C769.2 552.9 767.7 560.7 766.2 568C764.7 574.7 763.1 580.6 761.1 587C759.1 593.6 756.7 600.6 754.1 607C751.7 613.2 749 619.3 746.2 625C743.6 630.3 741.2 634.7 738.1 640C734.4 646.2 729.9 653.8 725.4 660C721.2 665.9 714.6 675.8 712 676.6Z", "paddleL": "M484 667C481.9 667.2 479.1 666.6 476.2 666C472.3 665.2 467.2 663.5 463 662C459.1 660.6 455.5 659.1 452 657.4C448.6 655.8 445.5 654.2 442 652.2C437.9 649.9 433.1 647 429 644.3C425 641.6 421.8 639.4 417.6 636C411.7 631.3 403.6 624.4 397.3 618C391.1 611.7 384.6 604 379.9 598C376.3 593.4 373.8 589.6 371 585.2C368.2 580.9 365.7 577 363 572C359.7 565.9 356 558.4 353 550.9C349.9 543.1 346.9 534.1 344.8 526C342.9 518.5 341.6 510.4 340.8 504C340.2 499.1 339.9 495.3 339.8 491C339.6 486.7 339.5 483 339.8 478C340.2 471.2 341.3 461.5 342.8 454C344.1 447.3 346.1 440.8 348 435.3C349.5 430.7 351.2 426.8 352.9 423C354.5 419.5 355.7 416.8 357.9 413C361.1 407.5 367 398.7 371 393.4C373.9 389.7 376.2 387.2 379 384.2C381.9 381.1 385.1 378 388 375.3C390.5 373 392.9 370.9 395.4 369C397.9 367.1 401.6 364.1 403 363.8C403.5 363.7 403.9 363.7 404 363.9C404.1 364.1 403.9 364.4 403.7 365C402.8 367.3 397.1 376.8 394.8 382C393 386.3 391.8 389.5 390.5 394C389 399.3 387.5 406.1 386.7 412C386 417.5 385.8 422.7 385.9 428C386 433.3 386.5 438.8 387.5 444C388.5 449.1 389.9 454.1 391.7 459C393.6 464.1 395.8 469.4 398.4 474C400.9 478.3 403.7 482.3 406.7 486C409.6 489.6 412.6 492.8 416 495.9C419.6 499.3 423.9 502.5 428 505.3C431.9 508 436 510.4 440 512.4C443.7 514.3 447.2 515.8 451 517.2C454.9 518.7 458.6 520 463 521.3C468.1 522.8 473.1 524.1 480 525.4C490.3 527.3 510.3 529.3 519 530.8C523.4 531.5 525.6 532 529 532.8C532.6 533.6 536.8 534.7 540 535.8C542.6 536.7 544.7 537.5 547 538.7C549.5 539.9 552.1 541.3 554.4 543C556.8 544.7 559.1 546.8 561 549C562.9 551.2 564.8 553.5 566.1 556C567.4 558.3 568.3 561 569 563.3C569.6 565.3 569.8 567 570.1 569C570.3 571.2 570.5 573.4 570.3 576C570.1 579.5 569.4 584.2 568.4 588C567.3 591.5 566 594.7 564.2 598C562.3 601.6 559.9 605.2 557 608.8C553.7 612.7 550.5 615.5 545 620.4C534 630.2 502.5 655.5 493.8 662C490.9 664.1 489.7 665.2 487.9 666C486.5 666.6 485.5 666.9 484 667Z", "paddleR": "M674 752.1C672.4 752.3 670.6 752.3 669 751.8C667.3 751.2 666.2 750.7 664 748.6C655.8 741 625.9 695.8 616 684.2C612 679.6 610.3 677.9 607 675.2C603.6 672.4 599 669.5 596 667.8C594.1 666.7 593 666.3 591 665.6C588.3 664.6 584.6 663.5 581 662.8C577 662.1 572.4 661.7 568 661.8C563.4 661.9 559.4 662.5 554 663.4C546.6 664.7 534.9 668 528 669C523.6 669.7 519 670.4 517 670C516.2 669.8 515.5 669.6 515.4 669C515.3 667.1 525.2 660.6 532 655C542.7 646.3 565.6 629.1 573.5 622C576.9 618.9 578.4 617.4 580.5 615C582.5 612.7 584.2 610.8 586.1 608C588.7 604.4 591.9 599.5 594.1 595C596.3 590.5 598.1 585.8 599.3 581C600.6 576.2 601.3 570.8 601.4 566C601.5 561.5 601.1 557.3 600.3 553C599.4 548.6 598.1 544.2 596.2 540C594.2 535.5 591 530.4 588.5 527C586.7 524.5 585 522.8 583.1 521C581.5 519.4 580.1 518.2 578 516.6C574.9 514.2 570 511 566 508.8C562.3 506.8 559.1 505.3 555 503.7C550 501.8 545.3 500.3 538 498.6C525.3 495.8 498.8 493.1 485 490.2C476 488.3 469.1 486.5 463 484.3C458.4 482.7 454.7 480.9 451.1 479C447.8 477.3 444.8 475.4 442 473.4C439.4 471.6 437.3 469.9 435 467.6C432.3 465 429.2 461.4 427 458.5C425.3 456.2 424.1 454.3 422.8 452C421.3 449.5 420 447 418.8 444C417.3 440.2 415.8 435.6 414.9 431C413.9 426 413.4 420.5 413.3 415C413.3 409.2 413.9 402.7 414.9 397C415.8 391.7 417.2 386.7 418.9 382C420.6 377.5 422.7 373.3 425 369.2C427.3 365 429.8 361 432.9 357C436.4 352.5 440.8 346.2 445 343.6C448.2 341.6 451.1 341.6 455 340.8C460.1 339.7 467.6 338.6 473 338C477.4 337.6 480.9 337.5 485 337.4C489.2 337.4 493.6 337.6 498 337.9C502.6 338.3 507.4 339 512 339.8C516.7 340.6 521.4 341.8 525.9 343C530.4 344.2 534.4 345.4 538.9 347C544 348.9 549.8 351.3 555 353.8C560.1 356.3 565.2 359.1 569.9 362C574.5 364.8 578.9 367.8 583 370.7C586.8 373.4 590.1 376 593.7 379C597.4 382.1 601.2 385.5 604.8 389C608.6 392.6 612.6 396.7 616 400.3C619 403.6 621.3 406.5 624.1 410C627.3 414 630.9 418.7 634 423.4C637.2 428.1 640.1 432.6 643 438C646.4 444.3 650.2 451.9 653.1 459C655.9 465.9 658.4 473.2 660.3 480C662 486.2 663.3 492 664.2 498C665 504 665.5 510.2 665.6 516C665.8 521.5 665.7 526.6 665.2 532C664.6 537.6 663.4 544.1 662.3 549C661.4 552.8 660.7 554.9 659.3 559C656.9 565.8 651.1 578.7 648.7 586C647.2 590.7 646.3 594 645.6 598C644.9 602 644.4 605.9 644.6 610C644.8 614.3 645.5 618.8 646.7 623C647.9 627.2 649.7 631.2 651.8 635C654 638.9 656.4 642.1 659.6 646C663.8 651 668.7 655.6 675.2 662C685.6 672.2 710.3 694.7 716 701C717.7 702.9 718.4 703.6 719 704.8C719.5 705.9 719.7 706.8 719.8 708C719.9 709.7 719.7 712.3 719.1 714C718.6 715.5 718.2 716.2 716.7 718C712 723.5 688.8 742.7 683 747.4C681.1 749 680.5 749.7 679 750.4C677.5 751.2 675.7 751.9 674 752.1Z", "ball": {"cx": 667.7, "cy": 335.1, "r": 39.9}};
+const MEDAL = { engine: null, loading: null, failed: false };
+const MEDAL_HINT_KEY = 'spin_medaille_vue';
+function medalHintSeen() { try { return localStorage.getItem(MEDAL_HINT_KEY) === '1'; } catch (e) { return false; } }
+function webglOk() {
+  try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl'))); }
+  catch (e) { return false; }
+}
+// Appelée après chaque rendu (voir afterRender).
+function mountMedal() {
+  const slot = document.querySelector('.medalslot');
+  if (!slot) { if (MEDAL.engine) MEDAL.engine.sleep(); return; }
+  if (MEDAL.failed || !webglOk()) { slot.classList.add('flat'); return; }
+  const id = slot.dataset.badge;
+  const b = (computeBadges() || []).find(x => x.id === id);
+  if (!b || !BADGE_FILES[id]) { slot.classList.add('flat'); return; }
+  const info = { id, name: b.name, desc: b.desc, unlocked: b.unlocked, file: BADGE_FILES[id] };
+  const drop = S._medalDrop === id;
+  if (drop) S._medalDrop = null;
+  if (!MEDAL.loading) {
+    MEDAL.loading = Promise.all([import('three'), import('three/addons/environments/RoomEnvironment.js')])
+      .then(([T, R]) => (MEDAL.engine = createMedalEngine(T, R.RoomEnvironment)));
+  }
+  MEDAL.loading
+    .then(eng => { if (slot.isConnected) eng.attach(slot, info, { drop }); })
+    .catch(() => {
+      MEDAL.failed = true; MEDAL.loading = null;
+      document.querySelectorAll('.medalslot').forEach(s => s.classList.add('flat'));
+    });
+}
+
+function createMedalEngine(THREE, RoomEnvironment) {
+  const canvas = document.createElement('canvas');
+  canvas.className = 'medalcanvas';
+  canvas.tabIndex = 0;
+  canvas.setAttribute('role', 'img');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+
+  const scene = new THREE.Scene();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+  const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 60);
+  const key = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(2.2, 3, 4); scene.add(key);
+  const fill = new THREE.DirectionalLight(0xcfe0ff, .35); fill.position.set(-3, -1, 2); scene.add(fill);
+  const lantern = new THREE.PointLight(0xff9a3c, 0, 9, 1.4); lantern.position.set(-2.4, -1.3, 2.2); scene.add(lantern);
+  const glint = new THREE.PointLight(0xffffff, 0, 6, 1.2); glint.position.set(-2.5, .6, 1.5); scene.add(glint);
+
+  // Le corps : profil tourné (rebord en relief des deux côtés, tranche droite).
+  const profile = [[.80, .052], [.812, .07], [.83, .078], [.95, .078], [.982, .068], [1, .046], [1, -.046], [.982, -.068], [.95, -.078], [.83, -.078], [.812, -.07], [.80, -.052]]
+    .map(([x, y]) => new THREE.Vector2(x, y));
+  const bodyGeo = new THREE.LatheGeometry(profile, 192); bodyGeo.rotateX(Math.PI / 2);
+  const faceGeo = new THREE.CircleGeometry(.806, 128);
+  const canvasTex = (w, h, draw, color = true) => {
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    draw(c.getContext('2d'), w, h);
+    const t = new THREE.CanvasTexture(c);
+    if (color) t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return t;
+  };
+  // Tranche cannelée : des stries, seulement sur la bande de la tranche.
+  const NSEG = profile.length - 1;
+  const edgeBump = canvasTex(2048, 440, (g, w, h) => {
+    g.fillStyle = '#808080'; g.fillRect(0, 0, w, h);
+    const y0 = h * (1 - 6 / NSEG), y1 = h * (1 - 5 / NSEG);
+    g.fillStyle = '#2a2a2a';
+    for (let i = 0; i < 200; i++) g.fillRect(i * w / 200, y0, w / 400, y1 - y0);
+  }, false);
+  const METALS = { gold: { color: 0xE3B44C, roughness: .27 }, pewter: { color: 0xAEB5BE, roughness: .42 } };
+  const bodyMat = new THREE.MeshPhysicalMaterial({ color: METALS.gold.color, metalness: 1, roughness: METALS.gold.roughness, bumpMap: edgeBump, bumpScale: 4 });
+  const frontMat = new THREE.MeshPhysicalMaterial({ metalness: 0, roughness: .48, clearcoat: 1, clearcoatRoughness: .14 });
+  const backMat = new THREE.MeshPhysicalMaterial({ color: METALS.gold.color, metalness: 1, roughness: .36, bumpScale: 3 });
+  const spin = new THREE.Group(), root = new THREE.Group();
+  const front = new THREE.Mesh(faceGeo, frontMat); front.position.z = .052;
+  const back = new THREE.Mesh(faceGeo, backMat); back.position.z = -.052; back.rotation.y = Math.PI;
+  spin.add(new THREE.Mesh(bodyGeo, bodyMat), front, back); root.add(spin); scene.add(root);
+  // L'ombre sur la table, sous la pièce qui flotte.
+  const shadowTex = canvasTex(256, 256, (g, w) => {
+    const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+    r.addColorStop(0, 'rgba(10,16,26,.55)'); r.addColorStop(.55, 'rgba(10,16,26,.22)'); r.addColorStop(1, 'rgba(10,16,26,0)');
+    g.fillStyle = r; g.fillRect(0, 0, w, w);
+  });
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 2.5), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = -1.42; scene.add(shadow);
+
+  // Halloween : la grande lumière s'éteint, une lanterne éclaire d'en bas.
+  key.color.set(HALLOWEEN ? 0xffe2c4 : 0xffffff); key.intensity = HALLOWEEN ? .55 : 1.5;
+  fill.color.set(HALLOWEEN ? 0x6c88c0 : 0xcfe0ff); fill.intensity = HALLOWEEN ? .3 : .35;
+  [bodyMat, frontMat, backMat].forEach(m => { m.envMapIntensity = HALLOWEEN ? .38 : 1; });
+
+  /* --- Les faces --- */
+  const imgs = new Map();
+  const loadImg = src => {
+    if (!imgs.has(src)) imgs.set(src, new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }));
+    return imgs.get(src);
+  };
+  function frontTex(img, locked) {
+    return canvasTex(640, 640, (g, w) => {
+      // Le disque occupe 300 px sur 320 dans l'image : on l'agrandit pour
+      // remplir la face, sur un fond de sa propre couleur.
+      const p = document.createElement('canvas'); p.width = p.height = 1;
+      const pg = p.getContext('2d'); pg.drawImage(img, 14, 160, 1, 1, 0, 0, 1, 1);
+      const [r0, g0, b0] = pg.getImageData(0, 0, 1, 1).data;
+      g.fillStyle = `rgb(${r0},${g0},${b0})`; g.fillRect(0, 0, w, w);
+      const k = w / 300;
+      g.save(); g.beginPath(); g.arc(w / 2, w / 2, w / 2, 0, Math.PI * 2); g.clip();
+      g.drawImage(img, -10 * k, -10 * k, 320 * k, 320 * k); g.restore();
+      if (locked) {
+        const d = g.getImageData(0, 0, w, w), px = d.data;
+        for (let i = 0; i < px.length; i += 4) { const l = (px[i] * .3 + px[i + 1] * .59 + px[i + 2] * .11) * .72 + 18; px[i] = px[i + 1] = px[i + 2] = l; }
+        g.putImageData(d, 0, 0);
+        const cx = w * .76, cy = w * .76, r = w * .12;
+        g.fillStyle = '#121A26'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = '#fff'; g.lineWidth = r * .16; g.beginPath(); g.arc(cx, cy - r * .12, r * .3, Math.PI, 0); g.stroke();
+        g.fillStyle = '#fff'; g.fillRect(cx - r * .45, cy - r * .12, r * .9, r * .62);
+      }
+    });
+  }
+  // Le revers : métal tourné, logo en relief, nom et condition gravés,
+  // légende tout autour comme sur une vraie pièce.
+  function drawBack(g, w, b, bump) {
+    const c = w / 2, TAU = Math.PI * 2;
+    g.fillStyle = bump ? '#808080' : '#F4F1EA'; g.fillRect(0, 0, w, w);
+    for (let r = 6; r < c; r += 3) {
+      g.strokeStyle = bump ? (r % 6 ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.05)') : (r % 6 ? 'rgba(90,80,60,.05)' : 'rgba(255,255,255,.08)');
+      g.lineWidth = 1.5; g.beginPath(); g.arc(c, c, r, 0, TAU); g.stroke();
+    }
+    const ink = bump ? '#3a3a3a' : 'rgba(92,70,30,.78)', hi = bump ? '#808080' : 'rgba(255,255,255,.55)';
+    const S0 = w * .26, lx = c - S0 / 2, ly = w * .16;
+    const paths = ['ring', 'swoosh', 'arc', 'paddleL', 'paddleR'].map(k => new Path2D(MEDAL_LOGO[k]));
+    const drawLogo = (dx, dy, f) => {
+      g.save(); g.translate(lx + dx, ly + dy); g.scale(S0 / 524, S0 / 524); g.translate(-250, -250); g.fillStyle = f;
+      paths.forEach(p => g.fill(p)); g.beginPath(); g.arc(MEDAL_LOGO.ball.cx, MEDAL_LOGO.ball.cy, MEDAL_LOGO.ball.r, 0, TAU); g.fill(); g.restore();
+    };
+    if (bump) drawLogo(0, 0, '#d8d8d8');
+    else { drawLogo(3, 4, 'rgba(70,50,15,.35)'); drawLogo(0, 0, 'rgba(255,250,235,.9)'); drawLogo(0, 0, 'rgba(160,120,40,.35)'); }
+    const engrave = (text, x, y) => { if (!bump) { g.fillStyle = hi; g.fillText(text, x + 2, y + 2); } g.fillStyle = ink; g.fillText(text, x, y); };
+    g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    const wrap = (text, max) => {
+      const words = String(text).split(' '), lines = []; let l = '';
+      for (const wd of words) { const t = l ? l + ' ' + wd : wd; if (g.measureText(t).width > max && l) { lines.push(l); l = wd; } else l = t; }
+      if (l) lines.push(l); return lines;
+    };
+    g.font = `italic 700 ${Math.round(w * .085)}px 'Barlow Semi Condensed', 'Arial Narrow', sans-serif`;
+    const nl = wrap(b.name, w * .66);
+    let y = w * .53;
+    nl.forEach((l, i) => engrave(l, c, y + i * w * .082));
+    y += nl.length * w * .082 + w * .02;
+    g.font = `500 ${Math.round(w * .041)}px 'Barlow', Arial, sans-serif`;
+    wrap(b.desc, w * .64).slice(0, 3).forEach((l, i) => engrave(l, c, y + i * w * .052));
+    g.font = `600 ${Math.round(w * .03)}px 'Barlow', Arial, sans-serif`;
+    const legend = 'SPIN   Pronostics de tennis de table entre amis   ' + (b.unlocked ? 'Médaille débloquée' : 'Médaille à débloquer') + '   ';
+    const rad = w * .455, f = TAU / g.measureText(legend).width;
+    g.save(); g.translate(c, c);
+    let ang = 0;
+    for (const ch of legend) {
+      const step = g.measureText(ch).width * f;
+      g.save(); g.rotate(ang + step / 2); g.translate(0, -rad);
+      if (!bump) { g.fillStyle = hi; g.fillText(ch, 1.5, 1.5); } g.fillStyle = ink; g.fillText(ch, 0, 0); g.restore();
+      ang += step;
+    }
+    g.restore();
+    g.strokeStyle = ink; g.lineWidth = 2; g.beginPath(); g.arc(c, c, w * .405, 0, TAU); g.stroke();
+  }
+  // Quelques faces gardées en mémoire, pas toutes (chacune pèse plusieurs Mo
+  // sur la carte graphique d'un téléphone).
+  const cache = new Map();
+  async function texturesFor(b) {
+    const k = b.id + (b.unlocked ? '1' : '0');
+    if (cache.has(k)) { const t = cache.get(k); cache.delete(k); cache.set(k, t); return t; }
+    try { await Promise.all([document.fonts.load(`italic 700 60px 'Barlow Semi Condensed'`), document.fonts.load(`500 30px 'Barlow'`), document.fonts.load(`600 30px 'Barlow'`)]); } catch (e) { /* polices de secours */ }
+    const img = await loadImg('badges/' + b.file);
+    const t = { front: frontTex(img, !b.unlocked), back: canvasTex(1024, 1024, (g, w) => drawBack(g, w, b, false)), bump: canvasTex(1024, 1024, (g, w) => drawBack(g, w, b, true), false) };
+    cache.set(k, t);
+    while (cache.size > 3) {
+      const [oldK, old] = cache.entries().next().value;
+      if (frontMat.map === old.front) break;
+      Object.values(old).forEach(x => x.dispose()); cache.delete(oldK);
+    }
+    return t;
+  }
+  function applyTextures(b, t) {
+    const m = b.unlocked ? METALS.gold : METALS.pewter;
+    frontMat.map = t.front; frontMat.clearcoat = b.unlocked ? 1 : .35; frontMat.needsUpdate = true;
+    backMat.map = t.back; backMat.bumpMap = t.bump; backMat.needsUpdate = true;
+    bodyMat.color.setHex(m.color); backMat.color.setHex(m.color);
+    bodyMat.roughness = m.roughness; backMat.roughness = m.roughness + .09;
+  }
+
+  /* --- Le mouvement ---
+     a : angle autour de l'axe vertical, v : sa vitesse. Lancée, la pièce
+     garde son élan puis retombe à plat (ressort un peu sous-amorti). */
+  const TAU = Math.PI * 2;
+  const st = { a: 0, v: 0, tilt: 0, tv: 0, drag: null, target: null, preferFront: false, landed: false, hx: 0, hy: 0, hxT: 0, hyT: 0, drop: null, glint: null };
+  const fine = matchMedia('(hover: hover) and (pointer: fine)');
+  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const settleTarget = () => st.target != null ? st.target : (st.preferFront ? Math.round(st.a / TAU) * TAU : Math.round(st.a / Math.PI) * Math.PI);
+  function seen() {
+    try { localStorage.setItem(MEDAL_HINT_KEY, '1'); } catch (e) { /* ignore */ }
+    document.querySelectorAll('.medalhint').forEach(h => h.classList.add('gone'));
+  }
+  function flip() {
+    if (st.drop) return;
+    st.target = (Math.round(st.a / Math.PI) + 1) * Math.PI; st.preferFront = false;
+    if (reduce()) { st.a = st.target; st.v = 0; st.target = null; }
+    playSound('tick');
+  }
+  canvas.addEventListener('pointerdown', e => {
+    if (st.drop) return;
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    const now = performance.now();
+    st.drag = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t0: now, t: now, moved: false };
+    st.target = null; st.v = 0;
+  });
+  canvas.addEventListener('pointermove', e => {
+    const r = canvas.getBoundingClientRect();
+    if (fine.matches && !st.drag) { st.hxT = ((e.clientY - r.top) / r.height - .5) * .22; st.hyT = ((e.clientX - r.left) / r.width - .5) * .32; }
+    if (!st.drag) return;
+    const now = performance.now(), dx = e.clientX - st.drag.x, dy = e.clientY - st.drag.y, dt = Math.max(1, now - st.drag.t) / 1000;
+    const da = dx * Math.PI / (r.width * .45);
+    st.a += da; st.tilt = Math.max(-.45, Math.min(.45, st.tilt + dy * .004));
+    st.v = st.v * .5 + (da / dt) * .5;
+    st.drag.x = e.clientX; st.drag.y = e.clientY; st.drag.t = now;
+    if (!st.drag.moved && Math.hypot(e.clientX - st.drag.x0, e.clientY - st.drag.y0) > 7) { st.drag.moved = true; seen(); }
+  });
+  const endDrag = () => {
+    if (!st.drag) return;
+    const tap = !st.drag.moved && performance.now() - st.drag.t0 < 380;
+    const still = performance.now() - st.drag.t > 90;
+    st.drag = null;
+    if (tap) { flip(); seen(); return; }
+    st.v = (still || reduce()) ? 0 : Math.max(-34, Math.min(34, st.v));
+  };
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+  canvas.addEventListener('pointerleave', () => { st.hxT = 0; st.hyT = 0; });
+  canvas.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); st.target = null; st.v = (e.key === 'ArrowLeft' ? -1 : 1) * 7; }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+  });
+  // Le déblocage : chute en tournant, petit rebond, côté badge, reflet.
+  function playDrop() {
+    if (reduce()) { st.a = 0; st.v = 0; st.drop = { t0: performance.now(), dur: 320, fade: true }; return; }
+    st.drop = { t0: performance.now(), dur: 1050, sound: false };
+    st.a = 0; st.v = 22; st.target = null; st.preferFront = true; st.tilt = -.3; st.landed = false;
+  }
+
+  /* --- Rendu --- */
+  let slot = null, info = null, awake = false, running = false, ro = null, last = 0, acc = 0, readyKey = '';
+  const STEP = 1 / 120;
+  function resize() {
+    if (!slot) return;
+    const w = slot.clientWidth, h = slot.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    const fitH = 1.62 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const d = Math.max(fitH, fitH / Math.min(1, camera.aspect));
+    camera.position.set(0, .42, d); camera.lookAt(0, -.05, 0);
+    camera.updateProjectionMatrix();
+  }
+  function physics(dt) {
+    if (!st.drag) {
+      if (Math.abs(st.v) > 2.4 && st.target == null) {
+        st.a += st.v * dt; st.v *= Math.exp(-dt * (st.drop ? 1.25 : st.landed ? 2.6 : 1.7));
+      } else {
+        const k = st.target != null ? 90 : 60, c = 2 * Math.sqrt(k) * (st.target != null ? .7 : .5), tgt = settleTarget();
+        st.v += (k * (tgt - st.a) - c * st.v) * dt; st.a += st.v * dt;
+        if (Math.abs(tgt - st.a) < .0008 && Math.abs(st.v) < .01) { st.a = tgt; st.v = 0; st.target = null; st.landed = false; st.preferFront = false; }
+      }
+      st.tv += (-90 * st.tilt - 2 * Math.sqrt(90) * .55 * st.tv) * dt; st.tilt += st.tv * dt;
+    }
+    st.hx += (st.hxT - st.hx) * Math.min(1, dt * 6); st.hy += (st.hyT - st.hy) * Math.min(1, dt * 6);
+  }
+  function frame(now) {
+    if (!running) return;
+    const dt = Math.min(.25, (now - last) / 1000); last = now;
+    const t = now / 1000;
+    acc += dt; while (acc >= STEP) { physics(STEP); acc -= STEP; }
+    let y = 0, sc = 1;
+    if (st.drop) {
+      const p = Math.min(1, (now - st.drop.t0) / st.drop.dur);
+      if (st.drop.fade) sc = .85 + .15 * p;
+      else if (p < .6) { const q = p / .6; y = 3.0 * (1 - q * q); sc = .8 + .2 * q; }
+      else {
+        if (!st.drop.sound) { st.drop.sound = true; playSound('clink'); }
+        const q = (p - .6) / .4; y = -.16 * Math.sin(Math.PI * q) * (1 - q * .4);
+      }
+      if (p >= 1) { if (!st.drop.fade) { st.glint = { t0: now }; st.landed = true; } st.drop = null; }
+    }
+    if (st.glint) {
+      const p = (now - st.glint.t0) / 800;
+      glint.position.x = -2.6 + 5.2 * p; glint.intensity = p < 1 ? Math.sin(Math.PI * p) * (HALLOWEEN ? 9 : 14) : 0;
+      if (p >= 1) st.glint = null;
+    }
+    const bob = reduce() || st.drop ? 0 : Math.sin(t * 1.3) * .035;
+    root.position.y = y + bob; root.scale.setScalar(sc);
+    root.rotation.x = st.hx; root.rotation.y = st.hy;
+    spin.rotation.y = st.a; spin.rotation.x = st.tilt;
+    const ca = Math.abs(Math.cos(st.a)), sa = Math.abs(Math.sin(st.a));
+    shadow.scale.set(.32 + .68 * ca, .16 + .5 * sa, 1);
+    shadow.material.opacity = Math.max(0, 1 - Math.max(0, root.position.y) * .45) * (HALLOWEEN ? .9 : .7);
+    lantern.intensity = HALLOWEEN ? 26 * (reduce() ? 1 : .82 + .1 * Math.sin(t * 7.3) + .08 * Math.sin(t * 13.1 + 1.7) + .05 * Math.sin(t * 2.3)) : 0;
+    renderer.render(scene, camera);
+    if (readyKey && slot && !slot.classList.contains('ready')) slot.classList.add('ready');
+    requestAnimationFrame(frame);
+  }
+  function start() {
+    if (running) return;
+    running = true; last = performance.now(); acc = 0;
+    requestAnimationFrame(frame);
+  }
+  return {
+    // Pose la pièce dans l'emplacement de la fiche (nouveau à chaque rendu).
+    attach(newSlot, b, opts) {
+      const fresh = !awake;
+      awake = true;
+      if (slot !== newSlot) {
+        slot = newSlot; newSlot.appendChild(canvas);
+        if (ro) ro.disconnect();
+        ro = new ResizeObserver(resize); ro.observe(newSlot); resize();
+      }
+      canvas.setAttribute('aria-label', `Médaille ${b.name}. Flèches gauche et droite pour la tourner, Entrée pour la retourner.`);
+      const k = b.id + (b.unlocked ? '1' : '0');
+      const same = info && info.k === k;
+      info = Object.assign({}, b, { k });
+      if (same && readyKey === k) {
+        newSlot.classList.add('ready');
+        if (opts.drop) playDrop();
+      } else {
+        readyKey = '';
+        texturesFor(b).then(tx => {
+          if (!info || info.k !== k) return;
+          applyTextures(b, tx); readyKey = k;
+          if (opts.drop) playDrop();
+          else if (fresh || !same) { st.a = reduce() ? 0 : -Math.PI / 2; st.v = 0; st.target = 0; st.preferFront = true; }
+        }).catch(() => { newSlot.classList.add('flat'); });
+      }
+      if (fresh && same && !opts.drop) { st.a = reduce() ? 0 : -Math.PI / 2; st.v = 0; st.target = 0; }
+      start();
+    },
+    // La fiche est fermée : on arrête de dessiner.
+    sleep() {
+      awake = false; running = false; slot = null;
+      if (ro) { ro.disconnect(); ro = null; }
+      st.drag = null; st.drop = null; st.glint = null; st.hxT = st.hyT = 0;
+    },
+  };
+}
+
 function badgeModal(id) {
   const list = computeBadges();
   const b = list && list.find(x => x.id === id);
@@ -3519,11 +3928,12 @@ function badgeModal(id) {
   <div class="modalbackdrop" data-act="closebadge">
     <div class="modal badgemodal" role="dialog" aria-modal="true" aria-label="Badge ${esc(b.name)}" data-act="stop" style="--ba:${def.colorA};--bb:${def.colorB}">
       <button class="modalclose dark" data-act="closebadge" aria-label="Fermer">${ico('x')}</button>
-      <div class="badgezoom ${b.unlocked ? 'unlocked' : 'locked'}">
-        <div class="badgezoom-img">${b.icon}${b.unlocked ? '' : `<span class="badgelock" aria-hidden="true">${BADGE_LOCK_SVG}</span>`}</div>
+      <div class="badgezoom has3d ${b.unlocked ? 'unlocked' : 'locked'}">
+        <div class="medalslot" data-badge="${esc(id)}"><div class="badgezoom-img">${b.icon}${b.unlocked ? '' : `<span class="badgelock" aria-hidden="true">${BADGE_LOCK_SVG}</span>`}</div></div>
+        ${medalHintSeen() ? '' : '<p class="medalhint">Glisse pour la faire tourner, touche-la pour voir le revers.</p>'}
       </div>
       <div class="badgemodal-body">
-        <span class="badgestatus ${b.unlocked ? 'on' : ''}">${b.unlocked ? 'Débloqué' : 'Pas encore débloqué'}</span>
+        <span class="badgestatus ${b.unlocked ? 'on' : ''}">${S._newBadge === id ? 'Nouveau badge' : b.unlocked ? 'Débloqué' : 'Pas encore débloqué'}</span>
         <h2 class="badgetitle">${esc(b.name)}</h2>
         <p class="badgehow">${b.unlocked ? 'Obtenu pour :' : 'Pour le débloquer :'}</p>
         <p class="badgedesc">${esc(b.desc)}</p>
@@ -4782,8 +5192,8 @@ $app.addEventListener('click', async e => {
   else if (act === 'rankgender') { S.rankGender = v; navigate(render); }
   else if (act === 'competitor') { S.openCompetitor = id; keepRender(); }
   else if (act === 'closecompetitor') { S.openCompetitor = null; keepRender(); }
-  else if (act === 'badge') { S.openBadge = el.dataset.badge; playSound('tick'); keepRender(); }
-  else if (act === 'closebadge') { S.openBadge = null; keepRender(); }
+  else if (act === 'badge') { S.openBadge = el.dataset.badge; S._newBadge = null; playSound('tick'); keepRender(); }
+  else if (act === 'closebadge') closeBadge();
   else if (act === 'spider') spiderUp();
   else if (act === 'stop') { /* clic à l'intérieur de la fiche détail : ne pas la fermer */ }
   else if (act === 'pick') pick(id, Number(el.dataset.a), Number(el.dataset.b));
@@ -4798,7 +5208,7 @@ $app.addEventListener('click', async e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && S.openCompetitor) { S.openCompetitor = null; keepRender(); }
-  if (e.key === 'Escape' && S.openBadge) { S.openBadge = null; keepRender(); }
+  if (e.key === 'Escape' && S.openBadge) closeBadge();
   if (e.key === 'Escape' && S.openRecap) { stopRecapRun(); S.openRecap = null; keepRender(); }
 });
 $app.addEventListener('submit', e => {
