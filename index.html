@@ -431,7 +431,7 @@ a{color:inherit}
 .subh{font:600 14px/1.2 var(--f-text);color:var(--ink-2);margin:18px 0 6px}
 .subh:first-of-type{margin-top:8px}
 @media (prefers-reduced-motion:no-preference){
-  .fresh > .panel,.fresh > .pagehead,.fresh > .acchero,.fresh > .podium,.fresh > .boardtools,.fresh > .standings{animation:rowIn .5s var(--ease-out) both}
+  .fresh > .panel,.fresh > .pagehead,.fresh > .acchero,.fresh > .boardpod,.fresh > .boardtools,.fresh > .standings{animation:rowIn .5s var(--ease-out) both}
   .fresh > :nth-child(2){animation-delay:.05s}.fresh > :nth-child(3){animation-delay:.1s}.fresh > :nth-child(4){animation-delay:.15s}
   .fresh > :nth-child(5){animation-delay:.2s}.fresh > :nth-child(n+6){animation-delay:.25s}
 }
@@ -1348,10 +1348,33 @@ html.halloween .av{color:var(--on-red)}
 .authstage:has(> .scene3d[data-ready]) .authstage-in{pointer-events:none}
 .authstage:has(> .scene3d[data-ready]) p{text-shadow:0 1px 12px rgba(0,0,0,.45)}
 /* Bilan : le podium en 3D remplace les marches à plat dès qu'il est prêt. */
-.rx-pod3d{position:relative;overflow:hidden;border-radius:16px;background:#7E98AE;isolation:isolate}
-.rx-pod3d:has(> .scene3d[data-ready]){height:clamp(290px,74vw,400px)}
-.rx-pod:has(.scene3d[data-ready]) .rx-podium{display:none}
-html.halloween .rx-pod3d{background:#09111C}
+.pod3d{position:relative;overflow:hidden;border-radius:16px;isolation:isolate}
+.pod3d:has(> .scene3d[data-ready]){height:clamp(290px,74vw,400px);background:#7E98AE}
+html.halloween .pod3d:has(> .scene3d[data-ready]){background:#09111C}
+.rx-pod:has(.scene3d[data-ready]) .rx-podium,.boardpod:has(.scene3d[data-ready]) > .podium{display:none}
+.boardpod{margin:4px 0 16px}
+.boardpod > .podium{margin:0}
+.lbbtn{border:0;background:none;padding:0;margin:0;text-align:left;cursor:pointer;color:inherit}
+.lbbtn:hover .lbpseudo{text-decoration:underline;text-underline-offset:3px}
+/* La fiche d'un joueur : son personnage à droite dans le décor, ses chiffres à gauche. */
+.playerx .modalhead{min-height:250px;overflow:hidden;isolation:isolate;background:var(--table)}
+.playerx .modalhead > .pod3d{position:absolute;inset:0;height:auto;border-radius:0;background:none;z-index:0}
+.playerx .modalhead > :not(.pod3d){position:relative;z-index:2}
+.playerx .modalhead:has(.scene3d[data-ready])::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(6,14,26,.72) 0%,rgba(6,14,26,.4) 48%,rgba(6,14,26,0) 70%)}
+.playerx .modalhead .scene3d-hint{display:none}
+.playerx .modalname .av{width:40px;height:40px;font-size:19px}
+.playerx .modalstats{flex-wrap:wrap;gap:16px 24px;max-width:64%}
+/* Ton personnage (Mon compte) : la 3D et le cercle chromatique du maillot. */
+.mychar-in{display:grid;gap:16px;margin-top:10px}
+.mychar .pod3d:has(> .scene3d[data-ready]){height:260px}
+.mychar-pick{display:flex;align-items:center;gap:18px}
+.mychar-pick .hint{margin:0 0 10px}
+.wheel{position:relative;flex:none;width:150px;height:150px;border-radius:50%;cursor:crosshair;touch-action:none;
+  background:radial-gradient(circle closest-side,#fff,rgba(255,255,255,0)),conic-gradient(red,yellow,lime,cyan,blue,magenta,red);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.wheel i{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px #fff,0 1px 6px rgba(0,0,0,.45);pointer-events:none}
+@media (min-width:700px){ .mychar-in{grid-template-columns:minmax(0,1fr) 320px;align-items:center} }
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -1965,6 +1988,7 @@ function friendlyError(e) {
   if (/Score impossible/i.test(msg)) return msg;
   if (/row-level security/i.test(msg)) return "Action refusée : le match a peut-être déjà commencé, ou tu n'as pas les droits.";
   if (/duplicate key/i.test(msg)) return 'Cet élément existe déjà.';
+  if (/shirt_color/i.test(msg)) return "La couleur du maillot n'est pas encore activée : il faut lancer le script ajout-couleur-maillot.sql dans Supabase.";
   if (/Bucket not found|avatar_v/i.test(msg)) return "La photo de profil n'est pas encore activée : il faut lancer le script ajout-photo-profil.sql dans Supabase.";
   return msg;
 }
@@ -2390,10 +2414,10 @@ const avatarUrl = uid => S.avatars && S.avatars[uid] ? `${SUPABASE_URL}/storage/
 const avatarImg = uid => avatarUrl(uid) ? `<img src="${avatarUrl(uid)}" alt="" loading="lazy" onerror="this.remove()">` : '';
 const avatarHtml = (uid, pseudo) => `<span class="av" aria-hidden="true">${esc((pseudo || '?').slice(0, 1).toUpperCase())}${avatarImg(uid)}</span>`;
 async function loadAvatars() {
-  const r = await sb.from('profiles').select('id,avatar_v').not('avatar_v', 'is', null);
-  // Colonne absente (script SQL pas encore lancé) : pas de photos, rien d'autre ne change.
-  S.avatars = {};
-  if (!r.error) (r.data || []).forEach(p => { S.avatars[p.id] = p.avatar_v; });
+  const r = await sb.from('profiles').select('*');
+  // Colonnes absentes (scripts SQL pas encore lancés) : ni photo ni maillot, rien d'autre ne change.
+  S.avatars = {}; S.shirts = {};
+  if (!r.error) (r.data || []).forEach(p => { if (p.avatar_v) S.avatars[p.id] = p.avatar_v; if (p.shirt_color) S.shirts[p.id] = p.shirt_color; });
 }
 // La photo choisie est recadrée en carré de 256 px et réenregistrée en JPEG
 // (environ 30 Ko) avant l'envoi : rapide à charger pour tout le monde.
@@ -2576,7 +2600,7 @@ function render() {
         <main class="tab-${S.tab}${Date.now() - (S._tabAt || 0) < 1500 ? ' fresh' : ''}">${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
         <aside class="side" aria-label="En un coup d'œil">${sideView()}</aside>
       </div>
-    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}`;
+    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}`;
   document.documentElement.classList.toggle('noscroll', !!S.openRecap);
   if (S.openRecap && !S.recapAnimPlayed) { S.recapAnimPlayed = true; S._podRun = (S._podRun || 0) + 1; mountRecapAnimation(); }
   afterRender();
@@ -3253,7 +3277,7 @@ function boardView() {
     const topClass = rank === 1 ? ' top1' : rank === 2 ? ' top2' : rank === 3 ? ' top3' : '';
     return `<tr class="${me ? 'me' : ''}">
       <td class="rankcell${topClass}">${rankInner(rank)}</td>
-      <td class="namecell"><div class="lbname">${avatarHtml(r.user_id, r.pseudo)}${esc(r.pseudo)}${me ? ' <span class="me-tag">toi</span>' : ''}</div>
+      <td class="namecell"><button class="lbname lbbtn" data-act="player" data-uid="${esc(r.user_id)}" aria-label="Fiche de ${esc(r.pseudo)}">${avatarHtml(r.user_id, r.pseudo)}<span class="lbpseudo">${esc(r.pseudo)}</span>${me ? ' <span class="me-tag">toi</span>' : ''}</button>
         <div class="lbsub">${r.good_winners}/${r.matches_played} bon${r.good_winners > 1 ? 's' : ''} vainqueur${r.good_winners > 1 ? 's' : ''} · ${r.exact_scores} exact${r.exact_scores > 1 ? 's' : ''}</div></td>
       <td class="ptscell">${r.total_points}<small>pts</small></td></tr>`;
   }).join('');
@@ -3277,7 +3301,7 @@ function boardPodium(board) {
     <span class="pts"><span data-count="${r.total_points}">${r.total_points}</span><small>pts</small></span>
     <div class="podstep"></div>
   </div>`;
-  return `<div class="podium" aria-label="Podium">${col(top[1], 2)}${col(top[0], 1)}${col(top[2], 3)}</div>`;
+  return `<div class="boardpod"><div class="pod3d" data-kind="board"></div><div class="podium" aria-label="Podium">${col(top[1], 2)}${col(top[0], 1)}${col(top[2], 3)}</div></div>`;
 }
 const rules = () => `<p class="rules">Barème : 1 point pour le bon vainqueur, 3 points pour le score exact. En WTT, un pronostic gagnant sur l'outsider (moins bien classé au tirage au sort) rapporte un bonus, d'autant plus grand que l'écart de tête de série est important (jusqu'à +5 points). Bonus de série : plus tu enchaînes les pronos gagnants d'affilée, plus le prochain rapporte gros (jusqu'à +75 % à partir d'une grosse série) — vois l'onglet "Mon compte" pour ta série en cours. Balles : à chaque tournoi WTT tu reçois 4 balles (2 par journée de Pro A) à miser sur tes pronos, 3 au maximum sur un même match ; si le prono est gagnant, chaque balle ajoute ×1 (1 balle = ×2, 2 = ×3, 3 = ×4), sinon elles sont perdues. Le bonus de série et les balles s'additionnent. En cas d'égalité au classement, le plus de scores exacts passe devant.</p>`;
 
@@ -4235,13 +4259,19 @@ function buildPodium(data) {
   const stepMats = [];
   const physical = map => { const m = withGlow(new THREE.MeshPhysicalMaterial({ map, emissiveMap: map, emissive: 0xffffff, emissiveIntensity: 0, roughness: .5, clearcoat: .25, clearcoatRoughness: .5 })); stepMats.push(m); return m; };
   const plinth = new THREE.Mesh(new THREE.BoxGeometry(3.0, BASE, D + .14), withGlow(new THREE.MeshStandardMaterial({ color: 0x1c2027, roughness: .8 })));
-  plinth.position.y = BASE / 2; plinth.receiveShadow = plinth.castShadow = true; root.add(plinth);
+  plinth.position.y = BASE / 2; plinth.receiveShadow = plinth.castShadow = true;
+  const stepsG = new THREE.Group(); stepsG.add(plinth); root.add(stepsG);
+  // Un joueur seul (sa fiche, « Ton personnage ») : un petit socle rond à la place des marches.
+  const SOLO_H = .1, soloMat = withGlow(new THREE.MeshPhysicalMaterial({ color: theme.table, roughness: .5, clearcoat: .25 }));
+  const soloBase = new THREE.Mesh(new THREE.CylinderGeometry(.34, .38, SOLO_H, 40), soloMat);
+  soloBase.position.y = SOLO_H / 2; soloBase.castShadow = soloBase.receiveShadow = true; soloBase.visible = false; root.add(soloBase);
+  let solo = false;
   for (const place of [1, 2, 3]) {
     const { x, h } = STEPS[place], px = 512;
     const mk = (kind, mw, mh) => { const f = { kind, place, mw, seed: place * 7 + faces.length, tex: mkTex(px, Math.max(64, Math.round(px * mh / mw))) }; faces.push(f); paint(f); return physical(f.tex); };
     const side = mk('side', D, h), top = mk('top', W, D), front = mk('front', W, h), back = mk('back', W, h);
     const m = new THREE.Mesh(new THREE.BoxGeometry(W, h, D), [side, side, top, back, front, back]);
-    m.position.set(x, BASE + h / 2, 0); m.castShadow = m.receiveShadow = true; root.add(m);
+    m.position.set(x, BASE + h / 2, 0); m.castShadow = m.receiveShadow = true; stepsG.add(m);
   }
   if (document.fonts && document.fonts.load) document.fonts.load(font(120)).then(() => faces.forEach(paint)).catch(() => {});
 
@@ -4249,7 +4279,7 @@ function buildPodium(data) {
   const std = o => withGlow(new THREE.MeshStandardMaterial(o));
   const plastic = std({ color: 0xf4f3ee, roughness: .4 });
   const pantsMat = std({ color: 0x252b36, roughness: .85 }), shoeMat = std({ color: 0x15171b, roughness: .55 });
-  const shirtMat = std({ color: theme.chip, roughness: .75 }), collarMat = std({ color: 0xf2f2ee, roughness: .7 });
+  const collarMat = std({ color: 0xf2f2ee, roughness: .7 });
   const rubberR = std({ color: 0xc0202a, roughness: .7 }), rubberB = std({ color: 0x17181b, roughness: .7 }), wood = std({ color: 0xc9a46c, roughness: .8 });
   const legGeo = new THREE.CapsuleGeometry(.06, .09, 4, 10), shoeGeo = new THREE.SphereGeometry(.068, 14, 10);
   const torsoGeo = new THREE.LatheGeometry([[0, .2], [.13, .205], [.175, .26], [.185, .37], [.17, .5], [.13, .6], [.07, .645], [0, .652]].map(([r, y]) => new THREE.Vector2(r, y)), 28);
@@ -4303,11 +4333,12 @@ function buildPodium(data) {
     const g = ch.root = new THREE.Group(), body = ch.body = new THREE.Group(); g.add(body);
     const add = (parent, geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; m.userData.ch = ch; pick.push(m); parent.add(m); return m; };
     for (const s of [-1, 1]) { add(body, legGeo, pantsMat, s * .07, .135, 0); add(body, shoeGeo, shoeMat, s * .075, .035, .03).scale.set(1, .62, 1.45); }
-    add(body, torsoGeo, shirtMat, 0, 0, 0);
+    ch.shirtMat = std({ color: p.shirt || theme.chip, roughness: .75 });
+    add(body, torsoGeo, ch.shirtMat, 0, 0, 0);
     add(body, collarGeo, collarMat, 0, .638, 0).rotation.x = Math.PI / 2;
     ch.arms = [-1, 1].map(s => {
       const pv = new THREE.Group(); pv.position.set(s * .162, .565, 0); body.add(pv);
-      add(pv, armGeo, shirtMat, 0, -.115, 0); add(pv, handGeo, plastic, 0, -.235, 0);
+      add(pv, armGeo, ch.shirtMat, 0, -.115, 0); add(pv, handGeo, plastic, 0, -.235, 0);
       if (s < 0) { // la raquette, dans la main droite
         const pad = new THREE.Group(); pad.rotation.x = -.45; pv.add(pad);
         add(pad, new THREE.BoxGeometry(.024, .1, .02), wood, 0, -.28, 0);
@@ -4319,15 +4350,22 @@ function buildPodium(data) {
     ch.tex = mkTex(256, 256); drawDecal(ch);
     add(ch.head, ballGeo, ballMaterial(ch.tex), 0, 0, 0);
     // L'auréole : or, argent ou bronze, inclinée vers nous pour qu'on la voie.
-    const halo = ch.halo = new THREE.Mesh(haloGeo, haloMats[place - 1]); halo.position.y = .27; halo.rotation.x = Math.PI / 2 - .5; ch.head.add(halo);
-    const glow = new THREE.Sprite(haloGlowMats[place - 1]); glow.scale.set(.5, .3, 1); glow.position.y = .27; ch.head.add(glow);
+    ch.halo = new THREE.Mesh(haloGeo, haloMats[0]); ch.halo.position.y = .27; ch.halo.rotation.x = Math.PI / 2 - .5; ch.head.add(ch.halo);
+    ch.glow = new THREE.Sprite(haloGlowMats[0]); ch.glow.scale.set(.5, .3, 1); ch.glow.position.y = .27; ch.head.add(ch.glow);
+    setHalo(ch);
     const { x, h } = STEPS[place];
-    g.position.set(x, BASE + h, .04); g.rotation.y = place === 2 ? .2 : place === 3 ? -.2 : 0;
+    g.position.set(x, BASE + h, .04); g.rotation.y = place === 2 ? .2 : place === 3 ? -.2 : 0; ch.top = BASE + h;
     root.add(g);
     // L'étiquette (pseudo et points), en HTML pour rester nette.
     const el = ch.label = document.createElement('div'); el.className = 'plabel' + (p.me ? ' me' : ''); el.setAttribute('aria-hidden', 'true');
     el.innerHTML = `<b></b><span></span>`; stage.appendChild(el); setLabel(ch);
     return ch;
+  };
+  // Auréole : or, argent, bronze selon le rang (p.halo), sinon la place sur le podium ; 0 = aucune.
+  const setHalo = ch => {
+    const r = ch.p.halo !== undefined ? ch.p.halo : ch.place;
+    ch.halo.visible = ch.glow.visible = r >= 1 && r <= 3;
+    if (ch.halo.visible) { ch.halo.material = haloMats[r - 1]; ch.glow.material = haloGlowMats[r - 1]; }
   };
   const setLabel = ch => { ch.label.querySelector('b').textContent = ch.p.pseudo + (ch.p.me ? ' (toi)' : ''); ch.label.querySelector('span').textContent = ch.p.pts + ' pts'; };
   // La photo du profil, si le joueur en a une (sinon son initiale reste).
@@ -4354,17 +4392,17 @@ function buildPodium(data) {
   const SIGN = { 1: 'cheer', 2: 'clap', 3: 'wave' };
   const update = (t, dt, still) => {
     for (const ch of chars) {
-      const top = BASE + STEPS[ch.place].h;
+      const top = ch.top;
       if (ch.p.empty) { ch.root.visible = false; continue; }
       if (still) {
         ch.root.visible = true; ch.root.position.y = top; ch.body.scale.set(1, 1, 1); ch.label.classList.add('on');
-        ch.arms.forEach(a => { a.pv.rotation.set(0, 0, ch.place === 1 ? a.s * 2.75 : a.s * .14); });
+        ch.arms.forEach(a => { a.pv.rotation.set(0, 0, ch.place === 1 && !solo ? a.s * 2.75 : a.s * .14); });
         continue;
       }
       ch.t += dt;
       if (ch.st === 'wait') {
         ch.root.visible = false;
-        if (ch.t > DELAY[ch.place]) { ch.st = 'air'; ch.y = 3.4; ch.vy = -1.2; ch.root.visible = true; }
+        if (ch.t > (solo ? .3 : DELAY[ch.place])) { ch.st = 'air'; ch.y = 3.4; ch.vy = -1.2; ch.root.visible = true; }
       }
       if (ch.st === 'air') { ch.vy -= 9.8 * dt; ch.y += ch.vy * dt; if (ch.y <= 0 && ch.vy < 0) land(ch); }
       // L'écrasement à la réception, qui rebondit un peu.
@@ -4375,7 +4413,7 @@ function buildPodium(data) {
       // Les gestes.
       if (ch.landed && ch.st !== 'wait') {
         ch.next -= dt;
-        if (!ch.act && ch.next <= 0) { ch.act = SIGN[ch.place]; ch.actT = 0; }
+        if (!ch.act && ch.next <= 0) { ch.act = solo ? 'wave' : SIGN[ch.place]; ch.actT = 0; }
         if (ch.act) ch.actT += dt;
       }
       let tz = [.14, .14], tx = [0, 0];
@@ -4414,7 +4452,7 @@ function buildPodium(data) {
     for (const ch of chars) {
       ch.head.getWorldPosition(v); v.y += .44; v.project(camera);
       ch.label.style.transform = `translate(${((v.x + 1) / 2 * w).toFixed(1)}px,${((1 - v.y) / 2 * h).toFixed(1)}px) translate(-50%,-100%)`;
-      ch.label.style.visibility = v.z < 1 && ch.root.visible ? 'visible' : 'hidden';
+      ch.label.style.visibility = v.z < 1 && ch.root.visible && !solo ? 'visible' : 'hidden';
     }
   };
   const tap = ch => { if (ch && ch.landed && ch.act !== 'spin' && ch.st === 'idle') { ch.act = 'spin'; ch.actT = 0; jump(ch, 3.3); } };
@@ -4423,9 +4461,15 @@ function buildPodium(data) {
     replay: (delay = 0) => { reset(); chars.forEach(ch => { ch.t = -delay; }); },
     setNight: n => { UP.night.value = n ? 1 : 0; stepMats.forEach(m => { m.emissiveIntensity = n ? .16 : .03; }); haloMats.forEach(m => { m.emissiveIntensity = n ? .75 : .25; }); haloGlowMats.forEach(m => { m.opacity = n ? .4 : .12; }); },
     skip: () => chars.forEach(ch => { if (ch.st === 'wait' || ch.st === 'air') { ch.root.visible = true; ch.y = 0; ch.vy = -1; land(ch); ch.sq = 0; } }),
-    setTheme: th => { theme = th; faces.forEach(paint); shirtMat.color.set(th.chip); },
+    setTheme: th => { theme = th; faces.forEach(paint); soloMat.color.set(th.table); chars.forEach(ch => { if (!ch.p.shirt) ch.shirtMat.color.set(th.chip); }); },
+    setShirt: (i, hex) => { const ch = chars[i]; if (!ch) return; ch.p.shirt = hex || null; ch.shirtMat.color.set(hex || theme.chip); },
+    // Un seul joueur, au centre, sur son socle (sa fiche) ; sinon le podium à trois marches.
+    setLayout: one => {
+      solo = one; stepsG.visible = !one; soloBase.visible = one;
+      chars.forEach(ch => { const { x, h } = STEPS[ch.place]; ch.top = one ? SOLO_H : BASE + h; ch.root.position.x = one ? 0 : x; ch.root.rotation.y = one ? 0 : ch.place === 2 ? .2 : ch.place === 3 ? -.2 : 0; });
+    },
     setPhoto: (i, img) => { const ch = chars[i]; if (!ch) return; ch.p.img = img; drawDecal(ch); },
-    setPlayers: ps => chars.forEach((ch, i) => { ch.p = Object.assign({}, ps[i] || EMPTY); drawDecal(ch); setLabel(ch); ch.label.classList.toggle('me', !!ch.p.me); loadPhoto(ch); }),
+    setPlayers: ps => chars.forEach((ch, i) => { ch.p = Object.assign({}, ps[i] || EMPTY); drawDecal(ch); setLabel(ch); setHalo(ch); ch.shirtMat.color.set(ch.p.shirt || theme.chip); ch.label.classList.toggle('me', !!ch.p.me); loadPhoto(ch); }),
   };
 }
 
@@ -4508,17 +4552,18 @@ const camera = new THREE.PerspectiveCamera(42, 1, .1, 2000);
 const LOOK = MODE === 'podium' ? new THREE.Vector3(0, 1.0, 0) : new THREE.Vector3(0, .74, -1.05);
 const DEF_EL = MODE === 'podium' ? .1 : .2;
 const cam = { az: 0, el: DEF_EL, vaz: 0, vel: 0, idle: 0, drag: null, hx: 0, hy: 0, hxT: 0, hyT: 0, dist: 5.2 };
+let soloView = false; // false, true (au centre) ou 'right' (à droite, le texte de la fiche à gauche)
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
   if (!w || !h) return; // pas encore à l'écran : on recalcule quand il apparaîtra
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
-  if (MODE === 'podium') LOOK.y = camera.aspect < .75 ? 1.18 : 1.0; // téléphone : le podium un peu plus bas, sous le titre
-  cam.dist = MODE === 'podium' ? Math.min(9, Math.max(camera.aspect > 1 ? 4.4 : 5.2, 1.8 / (tanH * .95))) : Math.min(6.2, Math.max(4.2, 1.05 / (tanH * .95)));
+  if (MODE === 'podium') LOOK.y = soloView ? .62 : camera.aspect < .75 ? 1.18 : 1.0; // téléphone : le podium un peu plus bas, sous le titre
+  cam.dist = soloView ? Math.max(2.5, .55 / (tanH * .95)) : MODE === 'podium' ? Math.min(9, Math.max(camera.aspect > 1 ? 4.4 : 5.2, 1.8 / (tanH * .95))) : Math.min(6.2, Math.max(4.2, 1.05 / (tanH * .95)));
   const tEl = opts.text && opts.text(), textH = tEl ? tEl.getBoundingClientRect().height : 0;
   const shift = Math.min(.2, Math.max(.04, (textH / h) * .3));
-  camera.setViewOffset(w, h, 0, -h * shift, w, h);
+  camera.setViewOffset(w, h, soloView === 'right' ? -w * .22 : 0, -h * shift, w, h);
   camera.updateProjectionMatrix();
 }
 const ro = new ResizeObserver(resize); ro.observe(stage);
@@ -5201,7 +5246,13 @@ document.getElementById('amb-halloween')?.addEventListener('click', () => setAmb
 let last = performance.now(), acc = 0, visible = true, running = false;
 const STEP = 1 / 120, up = new THREE.Vector3(0, 1, 0), axis = new THREE.Vector3(), tmp = new THREE.Vector3(), _gv = new THREE.Vector3();
 function start() { if (running) return; running = true; last = performance.now(); requestAnimationFrame(frame); }
-const io = new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible) start(); }); io.observe(stage);
+// On ne dessine que si la toile est à l'écran. L'observateur le dit presque
+// toujours ; s'il la croit cachée alors qu'elle est encore dans la page (une
+// fiche qui arrive en glissant, par exemple), on revérifie de temps en temps.
+let recheckT = 0;
+const onScreen = () => { const r = stage.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
+const recheck = () => { clearTimeout(recheckT); recheckT = setTimeout(() => { if (!stage.isConnected) return; if (onScreen()) { visible = true; start(); } else recheck(); }, 700); };
+const io = new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible) start(); else recheck(); }); io.observe(stage);
 function frame(now) {
   if (!visible) { running = false; return; }
   const dt = Math.min(.1, (now - last) / 1000); last = now;
@@ -5287,14 +5338,18 @@ function frame(now) {
 }
 if (reduce()) { pos.set(.18, TOP + R, .55); vel.set(0, 0, 0); }
 setAmb(opts.amb || 'salle');
-if (/[?&]debug\b/.test(location.search)) window.__dbg = { hw: () => hw, camera, THREE, walker, renderer, GLOW, scene, podium };
+if (/[?&]debug\b/.test(location.search)) window.__dbg = { hw: () => hw, camera, THREE, walker, renderer, GLOW, scene, podium, st: () => ({ visible, running }) };
 resize();
 stage.dataset.ready = '3d';
 start();
 return {
   setAmb, podium,
+  setSolo(v) { soloView = v; podium.setLayout(!!v); resize(); },
+  // Relance l'image quand la toile vient d'être posée ailleurs (l'observateur
+  // de visibilité ne le signale pas toujours) — seulement si elle est à l'écran.
+  wake() { visible = onScreen(); if (visible) start(); else recheck(); },
   // Libère la carte graphique (on n'en a plus besoin : connecté, par exemple).
-  dispose() { visible = false; io.disconnect(); ro.disconnect(); renderer.dispose(); renderer.forceContextLoss(); stage.remove(); },
+  dispose() { visible = false; clearTimeout(recheckT); io.disconnect(); ro.disconnect(); renderer.dispose(); renderer.forceContextLoss(); stage.remove(); },
 };
 }
 
@@ -5309,7 +5364,7 @@ function scene3dSlot(key, slot, o) {
     const layer = document.createElement('div'), canvas = document.createElement('canvas'), hint = document.createElement('p');
     layer.className = 'scene3d'; canvas.setAttribute('aria-hidden', 'true'); hint.className = 'scene3d-hint'; hint.textContent = o.hint;
     layer.append(canvas, hint);
-    s = SCENE3D[key] = { layer, api: null, run: 0 };
+    s = SCENE3D[key] = { layer, hint, api: null };
     slot.prepend(layer);
     SCENE3D.lib = SCENE3D.lib || Promise.all([import('three'), import('three/addons/objects/Sky.js'), import('three/addons/utils/BufferGeometryUtils.js')]);
     SCENE3D.lib.then(([T, SK, BU]) => {
@@ -5318,37 +5373,153 @@ function scene3dSlot(key, slot, o) {
         podium: { players: [] }, text: () => layer.parentElement && layer.parentElement.querySelector('.authstage-in') });
       if (!s.api) throw new Error('WebGL indisponible');
       if (o.ready) o.ready(s);
+      requestAnimationFrame(() => s.api && s.api.wake());
     }).catch(() => { SCENE3D.failed = true; layer.remove(); SCENE3D[key] = null; });
   } else if (s.layer.parentElement !== slot) slot.prepend(s.layer);
   return s;
 }
-// Les trois premiers du bilan ouvert : pseudo, points, photo de profil.
-function recapPodiumData() {
-  const r = S.openRecap && computeRecapData(S.openRecap.key, S.openRecap.circuit);
-  if (!r) return null;
-  const uid = S.session && S.session.user.id;
-  return { theme: r.theme, players: r.podium.map(p => ({ pseudo: p.pseudo, pts: p.pts, me: p.userId === uid, photo: avatarUrl(p.userId) })) };
+// Un joueur tel que le dessine la scène : pseudo, points, photo, maillot.
+const shirtOf = uid => (S.shirts && S.shirts[uid]) || null;
+const scenePlayer = (uid, pseudo, pts, extra) => Object.assign({ pseudo, pts, me: !!S.session && uid === S.session.user.id, photo: avatarUrl(uid), shirt: shirtOf(uid) }, extra);
+// Rang au classement général (ex aequo compris), et la ligne du joueur.
+function generalRank(uid) {
+  const b = S.accountBoard || (S.boardScope === 'ALL' && S.board) || [];
+  let prev = null, rk = 0;
+  for (let i = 0; i < b.length; i++) {
+    const k = b[i].total_points + '/' + b[i].exact_scores;
+    if (k !== prev) { rk = i + 1; prev = k; }
+    if (b[i].user_id === uid) return { rank: rk, row: b[i], n: b.length };
+  }
+  return null;
+}
+// Ce que montre un emplacement 3D (data-kind) : qui, aux couleurs de quoi, et une
+// clé qui change quand il faut rejouer l'arrivée des personnages.
+function podiumSlotState(slot) {
+  const kind = slot.dataset.kind, uid = S.session && S.session.user.id;
+  if (kind === 'recap') {
+    const r = S.openRecap && computeRecapData(S.openRecap.key, S.openRecap.circuit);
+    if (!r) return null;
+    return { key: 'recap:' + S._podRun, theme: r.theme, players: r.podium.map(p => scenePlayer(p.userId, p.pseudo, p.pts)),
+      delay: document.querySelector('.recapx.intro') ? 2.9 : .3 };
+  }
+  if (kind === 'board') {
+    const b = (S.board || []).slice(0, 3);
+    if (!b.length) return null;
+    return { key: `board:${S.boardScope}:${S._tabAt}:${b.map(r => r.user_id + r.total_points).join()}`,
+      theme: S.boardScope === 'PRO_A' ? THEME.PRO_A : S.boardScope === 'WTT' ? THEME.WTT_DEFAULT : THEME.ALL,
+      players: b.map(r => scenePlayer(r.user_id, r.pseudo, r.total_points)), delay: .3 };
+  }
+  // Un joueur seul : sa fiche (personnage à droite), ou toi dans « Mon compte ».
+  const id = kind === 'me' ? uid : slot.dataset.uid, g = generalRank(id);
+  if (!id) return null;
+  return { key: `${kind}:${id}:${S._tabAt}`, solo: kind === 'player' ? 'right' : true, theme: THEME.ALL, delay: .2,
+    players: [scenePlayer(id, g ? g.row.pseudo : S.pseudo, g ? g.row.total_points : 0, { halo: g && g.rank <= 3 ? g.rank : 0 })] };
 }
 // Appelée après chaque rendu (voir afterRender).
 function mountScenes3D() {
   // Une fois connecté, la scène de connexion ne sert plus : on libère la carte graphique.
   if (S.session && SCENE3D.login) { if (SCENE3D.login.api) SCENE3D.login.api.dispose(); else SCENE3D.login.layer.remove(); SCENE3D.login = null; }
-  const auth = document.querySelector('.authstage'), pod = document.querySelector('.rx-pod3d');
+  const auth = document.querySelector('.authstage');
+  // Une seule scène pour tous les personnages : elle va là où on regarde
+  // (le bilan ou la fiche ouverte d'abord, sinon l'écran en cours).
+  const pod = document.querySelector('.recapx .pod3d') || document.querySelector('.modal .pod3d') || document.querySelector('main .pod3d');
   if (SCENE3D.failed || !(auth || pod) || !webglOk()) return;
   if (auth) scene3dSlot('login', auth, { mode: 'table', hint: 'Touche la table pour placer la balle. Glisse pour tourner autour.' });
   if (pod) {
-    // Une nouvelle arrivée sur le podium à chaque ouverture du bilan (ou « Revoir l'animation »),
-    // calée sur l'apparition de la section quand la séquence d'entrée se joue.
-    const run = s => {
-      if (s.run === S._podRun) return;
-      s.run = S._podRun;
-      const d = recapPodiumData(); if (!d) return;
-      s.api.podium.setTheme(d.theme); s.api.podium.setPlayers(d.players);
-      s.api.podium.replay(document.querySelector('.recapx.intro') ? 2.9 : .3);
+    const apply = s => {
+      const d = podiumSlotState(pod);
+      if (!d || s.cur === d.key) return;
+      // Revenir sur un écran déjà vu (en fermant une fiche, par exemple) ne refait pas l'arrivée.
+      const seen = s.seen || (s.seen = {}), kind = pod.dataset.kind, again = seen[kind] === d.key;
+      seen[kind] = s.cur = d.key;
+      s.hint.textContent = d.solo ? 'Touche-le pour le faire sauter.' : 'Touche un joueur pour le faire sauter.';
+      s.api.setSolo(d.solo || false); s.api.podium.setTheme(d.theme); s.api.podium.setPlayers(d.players);
+      if (again) s.api.podium.skip(); else s.api.podium.replay(d.delay);
     };
-    const s = scene3dSlot('podium', pod, { mode: 'podium', hint: 'Touche un joueur pour le faire sauter.', ready: run });
-    if (s.api) run(s);
+    const s = scene3dSlot('podium', pod, { mode: 'podium', hint: '', ready: apply });
+    if (s.api) apply(s);
   }
+  // La toile a pu changer de place : on relance son image (après la mise en page).
+  for (const k of ['login', 'podium']) { const s = SCENE3D[k]; if (s && s.api) requestAnimationFrame(() => s.api && s.api.wake()); }
+}
+
+// Le cercle chromatique du maillot (« Ton personnage ») : teinte autour du
+// cercle, de plus en plus pâle vers le centre. On touche ou on glisse : le
+// personnage change de maillot en direct, la couleur est enregistrée au lâcher.
+const hsvHex = (h, s) => '#' + [5, 3, 1].map(n => { const k = (n + h / 60) % 6; return Math.round(255 * (1 - s * Math.max(0, Math.min(k, 4 - k, 1)))).toString(16).padStart(2, '0'); }).join('');
+function hexHS(hex) {
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255), mx = Math.max(r, g, b), d = mx - Math.min(r, g, b);
+  let hue = 0;
+  if (d) hue = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return { h: hue * 60, s: mx ? d / mx : 0 };
+}
+const wheelDot = (h, s) => `left:${(50 + 50 * s * Math.sin(h * Math.PI / 180)).toFixed(2)}%;top:${(50 - 50 * s * Math.cos(h * Math.PI / 180)).toFixed(2)}%`;
+function wheelSet(w, h, s) {
+  const hex = hsvHex(h, s), dot = w.querySelector('i');
+  w.style.setProperty('--c', hex); dot.setAttribute('style', wheelDot(h, s));
+  w.dataset.h = h; w.dataset.s = s; w.dataset.hex = hex; w.setAttribute('aria-valuenow', String(Math.round(h)));
+  const p = SCENE3D.podium;
+  if (p && p.api && p.cur && p.cur.startsWith('me:')) p.api.podium.setShirt(0, hex);
+}
+function wheelPick(e, w) {
+  const r = w.getBoundingClientRect(), dx = e.clientX - r.left - r.width / 2, dy = e.clientY - r.top - r.height / 2;
+  wheelSet(w, (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, Math.min(1, Math.hypot(dx, dy) / (r.width / 2)));
+}
+async function saveShirt(hex) {
+  if (hex !== null && !/^#[0-9a-f]{6}$/.test(hex || '')) return;
+  const uid = S.session.user.id, r = await sb.from('profiles').update({ shirt_color: hex }).eq('id', uid);
+  if (r.error) { toast(friendlyError(r.error), true); return false; }
+  S.shirts = S.shirts || {};
+  if (hex) S.shirts[uid] = hex; else delete S.shirts[uid];
+  if (hex && !document.querySelector('[data-act="shirtreset"]')) { // pour montrer « Couleur du tournoi », sans perdre le focus clavier
+    const focused = document.activeElement && document.activeElement.classList.contains('wheel');
+    keepRender();
+    if (focused) { const w = document.querySelector('.mychar .wheel'); if (w) w.focus(); }
+  }
+  return true;
+}
+function myCharPanel() {
+  const hex = shirtOf(S.session.user.id), hs = hex ? hexHS(hex) : { h: 0, s: 1 };
+  return `<section class="panel mychar">
+    <h3>Ton personnage</h3>
+    <div class="mychar-in">
+      <div class="pod3d" data-kind="me"></div>
+      <div class="mychar-pick">
+        <div class="wheel" role="slider" tabindex="0" aria-label="Couleur du maillot" aria-valuemin="0" aria-valuemax="359" aria-valuenow="${Math.round(hs.h)}"
+          data-h="${hs.h}" data-s="${hs.s}" style="--c:${hex || THEME.ALL.chip}"><i style="${hex ? wheelDot(hs.h, hs.s) : 'display:none'}"></i></div>
+        <div><p class="hint">Touche le cercle pour choisir la couleur de ton maillot. Elle se voit sur les podiums et sur ta fiche.</p>
+          ${hex ? '<button class="btn small sec" data-act="shirtreset">Couleur du tournoi</button>' : ''}</div>
+      </div>
+    </div>
+  </section>`;
+}
+// La fiche d'un joueur (un appui sur son nom dans le classement).
+function playerModal(uid) {
+  const g = generalRank(uid);
+  if (!g) return '';
+  const r = g.row, circ = c => (S.circuitBoard || []).find(x => x.user_id === uid && x.circuit === c);
+  const rows = [['WTT', circ('WTT')], ['Pro A', circ('PRO_A')]].filter(x => x[1]);
+  const plural = (n, w) => `${n} ${w}${n > 1 ? 's' : ''}`;
+  return `
+  <div class="modalbackdrop" data-act="closeplayer">
+    <div class="modal playerx" role="dialog" aria-modal="true" aria-label="Fiche de ${esc(r.pseudo)}" data-act="stop" style="${themeVarsCss('ALL')}">
+      <button class="modalclose" data-act="closeplayer" aria-label="Fermer">${ico('x')}</button>
+      <div class="modalhead">
+        <div class="pod3d" data-kind="player" data-uid="${esc(uid)}"></div>
+        <div class="modalname">${avatarHtml(uid, r.pseudo)}${esc(r.pseudo)}</div>
+        <div class="modalsub">${g.rank}${g.rank === 1 ? 'er' : 'e'} du classement général, sur ${g.n}</div>
+        <div class="modalstats">
+          <div class="statbox"><b>${r.total_points}</b><span>points</span></div>
+          <div class="statbox"><b>${r.exact_scores}</b><span>${r.exact_scores > 1 ? 'scores exacts' : 'score exact'}</span></div>
+          <div class="statbox"><b>${r.good_winners}/${r.matches_played}</b><span>bons vainqueurs</span></div>
+        </div>
+      </div>
+      ${rows.length ? `<div class="modalbody"><section class="modalsec">
+        <h3><span class="secdot" aria-hidden="true"></span>Par circuit</h3>
+        <ul class="cmlist">${rows.map(([l, x]) => `<li class="cmrow"><div class="cmopp">${l}</div><div class="cmmeta"><span class="cmdate">${plural(x.total_points, 'point')} · ${x.exact_scores} ${x.exact_scores > 1 ? 'scores exacts' : 'score exact'}</span></div></li>`).join('')}</ul>
+      </section></div>` : ''}
+    </div>
+  </div>`;
 }
 
 function createMedalEngine(THREE, RoomEnvironment) {
@@ -5745,7 +5916,7 @@ function accountView() {
   if (finished === null) return '<div class="loading">Chargement…</div>';
 
   if (!finished.length) {
-    return `<header class="pagehead"><h1>Mon compte</h1><p>Pas encore de match terminé sur lequel tu as pronostiqué : tes statistiques apparaissent ici dès que tes premiers pronos sont jugés.</p></header>${settingsPanel()}`;
+    return `<header class="pagehead"><h1>Mon compte</h1><p>Pas encore de match terminé sur lequel tu as pronostiqué : tes statistiques apparaissent ici dès que tes premiers pronos sont jugés.</p></header>${myCharPanel()}${settingsPanel()}`;
   }
 
   const n = finished.length;
@@ -5946,7 +6117,7 @@ function accountView() {
     <h3>Forme récente</h3>
     <ul class="cmlist" style="margin-top:8px">${recentRows}</ul>
   </section>
-  ${settingsPanel()}
+  ${myCharPanel()}${settingsPanel()}
   </div>`;
 }
 // Réglages et déconnexion (sur mobile, c'est ici qu'on se déconnecte).
@@ -6263,7 +6434,7 @@ function recapModal(key, circuit) {
       </section>
       ${podium.length ? `<section class="rx-step rx-pod" style="--d:2800ms">
         <h3>Podium du tournoi</h3>
-        <div class="rx-pod3d"></div>
+        <div class="pod3d" data-kind="recap"></div>
         <div class="podium rx-podium">${pcol(podium[1], 2, 3050)}${pcol(podium[0], 1, 2950)}${pcol(podium[2], 3, 3150)}</div>
       </section>` : ''}
       ${newBadges.length ? `<section class="rx-step rx-badges" style="--d:3800ms">
@@ -6951,6 +7122,11 @@ $app.addEventListener('click', async e => {
   else if (act === 'rankgender') { S.rankGender = v; navigate(render); }
   else if (act === 'competitor') { S.openCompetitor = id; keepRender(); }
   else if (act === 'closecompetitor') { S.openCompetitor = null; keepRender(); }
+  else if (act === 'player') { S.openPlayer = el.dataset.uid; keepRender(); }
+  else if (act === 'closeplayer') { S.openPlayer = null; keepRender(); }
+  else if (act === 'shirtreset') {
+    if (await saveShirt(null)) { const p = SCENE3D.podium; if (p && p.api && p.cur && p.cur.startsWith('me:')) p.api.podium.setShirt(0, null); keepRender(); }
+  }
   else if (act === 'badge') { S.openBadge = el.dataset.badge; S._newBadge = null; playSound('tick'); keepRender(); }
   else if (act === 'closebadge') closeBadge();
   else if (act === 'spider') spiderUp();
@@ -6969,6 +7145,7 @@ $app.addEventListener('click', async e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && S.openCompetitor) { S.openCompetitor = null; keepRender(); }
+  if (e.key === 'Escape' && S.openPlayer) { S.openPlayer = null; keepRender(); }
   if (e.key === 'Escape' && S.openBadge) closeBadge();
   if (e.key === 'Escape' && S.openRecap) { stopRecapRun(); S.openRecap = null; keepRender(); }
 });
@@ -6976,6 +7153,22 @@ $app.addEventListener('submit', e => {
   e.preventDefault();
   if (e.target.id === 'authform') submitAuth(e.target);
   else if (e.target.id === 'addmatch') addMatch(e.target);
+});
+$app.addEventListener('pointerdown', e => {
+  const w = e.target.closest('.wheel');
+  if (!w) return;
+  e.preventDefault(); wheelPick(e, w);
+  const move = ev => wheelPick(ev, w), up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); saveShirt(w.dataset.hex); };
+  window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+});
+let WHEEL_SAVE = null;
+$app.addEventListener('keydown', e => {
+  const w = e.target.closest && e.target.closest('.wheel');
+  const d = w && { ArrowLeft: [-10, 0], ArrowRight: [10, 0], ArrowUp: [0, .1], ArrowDown: [0, -.1] }[e.key];
+  if (!d) return;
+  e.preventDefault();
+  wheelSet(w, ((+w.dataset.h || 0) + d[0] + 360) % 360, Math.max(0, Math.min(1, +w.dataset.s + d[1])));
+  clearTimeout(WHEEL_SAVE); WHEEL_SAVE = setTimeout(() => saveShirt(w.dataset.hex), 600);
 });
 $app.addEventListener('change', e => {
   if (e.target.id === 'adm-circuit') { S.adminCircuit = e.target.value; keepRender(); }
