@@ -1375,6 +1375,121 @@ html.halloween .pod3d:has(> .scene3d[data-ready]){background:#09111C}
   box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
 .wheel i{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px #fff,0 1px 6px rgba(0,0,0,.45);pointer-events:none}
 @media (min-width:700px){ .mychar-in{grid-template-columns:minmax(0,1fr) 320px;align-items:center} }
+/* --- Vainqueur du tournoi : sous l'en-tête de chaque tournoi WTT --- */
+.wpicks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;margin:8px 0 4px}
+.wpick{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;border:0;border-radius:10px;padding:12px 14px 13px;
+  background:var(--surface);color:var(--ink);box-shadow:var(--lift);font:inherit}
+.wpick:hover{background:var(--surface-2)}
+.wpick .ico{font-size:24px;color:var(--gold);margin-top:3px}
+.wpick-t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.wpick-t small{font:500 12.5px/1.2 var(--f-text);color:var(--ink-2)}
+.wpick-t b{font:700 18px/1.15 var(--f-head);color:var(--ink);overflow-wrap:anywhere}
+.wpick-t span{font:400 13px/1.35 var(--f-text);color:var(--ink-2)}
+.wpick.todo b{color:var(--red)}
+.wpick.empty b,.wpick.lost b{color:var(--ink-2)}
+.wpick.lost .ico,.wpick.empty .ico{color:var(--ink-3)}
+.wpick.won .wpick-t span{color:var(--ink);font-weight:600}
+/* La feuille de choix : la tête de série devient la balle blanche une fois choisie. */
+.winx .modalname{font-size:27px;margin-top:6px}
+.winx .modalhead .modalsub:first-child{margin-top:0}
+.wlist{list-style:none;margin:12px 0 0;padding:0}
+.wlist > li{border-top:1px solid var(--line-2)}
+.wrow{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:10px 6px;
+  background:none;border:0;border-radius:6px;text-align:left;color:var(--ink);font:inherit}
+button.wrow:hover{background:var(--surface-2)}
+.wseed{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface-2);
+  font:700 italic 15px/1 var(--f-head);color:var(--ink-2)}
+.wname{display:flex;align-items:center;gap:8px;min-width:0;font:600 16.5px/1.2 var(--f-head)}
+.wname small{display:block;font:400 12.5px/1.3 var(--f-text);color:var(--ink-2);margin-top:2px}
+.wpts{font:600 13px/1 var(--f-text);color:var(--ink-2);white-space:nowrap}
+.wrow.on{background:color-mix(in srgb,var(--table) 11%,var(--surface))}
+.wrow.on .wseed{background:#fff;color:var(--table);box-shadow:inset 0 0 0 2px var(--table),0 1px 3px rgba(18,26,38,.3)}
+.wrow.on .wpts{color:var(--ink)}
+.wrow.out{opacity:.55}
+.wrow.champ .wpts{color:var(--ink);font-weight:700}
+
+/* --- Le face-à-face, sur une table vue de dessus : le filet au milieu --- */
+.duel{position:relative;margin:14px 0 0;padding:14px 14px 12px;border-radius:6px;background:var(--table);color:var(--on-table);
+  box-shadow:inset 0 0 0 4px var(--table),inset 0 0 0 6px var(--table-line);isolation:isolate}
+.duel::before{content:"";position:absolute;z-index:0;top:6px;bottom:6px;left:50%;width:4px;margin-left:-2px;
+  background:linear-gradient(90deg,rgba(0,0,0,.2),rgba(255,255,255,.95) 30% 70%,rgba(0,0,0,.2))}
+.duel-names{position:relative;z-index:1;display:flex;justify-content:space-between;gap:12px;margin:2px 4px 8px;font:700 17px/1.1 var(--f-head)}
+.duel-names span{display:inline-flex;align-items:center;gap:8px;min-width:0;max-width:45%;overflow-wrap:anywhere}
+.duel-names span:last-child{flex-direction:row-reverse;text-align:right}
+.duel-names .av{width:26px;height:26px;font-size:13px;box-shadow:0 0 0 2px rgba(255,255,255,.85)}
+.duel-row{position:relative;z-index:1;display:grid;grid-template-columns:62px minmax(0,1fr) 62px;grid-template-areas:"k k k" "a bars b";
+  align-items:center;row-gap:5px;column-gap:8px;padding:7px 4px}
+.duel-k{grid-area:k;justify-self:center;padding:2px 9px;border-radius:3px;background:var(--table);font:500 12.5px/1.25 var(--f-text);color:var(--on-table-2);text-align:center}
+.duel-v{display:inline-flex;align-items:center;gap:6px;font:700 italic 22px/1 var(--f-head);color:var(--on-table-2);white-space:nowrap}
+.duel-v.a{grid-area:a;justify-content:flex-start}
+.duel-v.b{grid-area:b;justify-content:flex-end}
+.duel-v.win{color:var(--on-table)}
+.duel-v.win::after,.duel-v.b.win::before{content:"";width:10px;height:10px;border-radius:50%;flex:none;
+  background:radial-gradient(circle at 35% 30%,#fff 0 35%,#E9ECEF 100%);box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.duel-v.b.win::after{content:none}
+.duel-bars{grid-area:bars;position:relative;height:10px}
+.duel-bars i{position:absolute;top:0;bottom:0;border-radius:2px}
+.duel-bars i.a{right:calc(50% + 5px);width:calc((50% - 5px) * var(--w));background:#fff;transform-origin:right}
+.duel-bars i.b{left:calc(50% + 5px);width:calc((50% - 5px) * var(--w));background:rgba(255,255,255,.5);transform-origin:left}
+@media (prefers-reduced-motion:no-preference){ .duel-bars i{animation:growx .8s var(--ease-out) .15s both} }
+.duelverdict{margin:12px 0 0;font:500 14.5px/1.45 var(--f-text);color:var(--ink)}
+.duelverdict.plain{font-weight:400;color:var(--ink-2)}
+.modalsec .duel{margin-top:10px}
+
+/* --- D'où viennent tes points : une barre découpée par origine --- */
+.mix{display:flex;gap:2px;height:16px;margin:14px 0 4px;border-radius:4px;overflow:hidden}
+.mix i{display:block;min-width:3px}
+.mixlegend{list-style:none;margin:10px 0 0;padding:0}
+.mixlegend li{display:grid;grid-template-columns:12px minmax(0,1fr) auto 42px;align-items:baseline;gap:4px 10px;padding:9px 0;border-top:1px solid var(--line-2)}
+.mixlegend li > i{width:12px;height:12px;border-radius:3px;align-self:center}
+.mixlegend span{font:600 15px/1.2 var(--f-head);color:var(--ink)}
+.mixlegend span small{display:block;font:400 12.5px/1.35 var(--f-text);color:var(--ink-2);margin-top:2px}
+.mixlegend b{font:700 italic 20px/1 var(--f-head);color:var(--ink);text-align:right;white-space:nowrap}
+.mixlegend b small{font:500 11.5px/1 var(--f-text);font-style:normal;color:var(--ink-2);margin-left:2px}
+.mixlegend em{font:500 13px/1 var(--f-text);font-style:normal;color:var(--ink-2);text-align:right}
+
+/* --- Ta grille des scores --- */
+.sglegend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:12px 0 2px;font:500 13px/1 var(--f-text);color:var(--ink-2)}
+.sglegend i{display:inline-block;width:14px;height:7px;border-radius:2px;margin-right:6px;vertical-align:1px}
+.sglegend i.you,.sg-bars i.you{background:var(--table)}
+.sglegend i.real,.sg-bars i.real{background:var(--ink-3)}
+.sgrid{list-style:none;margin:6px 0 0;padding:0}
+.sgrid li{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) 46px;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line-2)}
+.sg-k{font:600 15px/1.2 var(--f-head);color:var(--ink)}
+.sg-k small{display:block;font:400 12.5px/1.3 var(--f-text);color:var(--ink-2);margin-top:1px}
+.sg-bars{display:grid;gap:4px}
+.sg-bars i{display:block;height:7px;border-radius:2px;min-width:2px}
+.sg-v{display:grid;text-align:right;line-height:1.15}
+.sg-v b{font:700 italic 17px/1.1 var(--f-head);color:var(--ink)}
+.sg-v small{font:500 12.5px/1.2 var(--f-text);color:var(--ink-2)}
+
+/* --- Classement du mois --- */
+.monthline{margin:12px 2px 14px;font:400 15px/1.4 var(--f-text);color:var(--ink-2)}
+.monthline b{font:700 20px/1 var(--f-head);color:var(--ink);margin-right:2px}
+.tab-board .journeerow{margin:0 0 4px}
+.racepanel{margin-top:14px}
+.race{position:relative;height:190px;margin:16px 0 0;padding-right:86px}
+.raceplot{position:relative;height:100%}
+.race svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.race line{stroke:var(--line-2);stroke-width:1;vector-effect:non-scaling-stroke}
+.race polyline{fill:none;stroke:var(--line);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.race polyline.lead{stroke:var(--ink-2);stroke-width:2}
+.race polyline.me{stroke:var(--table);stroke-width:3.5}
+.racelab{position:absolute;right:0;width:80px;transform:translateY(-50%);display:flex;align-items:baseline;gap:5px;
+  font:600 13px/1.1 var(--f-text);color:var(--ink-2);white-space:nowrap;overflow:hidden}
+.racelab b{font:700 italic 17px/1 var(--f-head);color:var(--ink)}
+.racelab.me::before{content:"";width:10px;height:4px;border-radius:2px;background:var(--table);flex:none;align-self:center}
+.raceaxis{display:flex;justify-content:space-between;padding-right:86px;margin-top:8px;font:500 12.5px/1 var(--f-text);color:var(--ink-2)}
+.champrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.champwho{display:flex;align-items:center;gap:10px;min-width:0}
+.champwho .av{width:34px;height:34px;font-size:16px;box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--gold)}
+.champwho .av + .av{margin-left:-14px}
+.champwho b{display:block;font:600 16px/1.2 var(--f-head);color:var(--ink)}
+.champwho small{display:block;font:400 13px/1.3 var(--f-text);color:var(--ink-2)}
+.modalsub .champline{display:block;margin-top:3px}
+
+html.halloween .race polyline.me,html.halloween .racelab.me::before{stroke:var(--red);background:var(--red)}
+html.halloween .sglegend i.you,html.halloween .sg-bars i.you{background:color-mix(in srgb,var(--table) 55%,white)}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -1745,7 +1860,8 @@ const S = {
   session: null, pseudo: '', isAdmin: false,
   tab: 'matches', circuit: 'ALL', view: 'upcoming',
   matches: [], competitors: {}, myPreds: {},
-  board: null, boardScope: 'ALL',
+  board: null, boardScope: 'ALL', boardMonth: null, // boardMonth : mois affiché dans « Ce mois » (AAAA-MM)
+  winnerPicks: null, winnerPoints: [], openWin: null, // vainqueur du tournoi (null = fonction pas encore activée dans la base)
   friends: {}, openFriends: {},
   authMode: 'login', adminCircuit: 'WTT', bootError: '',
   _freshMatches: true, // vrai à l'ouverture : la toute première liste a le droit d'entrer en scène
@@ -1986,6 +2102,8 @@ function friendlyError(e) {
   if (/at least \d+ characters/i.test(msg)) return 'Le mot de passe doit faire au moins 6 caractères.';
   if (/Email not confirmed/i.test(msg)) return "Ton email n'est pas encore confirmé. Vérifie ta boîte mail.";
   if (/Score impossible/i.test(msg)) return msg;
+  if (/winner_picks/i.test(msg) && /row-level security/i.test(msg)) return 'Trop tard : le tableau a commencé, les choix sont figés.';
+  if (/winner_pick/i.test(msg)) return "Le vainqueur du tournoi n'est pas encore activé : il faut lancer le script ajout-vainqueur-tournoi.sql dans Supabase.";
   if (/row-level security/i.test(msg)) return "Action refusée : le match a peut-être déjà commencé, ou tu n'as pas les droits.";
   if (/duplicate key/i.test(msg)) return 'Cet élément existe déjà.';
   if (/shirt_color/i.test(msg)) return "La couleur du maillot n'est pas encore activée : il faut lancer le script ajout-couleur-maillot.sql dans Supabase.";
@@ -2395,6 +2513,7 @@ async function loadAll() {
   loadAvatars().then(render);
   loadWorldRankings().then(() => { if (S.tab === 'rankings') render(); });
   loadAccount().then(render); // idem : pour la pastille de série sur les cartes de match, sans bloquer la connexion
+  loadWinners().then(render);
 }
 // Vrai classement mondial WTT (top 100 de chaque tableau), enregistré par le
 // robot de synchronisation dans world_rankings (voir
@@ -2448,7 +2567,9 @@ async function removeAvatar() {
   toast('Photo retirée'); keepRender();
 }
 async function loadBoard() {
-  const q = S.boardScope === 'ALL'
+  // « Ce mois » se calcule dans l'appli à partir des pronos jugés de tout le monde.
+  if (S.boardScope === 'MONTH' && !S.allJudgedPreds) await loadAccount();
+  const q = S.boardScope === 'ALL' || S.boardScope === 'MONTH'
     ? sb.from('leaderboard').select('*')
     : sb.from('leaderboard_by_circuit').select('*').eq('circuit', S.boardScope);
   const r = await q.order('total_points', { ascending: false }).order('exact_scores', { ascending: false });
@@ -2600,7 +2721,7 @@ function render() {
         <main class="tab-${S.tab}${Date.now() - (S._tabAt || 0) < 1500 ? ' fresh' : ''}">${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
         <aside class="side" aria-label="En un coup d'œil">${sideView()}</aside>
       </div>
-    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}`;
+    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}${S.openWin ? winnerModal(S.openWin) : ''}`;
   document.documentElement.classList.toggle('noscroll', !!S.openRecap);
   if (S.openRecap && !S.recapAnimPlayed) { S.recapAnimPlayed = true; S._podRun = (S._podRun || 0) + 1; mountRecapAnimation(); }
   afterRender();
@@ -2792,6 +2913,7 @@ function sideView() {
       <li><b>×2 à ×4</b><span>avec 1 à 3 balles, si gagnant</span></li>
       <li><b>+75 %</b><span>au plus, grâce à la série</span></li>
       <li><b>+5 pts</b><span>au plus, avec l'outsider (WTT)</span></li>
+      <li><b>5 à 15</b><span>pour le vainqueur du tournoi (WTT)</span></li>
     </ul>
     <button class="linkbtn" data-act="tuto">Revoir le tuto</button>
   </section>`);
@@ -2920,6 +3042,7 @@ function matchesView() {
       g.matches.push(m);
     }
     let i = 0;
+    const seenWin = new Set(); // un tournoi coupé en deux groupes n'affiche ses choix qu'une fois
     body = groups.map(g => {
       const n = g.matches.length;
       let lastDay = '', rows = '';
@@ -2931,7 +3054,7 @@ function matchesView() {
       const m0 = g.matches[0];
       const tierName = m0.circuit === 'PRO_A' ? 'Pro A' : (m0.tier || 'WTT');
       return `<section class="compgroup" style="${themeVarsCss(themeKeyFor(m0))}"><div class="complabel">
-        <div><h2 style="margin:0"><b>${esc(g.competition)}</b></h2><small><span class="tier"><i aria-hidden="true"></i>${esc(tierName)}</span><span>${n} match${n > 1 ? 's' : ''}</span></small></div>${groupBallesBudgetHtml(g.matches)}</div>
+        <div><h2 style="margin:0"><b>${esc(g.competition)}</b></h2><small><span class="tier"><i aria-hidden="true"></i>${esc(tierName)}</span><span>${n} match${n > 1 ? 's' : ''}</span></small></div>${groupBallesBudgetHtml(g.matches)}</div>${m0.circuit === 'WTT' && !seenWin.has(g.competition) ? (seenWin.add(g.competition), winnerStrip(g.competition)) : ''}
         <div class="complist">${rows}</div></section>`;
     }).join('');
   }
@@ -3265,23 +3388,12 @@ async function toggleFriends(id) {
 
 /* --- Classement des amis : vraie table de standings, podium en évidence. --- */
 function boardView() {
-  const seg = segRow([['ALL', 'Général'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.boardScope, 'boardscope');
+  const seg = segRow([['ALL', 'Général'], ['MONTH', 'Ce mois'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.boardScope, 'boardscope');
   const exportBtn = `<button class="btn small sec" data-act="exportboard">${ico('share-network')}Partager en image</button>`;
   if (S.board === null) return seg + '<div class="loading">Chargement…</div>';
+  if (S.boardScope === 'MONTH') return `<div class="boardtools">${seg}${exportBtn}</div>` + monthView();
   if (!S.board.length) return seg + `<div class="empty">Pas encore de points. Le classement se remplit dès que les premiers matchs sont terminés.</div>${rules()}`;
-  let prev = null, rank = 0;
-  const rows = S.board.map((r, i) => {
-    const key = r.total_points + '/' + r.exact_scores;
-    if (key !== prev) { rank = i + 1; prev = key; }
-    const me = r.user_id === S.session.user.id;
-    const topClass = rank === 1 ? ' top1' : rank === 2 ? ' top2' : rank === 3 ? ' top3' : '';
-    return `<tr class="${me ? 'me' : ''}">
-      <td class="rankcell${topClass}">${rankInner(rank)}</td>
-      <td class="namecell"><button class="lbname lbbtn" data-act="player" data-uid="${esc(r.user_id)}" aria-label="Fiche de ${esc(r.pseudo)}">${avatarHtml(r.user_id, r.pseudo)}<span class="lbpseudo">${esc(r.pseudo)}</span>${me ? ' <span class="me-tag">toi</span>' : ''}</button>
-        <div class="lbsub">${r.good_winners}/${r.matches_played} bon${r.good_winners > 1 ? 's' : ''} vainqueur${r.good_winners > 1 ? 's' : ''} · ${r.exact_scores} exact${r.exact_scores > 1 ? 's' : ''}</div></td>
-      <td class="ptscell">${r.total_points}<small>pts</small></td></tr>`;
-  }).join('');
-  return `<div class="boardtools">${seg}${exportBtn}</div>${boardPodium(S.board)}<table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>` + rules();
+  return `<div class="boardtools">${seg}${exportBtn}</div>${boardPodium(S.board)}${standingsTable(S.board)}` + rules();
 }
 // Rang dans un tableau : pastille de médaille pour le podium.
 const rankInner = r => (r >= 1 && r <= 3) ? `<span class="medal">${r}</span>` : r;
@@ -3303,7 +3415,7 @@ function boardPodium(board) {
   </div>`;
   return `<div class="boardpod"><div class="pod3d" data-kind="board"></div><div class="podium" aria-label="Podium">${col(top[1], 2)}${col(top[0], 1)}${col(top[2], 3)}</div></div>`;
 }
-const rules = () => `<p class="rules">Barème : 1 point pour le bon vainqueur, 3 points pour le score exact. En WTT, un pronostic gagnant sur l'outsider (moins bien classé au tirage au sort) rapporte un bonus, d'autant plus grand que l'écart de tête de série est important (jusqu'à +5 points). Bonus de série : plus tu enchaînes les pronos gagnants d'affilée, plus le prochain rapporte gros (jusqu'à +75 % à partir d'une grosse série) — vois l'onglet "Mon compte" pour ta série en cours. Balles : à chaque tournoi WTT tu reçois 4 balles (2 par journée de Pro A) à miser sur tes pronos, 3 au maximum sur un même match ; si le prono est gagnant, chaque balle ajoute ×1 (1 balle = ×2, 2 = ×3, 3 = ×4), sinon elles sont perdues. Le bonus de série et les balles s'additionnent. En cas d'égalité au classement, le plus de scores exacts passe devant.</p>`;
+const rules = () => `<p class="rules">Barème : 1 point pour le bon vainqueur, 3 points pour le score exact. En WTT, un pronostic gagnant sur l'outsider (moins bien classé au tirage au sort) rapporte un bonus, d'autant plus grand que l'écart de tête de série est important (jusqu'à +5 points). Bonus de série : plus tu enchaînes les pronos gagnants d'affilée, plus le prochain rapporte gros (jusqu'à +75 % à partir d'une grosse série) — vois l'onglet "Mon compte" pour ta série en cours. Balles : à chaque tournoi WTT tu reçois 4 balles (2 par journée de Pro A) à miser sur tes pronos, 3 au maximum sur un même match ; si le prono est gagnant, chaque balle ajoute ×1 (1 balle = ×2, 2 = ×3, 3 = ×4), sinon elles sont perdues. Le bonus de série et les balles s'additionnent. Vainqueur du tournoi (WTT) : avant le premier match d'un tableau, choisis qui va le gagner ; 5 points si c'est une tête de série 1 ou 2, 10 points de 3 à 8, 15 points au-delà ou sans tête de série. En cas d'égalité au classement, le plus de scores exacts passe devant.</p>`;
 
 /* --- Classements WTT (mondial, messieurs/dames séparés) et Pro A
    (championnat) : à distinguer du classement des amis (points de
@@ -5403,9 +5515,9 @@ function podiumSlotState(slot) {
       delay: document.querySelector('.recapx.intro') ? 2.9 : .3 };
   }
   if (kind === 'board') {
-    const b = (S.board || []).slice(0, 3);
+    const b = (boardRows() || []).slice(0, 3);
     if (!b.length) return null;
-    return { key: `board:${S.boardScope}:${S._tabAt}:${b.map(r => r.user_id + r.total_points).join()}`,
+    return { key: `board:${S.boardScope}${S.boardScope === 'MONTH' ? S.boardMonth : ''}:${S._tabAt}:${b.map(r => r.user_id + r.total_points).join()}`,
       theme: S.boardScope === 'PRO_A' ? THEME.PRO_A : S.boardScope === 'WTT' ? THEME.WTT_DEFAULT : THEME.ALL,
       players: b.map(r => scenePlayer(r.user_id, r.pseudo, r.total_points)), delay: .3 };
   }
@@ -5507,17 +5619,17 @@ function playerModal(uid) {
       <div class="modalhead">
         <div class="pod3d" data-kind="player" data-uid="${esc(uid)}"></div>
         <div class="modalname">${avatarHtml(uid, r.pseudo)}${esc(r.pseudo)}</div>
-        <div class="modalsub">${g.rank}${g.rank === 1 ? 'er' : 'e'} du classement général, sur ${g.n}</div>
+        <div class="modalsub">${g.rank}${g.rank === 1 ? 'er' : 'e'} du classement général, sur ${g.n}${(c => c.length ? `<span class="champline">${c.length > 1 ? `A gagné ${c.length} classements du mois` : 'A gagné le classement du mois'} : ${c.map(x => monthWord(x.k)).join(', ')}</span>` : '')(champCount(uid))}</div>
         <div class="modalstats">
           <div class="statbox"><b>${r.total_points}</b><span>points</span></div>
           <div class="statbox"><b>${r.exact_scores}</b><span>${r.exact_scores > 1 ? 'scores exacts' : 'score exact'}</span></div>
           <div class="statbox"><b>${r.good_winners}/${r.matches_played}</b><span>bons vainqueurs</span></div>
         </div>
       </div>
-      ${rows.length ? `<div class="modalbody"><section class="modalsec">
+      ${(rows.length || faceToFace(uid)) ? `<div class="modalbody">${faceToFace(uid)}${rows.length ? `<section class="modalsec">
         <h3><span class="secdot" aria-hidden="true"></span>Par circuit</h3>
         <ul class="cmlist">${rows.map(([l, x]) => `<li class="cmrow"><div class="cmopp">${l}</div><div class="cmmeta"><span class="cmdate">${plural(x.total_points, 'point')} · ${x.exact_scores} ${x.exact_scores > 1 ? 'scores exacts' : 'score exact'}</span></div></li>`).join('')}</ul>
-      </section></div>` : ''}
+      </section>` : ''}</div>` : ''}
     </div>
   </div>`;
 }
@@ -5870,6 +5982,437 @@ function badgeModal(id) {
 
 // Rangée compacte façon "laddrow" pour un groupe tournoi/journée (réutilisée
 // par le panneau "Par tournoi / saison" de "Mon compte").
+/* =============================================================================
+   Vainqueur du tournoi, classement du mois et statistiques en plus.
+   Tout est calculé ici avec le même barème que la base, à partir des données
+   déjà chargées (S.allJudgedPreds, S.myHistory) et des choix de vainqueur.
+   ========================================================================== */
+
+// --- Vainqueur du tournoi (WTT) ---------------------------------------------
+// Avant chaque tournoi WTT, chacun désigne le vainqueur du simple messieurs et
+// du simple dames. Modifiable jusqu'au premier match du tableau, puis figé et
+// visible des amis. Points une fois la finale jouée, mêmes règles que la base
+// (voir ajout-vainqueur-tournoi.sql) : 5, 10 ou 15 selon la tête de série du gagnant.
+const WIN_DRAWS = ['Simple messieurs', 'Simple dames'];
+const drawOf = round => String(round || '').split(', ')[0];
+const winnerPtsForSeed = seed => seed >= 1 && seed <= 2 ? 5 : seed >= 3 && seed <= 8 ? 10 : 15;
+async function loadWinners() {
+  try {
+    const [p, w] = await Promise.all([
+      fetchAllRows(() => sb.from('winner_picks').select('user_id,competition,draw,pick').order('id')),
+      fetchAllRows(() => sb.from('winner_pick_points').select('user_id,competition,draw,pick,winner,points,final_at').order('final_at').order('user_id')),
+    ]);
+    // Script SQL pas encore lancé : la fonction reste cachée, rien d'autre ne change.
+    S.winnerPicks = p.error ? null : (p.data || []);
+    S.winnerPoints = w.error ? [] : (w.data || []);
+  } catch (e) { S.winnerPicks = null; S.winnerPoints = []; }
+}
+const pickOf = (uid, comp, draw) => (S.winnerPicks || []).find(w => w.user_id === uid && w.competition === comp && w.draw === draw) || null;
+const pseudoMap = () => { const o = {}; (S.accountBoard || S.board || []).forEach(r => { o[r.user_id] = r.pseudo; }); return o; };
+// Un tableau d'un tournoi : ses joueurs (tête de série, éliminé ou pas), s'il
+// est encore ouvert aux choix, quand il ferme, et son vainqueur une fois la finale jouée.
+function drawInfo(competition, draw) {
+  const ms = S.matches.filter(m => m.circuit === 'WTT' && m.competition === competition && drawOf(m.round) === draw && m.status !== 'cancelled');
+  if (!ms.length) return null;
+  const players = new Map();
+  const add = (name, seed, cid) => {
+    if (!name) return;
+    const p = players.get(name) || { name, seed: null, cid: null, out: null };
+    if (seed != null && (p.seed == null || seed < p.seed)) p.seed = seed;
+    if (cid && !p.cid) p.cid = cid;
+    players.set(name, p);
+  };
+  let closesAt = Infinity, final = null;
+  for (const m of ms) {
+    add(m.side_a, m.seed_a, m.competitor_a_id); add(m.side_b, m.seed_b, m.competitor_b_id);
+    closesAt = Math.min(closesAt, new Date(m.starts_at).getTime());
+  }
+  for (const m of ms) {
+    if (m.status !== 'finished') continue;
+    const aWon = m.score_a > m.score_b, loser = players.get(aWon ? m.side_b : m.side_a);
+    if (loser) loser.out = String(m.round || '').split(', ').slice(1).join(', ');
+    if (/, finale$/.test(m.round || '')) final = { winner: aWon ? m.side_a : m.side_b, seed: aWon ? m.seed_a : m.seed_b };
+  }
+  const list = [...players.values()].sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999) || a.name.localeCompare(b.name));
+  return { competition, draw, open: !ms.some(isLocked), closesAt, players: list, final };
+}
+// « demain à 10 h », « samedi 25 oct. à 9 h 30 »
+function fmtClose(t) {
+  const d = new Date(t), now = new Date();
+  const days = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 864e5);
+  const day = days === 0 ? "aujourd'hui" : days === 1 ? 'demain' : d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' });
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${day} à ${d.getHours()}\u00a0h${mm === '00' ? '' : '\u00a0' + mm}`;
+}
+// Sous l'en-tête d'un tournoi WTT (onglet Matchs) : ton choix pour chaque tableau.
+function winnerStrip(competition) {
+  if (!S.winnerPicks || !S.session) return '';
+  const uid = S.session.user.id;
+  const items = WIN_DRAWS.map(d => drawInfo(competition, d)).filter(Boolean).map(info => {
+    const fem = info.draw === 'Simple dames', mine = pickOf(uid, competition, info.draw);
+    const p = mine && info.players.find(x => x.name === mine.pick);
+    const ifWins = `+${winnerPtsForSeed(p && p.seed)} pts ${fem ? 'si elle gagne' : "s'il gagne"}`;
+    let name, sub, cls = '';
+    if (info.final) {
+      if (!mine) { name = 'Pas de choix'; sub = `${info.final.winner} a gagné`; cls = ' empty'; }
+      else if (mine.pick === info.final.winner) { name = mine.pick; sub = `Trouvé : +${winnerPtsForSeed(info.final.seed)} pts`; cls = ' won'; }
+      else { name = mine.pick; sub = `Raté : ${info.final.winner} a gagné`; cls = ' lost'; }
+    } else if (info.open) {
+      name = mine ? mine.pick : 'Choisis ton vainqueur';
+      sub = mine ? `${ifWins}, modifiable jusqu'à ${fmtClose(info.closesAt)}` : `De 5 à 15 pts à gagner, jusqu'à ${fmtClose(info.closesAt)}`;
+      if (!mine) cls = ' todo';
+    } else if (!mine) { name = 'Pas de choix'; sub = 'Les choix sont fermés : vois ceux des amis'; cls = ' empty'; }
+    else if (p && p.out) { name = mine.pick; sub = `${fem ? 'Éliminée' : 'Éliminé'} en ${p.out}`; cls = ' lost'; }
+    else { name = mine.pick; sub = `Encore en lice, ${ifWins}`; }
+    return `<button class="wpick${cls}" data-act="wpick" data-comp="${esc(competition)}" data-draw="${esc(info.draw)}">
+      ${ico(cls === ' won' ? 'trophy.f' : 'trophy')}<span class="wpick-t"><small>Vainqueur du ${esc(info.draw.toLowerCase())}</small><b>${esc(name)}</b><span>${esc(sub)}</span></span></button>`;
+  });
+  return items.length ? `<div class="wpicks">${items.join('')}</div>` : '';
+}
+// La feuille de choix d'un tableau (ou, une fois figé, les choix de tout le monde).
+function winnerModal(o) {
+  const info = drawInfo(o.comp, o.draw);
+  if (!info || !S.winnerPicks) return '';
+  const uid = S.session.user.id, mine = pickOf(uid, o.comp, o.draw), fem = o.draw === 'Simple dames';
+  const m0 = S.matches.find(m => m.circuit === 'WTT' && m.competition === o.comp);
+  const pseudoOf = pseudoMap(), byPick = {};
+  for (const w of S.winnerPicks) if (w.competition === o.comp && w.draw === o.draw) (byPick[w.pick] || (byPick[w.pick] = [])).push(w.user_id === uid ? 'toi' : (pseudoOf[w.user_id] || '?'));
+  const row = p => {
+    const on = !!mine && mine.pick === p.name, c = p.cid && S.competitors[p.cid], who = byPick[p.name];
+    const status = info.final && info.final.winner === p.name ? (fem ? 'Gagnante' : 'Gagnant') : p.out ? (fem ? 'Éliminée' : 'Éliminé') : '';
+    const inner = `<span class="wseed" title="Tête de série">${p.seed ?? '–'}</span>
+      <span class="wname">${c ? flagHtml(c) : ''}<span>${esc(p.name)}${!info.open && who ? `<small>${esc(who.join(', '))}</small>` : ''}</span></span>
+      <span class="wpts">${status || `+${winnerPtsForSeed(p.seed)} pts`}</span>`;
+    return info.open
+      ? `<li><button class="wrow${on ? ' on' : ''}" data-act="wsave" data-comp="${esc(o.comp)}" data-draw="${esc(o.draw)}" data-pick="${esc(p.name)}" aria-pressed="${on}">${inner}</button></li>`
+      : `<li class="wrow${on ? ' on' : ''}${p.out ? ' out' : ''}${status && !p.out ? ' champ' : ''}">${inner}</li>`;
+  };
+  const nobody = !info.open && !Object.keys(byPick).length;
+  const sub = info.final ? `${info.final.winner} a gagné le tableau.`
+    : info.open ? `Tu peux changer d'avis jusqu'à ${fmtClose(info.closesAt)}, au premier match du tableau.`
+    : 'Les choix sont figés depuis le premier match. Voici ceux de tout le monde.';
+  return `
+  <div class="modalbackdrop" data-act="closewin">
+    <div class="modal winx" role="dialog" aria-modal="true" aria-label="Vainqueur du ${esc(o.draw.toLowerCase())}" data-act="stop" style="${themeVarsCss(m0 ? themeKeyFor(m0) : 'WTT_DEFAULT')}">
+      <button class="modalclose" data-act="closewin" aria-label="Fermer">${ico('x')}</button>
+      <div class="modalhead">
+        <div class="modalsub">${esc(o.comp)}</div>
+        <div class="modalname">${info.open ? `Qui va gagner le ${esc(o.draw.toLowerCase())} ?` : `Le ${esc(o.draw.toLowerCase())}`}</div>
+        <div class="modalsub">${esc(sub)}</div>
+      </div>
+      <div class="modalbody">
+        <p class="hint">Le numéro est la tête de série. Le vainqueur rapporte 5 pts s'il est tête de série 1 ou 2, 10 pts de 3 à 8, 15 pts au-delà ou sans tête de série.</p>
+        ${nobody ? '<p class="hint">Personne n’a fait de choix pour ce tableau.</p>' : ''}
+        <ul class="wlist">${info.players.map(row).join('')}</ul>
+      </div>
+    </div>
+  </div>`;
+}
+async function saveWinnerPick(comp, draw, pick) {
+  const uid = S.session.user.id, prev = pickOf(uid, comp, draw);
+  if (prev && prev.pick === pick) { S.openWin = null; keepRender(); return; }
+  const r = await sb.from('winner_picks').upsert({ user_id: uid, competition: comp, draw, pick }, { onConflict: 'user_id,competition,draw' }).select().single();
+  if (r.error) { toast(friendlyError(r.error), true); return; }
+  S.winnerPicks = S.winnerPicks.filter(w => !(w.user_id === uid && w.competition === comp && w.draw === draw)).concat([{ user_id: uid, competition: comp, draw, pick }]);
+  S.openWin = null;
+  playSound('confirm'); toast(`Choix enregistré : ${pick}`); keepRender();
+}
+
+// --- Historique jugé de tout le monde (points, série) -----------------------
+// Même calcul que le bilan de tournoi et la vue SQL ; recalculé seulement
+// quand S.allJudgedPreds change.
+let _scoredCache = { src: null, by: null };
+function scoredByUser() {
+  const src = S.allJudgedPreds;
+  if (!src) return null;
+  if (_scoredCache.src === src) return _scoredCache.by;
+  const by = {};
+  for (const r of src) if (r.matches) (by[r.user_id] || (by[r.user_id] = [])).push(r);
+  for (const uid in by) {
+    by[uid].sort((a, b) => new Date(a.matches.starts_at) - new Date(b.matches.starts_at) || a.match_id - b.match_id);
+    by[uid] = computeStreakSeries(by[uid]).map(h => ({ ...h, pt: pointsDetail(h.matches, h, h.streakBefore) }));
+  }
+  _scoredCache = { src, by };
+  return by;
+}
+
+// --- Classement du mois -----------------------------------------------------
+// Les points des matchs joués pendant le mois (heure de Paris), plus les
+// vainqueurs de tournoi dont la finale a eu lieu ce mois-là. La série, elle,
+// continue d'un mois à l'autre (comme au classement général).
+const PARIS_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' });
+const parisYMD = t => PARIS_DAY.format(new Date(t));
+const monthKeyOf = t => parisYMD(t).slice(0, 7);
+const dayOf = t => Number(parisYMD(t).slice(8, 10));
+const curMonthKey = () => monthKeyOf(Date.now());
+const daysIn = k => { const [y, m] = k.split('-').map(Number); return new Date(Date.UTC(y, m, 0)).getUTCDate(); };
+const monthWord = k => { const [y, m] = k.split('-').map(Number); return new Date(Date.UTC(y, m - 1, 15)).toLocaleDateString('fr-FR', { month: 'long', timeZone: 'UTC' }); };
+const monthLabel = k => { const w = monthWord(k); return w.charAt(0).toUpperCase() + w.slice(1) + ' ' + k.slice(0, 4); };
+const deMonth = k => { const w = monthWord(k) + ' ' + k.slice(0, 4); return (/^[aeiou]/i.test(w) ? "d'" : 'de ') + w; };
+function monthBoard(k) {
+  const by = scoredByUser();
+  if (!by) return null;
+  const pseudoOf = pseudoMap(), rows = {};
+  const row = uid => rows[uid] || (rows[uid] = { user_id: uid, pseudo: pseudoOf[uid] || '?', total_points: 0, exact_scores: 0, good_winners: 0, matches_played: 0, winner_points: 0 });
+  for (const uid in by) for (const h of by[uid]) {
+    if (monthKeyOf(h.matches.starts_at) !== k) continue;
+    const r = row(uid);
+    r.total_points += h.pt.total; r.matches_played++;
+    if (h.pt.base === 3) r.exact_scores++;
+    if (h.pt.base >= 1) r.good_winners++;
+  }
+  for (const w of S.winnerPoints || []) {
+    if (!w.points || monthKeyOf(w.final_at) !== k) continue;
+    const r = row(w.user_id); r.total_points += w.points; r.winner_points += w.points;
+  }
+  return Object.values(rows).sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || a.pseudo.localeCompare(b.pseudo));
+}
+const boardRows = () => S.boardScope === 'MONTH' ? monthBoard(S.boardMonth || curMonthKey()) : S.board;
+function monthsAvailable() {
+  const set = new Set([curMonthKey()]), by = scoredByUser() || {};
+  for (const uid in by) for (const h of by[uid]) set.add(monthKeyOf(h.matches.starts_at));
+  for (const w of S.winnerPoints || []) set.add(monthKeyOf(w.final_at));
+  return [...set].sort().reverse();
+}
+// Les champions des mois terminés (plusieurs en cas d'égalité parfaite).
+let _champCache = { src: null, w: null, cur: null, list: [] };
+function monthChampions() {
+  const cur = curMonthKey();
+  if (_champCache.src === S.allJudgedPreds && _champCache.w === S.winnerPoints && _champCache.cur === cur) return _champCache.list;
+  const list = [];
+  for (const k of monthsAvailable()) {
+    if (k >= cur) continue;
+    const b = monthBoard(k) || [];
+    if (!b.length || b[0].total_points <= 0) continue;
+    list.push({ k, pts: b[0].total_points, rows: b.filter(r => r.total_points === b[0].total_points && r.exact_scores === b[0].exact_scores) });
+  }
+  _champCache = { src: S.allJudgedPreds, w: S.winnerPoints, cur, list };
+  return list;
+}
+// La course du mois : les points cumulés jour après jour, toi en couleur.
+function raceChart(rows, k) {
+  if (rows.length < 2) return '';
+  const by = scoredByUser() || {}, uid = S.session.user.id;
+  const cur = k === curMonthKey(), D = cur ? dayOf(Date.now()) : daysIn(k);
+  if (D < 2) return '';
+  const lines = rows.slice(0, 12).map(r => {
+    const daily = new Array(D + 1).fill(0);
+    for (const h of by[r.user_id] || []) if (monthKeyOf(h.matches.starts_at) === k) { const d = dayOf(h.matches.starts_at); if (d <= D) daily[d] += h.pt.total; }
+    for (const w of S.winnerPoints || []) if (w.user_id === r.user_id && w.points && monthKeyOf(w.final_at) === k) { const d = dayOf(w.final_at); if (d <= D) daily[d] += w.points; }
+    let c = 0;
+    return { r, cum: daily.map(v => (c += v)) };
+  });
+  const max = Math.max(1, ...lines.map(l => l.cum[D]));
+  const X = d => d / D * 100, Y = v => 100 - v / max * 100;
+  const lead = rows[0].user_id;
+  const cls = l => l.r.user_id === uid ? 'me' : l.r.user_id === lead ? 'lead' : '';
+  const order = lines.slice().sort((a, b) => (cls(a) ? 1 : 0) - (cls(b) ? 1 : 0) || (cls(a) === 'me') - (cls(b) === 'me'));
+  const svg = `<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+    ${[25, 50, 75].map(y => `<line x1="0" x2="100" y1="${y}" y2="${y}"/>`).join('')}
+    ${order.map(l => `<polyline class="${cls(l)}" points="${l.cum.map((v, d) => `${X(d).toFixed(2)},${Y(v).toFixed(2)}`).join(' ')}"/>`).join('')}
+  </svg>`;
+  // Étiquettes au bout des lignes : toi et le premier (écartées si elles se touchent).
+  const labs = lines.filter(l => cls(l)).map(l => ({ l, y: Y(l.cum[D]) })).sort((a, b) => a.y - b.y);
+  if (labs.length === 2 && labs[1].y - labs[0].y < 14) { const mid = (labs[0].y + labs[1].y) / 2; labs[0].y = mid - 7; labs[1].y = mid + 7; }
+  const labHtml = labs.map(({ l, y }) => `<span class="racelab ${cls(l)}" style="top:${Math.max(4, Math.min(96, y)).toFixed(1)}%">${l.r.user_id === uid ? 'Toi' : esc(l.r.pseudo)} <b>${l.cum[D]}</b></span>`).join('');
+  const me = lines.find(l => l.r.user_id === uid);
+  const aria = `${esc(rows[0].pseudo)} en tête avec ${rows[0].total_points} points${me && me.r.user_id !== lead ? `, toi ${me.cum[D]} points` : ''}.`;
+  return `<section class="panel racepanel">
+    <h3>La course du mois</h3>
+    <p class="hint">Les points de chacun, jour après jour${cur ? ", jusqu'à aujourd'hui" : ''}. Ta ligne est en couleur.</p>
+    <div class="race" role="img" aria-label="${aria}"><div class="raceplot">${svg}</div>${labHtml}</div>
+    <div class="raceaxis"><span>1er ${monthWord(k)}</span><span>${cur ? "aujourd'hui" : `${D} ${monthWord(k)}`}</span></div>
+  </section>`;
+}
+function championsPanel() {
+  const list = monthChampions();
+  if (!list.length) return '';
+  return `<section class="panel champs">
+    <h3>Champions du mois</h3>
+    <ul class="cmlist">${list.slice(0, 6).map(c => `<li class="cmrow champrow">
+      <span class="champwho">${c.rows.map(r => avatarHtml(r.user_id, r.pseudo)).join('')}<span><b>${esc(c.rows.map(r => r.pseudo).join(', '))}</b><small>${monthLabel(c.k)}</small></span></span>
+      <span class="cmres win">${c.pts} pts</span></li>`).join('')}</ul>
+  </section>`;
+}
+const champCount = uid => monthChampions().filter(c => c.rows.some(r => r.user_id === uid));
+// L'onglet Amis, « Ce mois » : choix du mois, podium, classement, course, palmarès.
+function monthView() {
+  if (!S.boardMonth) S.boardMonth = curMonthKey();
+  const k = S.boardMonth, rows = monthBoard(k);
+  if (rows === null) return '<div class="loading">Chargement…</div>';
+  const ms = monthsAvailable(), cur = k === curMonthKey();
+  const chips = ms.length > 1 ? `<div class="journeerow" role="group" aria-label="Mois">${ms.map(x => `<button class="jchip" data-act="boardmonth" data-v="${x}" aria-pressed="${x === k}">${monthLabel(x)}</button>`).join('')}</div>` : '';
+  const line = `<p class="monthline"><b>${monthLabel(k)}</b> ${cur ? `en cours, jusqu'au ${daysIn(k)} ${monthWord(k)}.` : 'terminé.'}</p>`;
+  const rule = `<p class="rules">Le classement du mois compte les points des matchs joués pendant le mois (heure de Paris) et les vainqueurs de tournoi dont la finale a eu lieu ce mois-là. Ta série continue d'un mois à l'autre. Le premier à la fin du mois entre dans les champions du mois.</p>`;
+  if (!rows.length) return chips + line + `<div class="empty">${cur ? "Personne n'a encore marqué de points ce mois-ci. Le classement se remplit dès le premier match terminé." : 'Aucun point marqué ce mois-là.'}</div>` + championsPanel() + rule;
+  return chips + line + boardPodium(rows) + standingsTable(rows) + raceChart(rows, k) + championsPanel() + rule;
+}
+// Le tableau du classement (général, par circuit ou du mois).
+function standingsTable(board) {
+  let prev = null, rank = 0;
+  const rows = board.map((r, i) => {
+    const key = r.total_points + '/' + r.exact_scores;
+    if (key !== prev) { rank = i + 1; prev = key; }
+    const me = r.user_id === S.session.user.id;
+    const topClass = rank === 1 ? ' top1' : rank === 2 ? ' top2' : rank === 3 ? ' top3' : '';
+    return `<tr class="${me ? 'me' : ''}">
+      <td class="rankcell${topClass}">${rankInner(rank)}</td>
+      <td class="namecell"><button class="lbname lbbtn" data-act="player" data-uid="${esc(r.user_id)}" aria-label="Fiche de ${esc(r.pseudo)}">${avatarHtml(r.user_id, r.pseudo)}<span class="lbpseudo">${esc(r.pseudo)}</span>${me ? ' <span class="me-tag">toi</span>' : ''}</button>
+        <div class="lbsub">${r.good_winners}/${r.matches_played} bon${r.good_winners > 1 ? 's' : ''} vainqueur${r.good_winners > 1 ? 's' : ''} · ${r.exact_scores} exact${r.exact_scores > 1 ? 's' : ''}${r.winner_points ? ` · ${r.winner_points} pts de vainqueur` : ''}</div></td>
+      <td class="ptscell">${r.total_points}<small>pts</small></td></tr>`;
+  }).join('');
+  return `<table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// --- Statistiques en plus ---------------------------------------------------
+// Le face-à-face sur une table vue de dessus : le filet au milieu, une barre de
+// chaque côté qui part du filet, et la balle blanche du côté qui mène.
+function duelHtml(nameA, nameB, rows, label) {
+  return `<div class="duel" role="table" aria-label="${esc(label)}">
+    <div class="duel-names" role="row"><span role="columnheader">${nameA}</span><span role="columnheader">${nameB}</span></div>
+    ${rows.map(r => {
+      const win = r.a > r.b ? 'a' : r.b > r.a ? 'b' : '';
+      return `<div class="duel-row" role="row">
+        <span class="duel-k" role="rowheader">${esc(r.k)}</span>
+        <span class="duel-v a${win === 'a' ? ' win' : ''}" role="cell">${r.fa}</span>
+        <span class="duel-bars" aria-hidden="true"><i class="a" style="--w:${Math.max(0, Math.min(1, r.wa)).toFixed(3)}"></i><i class="b" style="--w:${Math.max(0, Math.min(1, r.wb)).toFixed(3)}"></i></span>
+        <span class="duel-v b${win === 'b' ? ' win' : ''}" role="cell">${r.fb}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+const pctOf = (x, n) => n ? Math.round(x / n * 100) : 0;
+const pctRow = (k, a, na, b, nb) => { const pa = pctOf(a, na), pb = pctOf(b, nb); return { k, a: pa, b: pb, fa: `${pa} %`, fb: `${pb} %`, wa: pa / 100, wb: pb / 100 }; };
+const numRow = (k, a, b) => { const m = Math.max(a, b, 1); return { k, a, b, fa: String(a), fb: String(b), wa: a / m, wb: b / m }; };
+// La machine joue toujours le favori : la meilleure tête de série du tableau (WTT).
+function favSide(m) {
+  if (m.circuit !== 'WTT' || (m.seed_a == null && m.seed_b == null)) return null;
+  if (m.seed_b == null) return 'a';
+  if (m.seed_a == null) return 'b';
+  return m.seed_a < m.seed_b ? 'a' : m.seed_b < m.seed_a ? 'b' : null;
+}
+function machinePanel(hist) {
+  const rows = hist.map(h => {
+    const f = favSide(h.matches);
+    if (!f) return null;
+    const realA = h.matches.score_a > h.matches.score_b, youA = h.pred_a > h.pred_b;
+    return { you: youA === realA, mach: (f === 'a') === realA, agree: youA === (f === 'a') };
+  }).filter(Boolean);
+  if (rows.length < 5) return '';
+  const n = rows.length, you = rows.filter(r => r.you).length, mach = rows.filter(r => r.mach).length;
+  const dis = rows.filter(r => !r.agree), disYou = dis.filter(r => r.you).length;
+  const last = rows.slice(-20);
+  const list = [pctRow('Bons vainqueurs', you, n, mach, n)];
+  if (n > last.length) list.push(pctRow(`Sur tes ${last.length} derniers`, last.filter(r => r.you).length, last.length, last.filter(r => r.mach).length, last.length));
+  if (dis.length) list.push(numRow("Quand vous n'êtes pas d'accord", disYou, dis.length - disYou));
+  const a = pctOf(you, n), b = pctOf(mach, n);
+  const verdict = a > b ? `Tu fais mieux que la machine : ${a} % de bons vainqueurs contre ${b} %.`
+    : a < b ? `La machine fait mieux que toi pour l'instant : ${b} % de bons vainqueurs contre ${a} %.`
+    : `Égalité avec la machine : ${a} % de bons vainqueurs chacun.`;
+  const disLine = dis.length > 1 ? ` Sur les ${dis.length} matchs où tu ne suivais pas le favori, tu avais raison ${disYou} fois.`
+    : dis.length ? ` Le seul match où tu ne suivais pas le favori, tu avais ${disYou ? 'raison' : 'tort'}.` : ' Tu as toujours suivi le favori.';
+  return `<section class="panel duelpanel" style="${themeVarsCss('ALL')}">
+    <h3>Toi contre la machine</h3>
+    <p class="hint">La machine joue toujours le favori : la meilleure tête de série du tableau. Comparé sur tes ${n} pronos WTT jugés.</p>
+    ${duelHtml(`${avatarHtml(S.session.user.id, S.pseudo)}Toi`, 'La machine', list, 'Toi contre la machine')}
+    <p class="duelverdict">${verdict}${disLine}</p>
+  </section>`;
+}
+// D'où viennent tes points : une seule barre, découpée par origine.
+function originPanel(hist, winPts) {
+  const sum = f => hist.reduce((s, h) => s + (f(h.pt) || 0), 0);
+  const parts = [
+    ['Pronos', sum(p => p.base), 'var(--table)', 'Le barème : 1 pt le bon vainqueur, 3 pts le score exact'],
+    ['Série', sum(p => p.streakBonus), '#2D7F4E', 'Le bonus des pronos gagnants d’affilée'],
+    ['Balles', sum(p => p.ballesBonus), '#D9761E', 'Ce que tes balles ont ajouté'],
+    ['Outsider', sum(p => p.bonus), 'var(--ink-3)', "Le bonus quand l'outsider passe (WTT)"],
+    ['Vainqueurs de tournoi', winPts || 0, 'var(--gold)', 'Tes vainqueurs de tableau trouvés'],
+  ].filter(p => p[1] > 0);
+  const total = parts.reduce((s, p) => s + p[1], 0);
+  if (!total) return '';
+  const staked = hist.reduce((s, h) => s + Math.min(h.balles_staked || 0, BALLES_MAX_PER_MATCH), 0);
+  const wonStaked = hist.reduce((s, h) => s + (h.pt.base > 0 ? Math.min(h.balles_staked || 0, BALLES_MAX_PER_MATCH) : 0), 0);
+  const balles = parts.find(p => p[0] === 'Balles');
+  return `<section class="panel">
+    <h3>D'où viennent tes points</h3>
+    <div class="mix" role="img" aria-label="${parts.map(p => `${p[0]} : ${p[1]} points`).join(', ')}">${parts.map(p => `<i style="flex:${p[1]} 1 0;background:${p[2]}"></i>`).join('')}</div>
+    <ul class="mixlegend">${parts.map(p => `<li><i style="background:${p[2]}" aria-hidden="true"></i><span>${p[0]}<small>${p[3]}</small></span><b>${p[1]}<small>pts</small></b><em>${pctOf(p[1], total)} %</em></li>`).join('')}</ul>
+    ${staked ? `<p class="hint">Tu as misé ${staked} balle${staked > 1 ? 's' : ''} sur des matchs déjà joués : ${wonStaked} sur des pronos gagnants (${pctOf(wonStaked, staked)} %), qui t'ont rapporté ${balles ? balles[1] : 0} pts en plus.</p>` : ''}
+  </section>`;
+}
+// Ta grille des scores : ce que tu annonces, comparé à ce qui arrive vraiment.
+function gridPanel(hist) {
+  const cats = [['Sans perdre de manche', '3–0, 4–0'], ['Une manche perdue', '3–1, 4–1'], ['Deux manches perdues', '4–2'], ['À la belle', '3–2, 4–3']];
+  const cat = (x, y, wn) => { const lo = Math.min(x, y); return lo >= wn - 1 ? 3 : lo; };
+  const you = [0, 0, 0, 0], real = [0, 0, 0, 0];
+  let n = 0;
+  for (const h of hist) {
+    const m = h.matches, wn = m.wins_needed || 3;
+    if (wn < 2 || m.score_a == null) continue;
+    you[cat(h.pred_a, h.pred_b, wn)]++; real[cat(m.score_a, m.score_b, wn)]++; n++;
+  }
+  if (n < 5) return '';
+  const rows = cats.map((c, i) => ({ c, py: pctOf(you[i], n), pr: pctOf(real[i], n), used: you[i] + real[i] })).filter(r => r.used);
+  const gap = rows.slice().sort((a, b) => Math.abs(b.py - b.pr) - Math.abs(a.py - a.pr))[0];
+  const g = gap && Math.abs(gap.py - gap.pr) >= 8 ? gap : null;
+  const verdict = !g ? 'Tes scores collent à la réalité : pas plus de 8 points d’écart sur chaque ligne.'
+    : g.py > g.pr ? `Tu annonces « ${g.c[0].toLowerCase()} » plus souvent que ça n'arrive : ${g.py} % de tes pronos, ${g.pr} % des vrais scores.`
+    : `« ${g.c[0]} » arrive plus souvent que tu ne l'annonces : ${g.pr} % des vrais scores, ${g.py} % de tes pronos.`;
+  return `<section class="panel">
+    <h3>Ta grille des scores</h3>
+    <p class="hint">Sur tes ${n} pronos jugés : les scores que tu annonces, et ceux qui sont vraiment tombés.</p>
+    <div class="sglegend"><span><i class="you"></i>Tes pronos</span><span><i class="real"></i>Les vrais scores</span></div>
+    <ul class="sgrid">${rows.map(r => `<li>
+      <span class="sg-k">${r.c[0]}<small>${r.c[1]}</small></span>
+      <span class="sg-bars" aria-hidden="true"><i class="you" style="width:${r.py}%"></i><i class="real" style="width:${r.pr}%"></i></span>
+      <span class="sg-v"><b>${r.py} %</b><small>${r.pr} %</small></span></li>`).join('')}</ul>
+    <p class="duelverdict plain">${verdict}</p>
+  </section>`;
+}
+// Tes vainqueurs de tournoi : les choix en cours et les finales jouées.
+function winnerHistoryPanel() {
+  if (!S.winnerPicks) return '';
+  const uid = S.session.user.id;
+  const done = (S.winnerPoints || []).filter(w => w.user_id === uid);
+  const settled = new Set(done.map(w => w.competition + '|' + w.draw));
+  const pending = S.winnerPicks.filter(w => w.user_id === uid && !settled.has(w.competition + '|' + w.draw));
+  if (!done.length && !pending.length) return '';
+  const found = done.filter(w => w.points > 0).length;
+  const li = (w, res) => `<li class="cmrow"><div class="cmopp">${esc(w.pick)}</div><div class="cmmeta"><span class="cmdate">${esc(w.competition)}, ${esc(w.draw.toLowerCase())}</span>${res}</div></li>`;
+  return `<section class="panel">
+    <h3>Tes vainqueurs de tournoi</h3>
+    ${done.length ? `<p class="hint">${found} trouvé${found > 1 ? 's' : ''} sur ${done.length} tableau${done.length > 1 ? 'x' : ''} terminé${done.length > 1 ? 's' : ''}.</p>` : ''}
+    <ul class="cmlist" style="margin-top:8px">${pending.map(w => li(w, '<span class="cmres">en cours</span>')).join('')}${done.slice().reverse().slice(0, 6).map(w => li(w, w.points > 0 ? `<span class="cmres win">+${w.points} pts</span>` : '<span class="cmres loss">raté</span>')).join('')}</ul>
+  </section>`;
+}
+// Fiche d'un ami : le face-à-face avec toi.
+function faceToFace(uid) {
+  const me = S.session.user.id;
+  if (uid === me) return '';
+  const by = scoredByUser();
+  if (!by || !(by[me] || []).length || !(by[uid] || []).length) return '';
+  const A = by[me], B = by[uid];
+  const st = l => ({ n: l.length, good: l.filter(h => h.pt.base > 0).length, exact: l.filter(h => h.pt.exact).length, best: l.reduce((m, h) => Math.max(m, h.streakAfter), 0) });
+  const a = st(A), b = st(B), ga = generalRank(me), gb = generalRank(uid);
+  const pseudo = gb ? gb.row.pseudo : '?';
+  const ptsB = new Map(B.map(h => [h.match_id, h.pt.total]));
+  let wa = 0, wb = 0, eq = 0;
+  for (const h of A) if (ptsB.has(h.match_id)) { const x = h.pt.total, y = ptsB.get(h.match_id); if (x > y) wa++; else if (y > x) wb++; else eq++; }
+  const rows = [
+    numRow('Points', ga ? ga.row.total_points : 0, gb ? gb.row.total_points : 0),
+    pctRow('Bons vainqueurs', a.good, a.n, b.good, b.n),
+    pctRow('Scores exacts', a.exact, a.n, b.exact, b.n),
+    numRow('Meilleure série', a.best, b.best),
+  ];
+  if (wa + wb) rows.push(numRow('Matchs gagnés en duel', wa, wb));
+  const common = wa + wb + eq;
+  return `<section class="modalsec">
+    <h3><span class="secdot" aria-hidden="true"></span>Face à face</h3>
+    ${duelHtml(`${avatarHtml(me, S.pseudo)}Toi`, `${avatarHtml(uid, pseudo)}${esc(pseudo)}`, rows, `Toi contre ${pseudo}`)}
+    ${common ? `<p class="duelverdict plain">Sur les ${common} match${common > 1 ? 's' : ''} que vous avez pronostiqués tous les deux, tu as pris plus de points ${wa} fois, ${esc(pseudo)} ${wb} fois${eq ? `, et autant ${eq} fois` : ''}.</p>` : ''}
+  </section>`;
+}
+
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
   // entièrement terminé (voir isTournamentFinished) : pas de bilan sur
@@ -5920,7 +6463,9 @@ function accountView() {
   }
 
   const n = finished.length;
-  const total = finished.reduce((s, h) => s + h.pt.total, 0);
+  const myWins = (S.winnerPoints || []).filter(w => w.user_id === S.session.user.id);
+  const winPts = myWins.reduce((s, w) => s + w.points, 0);
+  const total = finished.reduce((s, h) => s + h.pt.total, 0) + winPts;
   const exactN = finished.filter(h => h.pt.exact).length;
   const goodN = finished.filter(h => h.pt.total > 0).length;
   const pctExact = Math.round(exactN / n * 100);
@@ -6021,6 +6566,7 @@ function accountView() {
       s.n++; s.pts += h.pt.total; if (h.pt.exact) s.exact++;
     }
   }
+  for (const w of myWins) if (w.points && byTournament[w.competition]) byTournament[w.competition].pts += w.points;
   const tournamentRows = Object.entries(byTournament)
     .sort((a, b) => new Date(b[1].last) - new Date(a[1].last))
     .map(([name, s]) => breakdownRow(name, s, (THEME[themeKeyFor(S.matches.find(m => m.circuit === 'WTT' && m.competition === name))] || THEME.WTT_DEFAULT).chip, 'WTT')).join('');
@@ -6093,6 +6639,10 @@ function accountView() {
     <div class="streakrow" style="margin-top:12px" aria-label="Tes 10 derniers pronos jugés">${streakTiles}</div>
     <p class="hint" style="margin-top:10px">${curStreak > 0 ? `${curStreak} prono${curStreak > 1 ? 's' : ''} gagnant${curStreak > 1 ? 's' : ''} d'affilée en ce moment${curPct > 0 ? `, le prochain prono gagnant rapporte +${curPct} %` : ''}.` : "Pas de série en cours."} Meilleure série : <b style="color:var(--ink)">${bestStreak}</b>.</p>
   </section>
+  ${machinePanel(finished)}
+  ${originPanel(finished, winPts)}
+  ${gridPanel(finished)}
+  ${winnerHistoryPanel()}
   ${badgesPanel()}
   ${sparkline}
   ${byCircuit.length ? `
@@ -6181,6 +6731,12 @@ function computeRecapData(key, circuit) {
       n: inT.length,
       bestStreak: bestStreakInT,
     });
+  }
+  if (circuit === 'WTT') for (const w of S.winnerPoints || []) {
+    if (w.competition !== key || !w.points) continue;
+    const r = rows.find(x => x.userId === w.user_id);
+    if (r) r.pts += w.points;
+    else rows.push({ userId: w.user_id, pseudo: pseudoOf[w.user_id] || '?', pts: w.points, exact: 0, n: 0, bestStreak: 0 });
   }
   rows.sort((a, b) => b.pts - a.pts || b.exact - a.exact);
   let prevKey = null, rk = 0;
@@ -6982,13 +7538,13 @@ async function exportMatchImage(id) {
 }
 
 async function exportBoardImage() {
-  const rows = (S.board || []).slice(0, 10);
+  const rows = (boardRows() || []).slice(0, 10);
   if (!rows.length) { toast('Rien à exporter encore.', true); return; }
   await exportFontsReady();
   const t = THEME.ALL;
   const w = 780, hRow = 66, h = 160 + rows.length * hRow + 96;
   const { canvas, ctx } = makeExportCanvas(w, h);
-  const scopeLabel = S.boardScope === 'ALL' ? 'Classement général' : (S.boardScope === 'WTT' ? 'Classement WTT' : 'Classement Pro A');
+  const scopeLabel = S.boardScope === 'MONTH' ? `Classement ${deMonth(S.boardMonth || curMonthKey())}` : S.boardScope === 'ALL' ? 'Classement général' : (S.boardScope === 'WTT' ? 'Classement WTT' : 'Classement Pro A');
   const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const top = paintExportPoster(ctx, w, h, t, scopeLabel, `Au ${today}`);
   const uid = S.session && S.session.user.id;
@@ -7110,8 +7666,8 @@ $app.addEventListener('click', async e => {
     S.tab = el.dataset.tab;
     S._tabAt = Date.now();
     if (S.tab === 'matches') S._freshMatches = true;
-    if (S.tab === 'board') { S.board = null; navigate(render); await loadBoard(); }
-    if (S.tab === 'account') { S.myHistory = null; navigate(render); await loadAccount(); }
+    if (S.tab === 'board') { S.board = null; navigate(render); await Promise.all([loadBoard(), loadWinners()]); }
+    if (S.tab === 'account') { S.myHistory = null; navigate(render); await Promise.all([loadAccount(), loadWinners()]); }
     navigate(render); window.scrollTo(0, 0);
   }
   else if (act === 'view') { S.view = v; S._freshMatches = true; navigate(render); }
@@ -7142,10 +7698,15 @@ $app.addEventListener('click', async e => {
   else if (act === 'adm-roster') saveRoster(id);
   else if (act === 'avatarpick') document.getElementById('avatarfile').click();
   else if (act === 'avatarremove') removeAvatar();
+  else if (act === 'wpick') { S.openWin = { comp: el.dataset.comp, draw: el.dataset.draw }; keepRender(); }
+  else if (act === 'closewin') { S.openWin = null; keepRender(); }
+  else if (act === 'wsave') saveWinnerPick(el.dataset.comp, el.dataset.draw, el.dataset.pick);
+  else if (act === 'boardmonth') { S.boardMonth = v; navigate(render); }
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && S.openCompetitor) { S.openCompetitor = null; keepRender(); }
   if (e.key === 'Escape' && S.openPlayer) { S.openPlayer = null; keepRender(); }
+  if (e.key === 'Escape' && S.openWin) { S.openWin = null; keepRender(); }
   if (e.key === 'Escape' && S.openBadge) closeBadge();
   if (e.key === 'Escape' && S.openRecap) { stopRecapRun(); S.openRecap = null; keepRender(); }
 });
