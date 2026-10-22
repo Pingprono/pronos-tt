@@ -1573,6 +1573,50 @@ html.halloween .acc.on{box-shadow:inset 0 0 0 2px var(--red)}
 .duelscore .sep{width:14px;height:3px;border-radius:2px;background:var(--ink-3)}
 .duelscore small{flex-basis:100%;font:400 13px/1.3 var(--f-text);color:var(--ink-2)}
 .modalsec .duelrow.col{margin-top:10px}
+/* --- Défi proposé : accepter ou refuser --- */
+.duelnotice .noticebtns{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:12px}
+.duelnotice .noticebtns .btn{margin:0;grid-column:auto;grid-row:auto}
+.duelbtns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.duelbtns .btn.small{margin-top:0}
+.duelchip.proposed:not(.incoming){box-shadow:none;outline:1.5px dashed var(--line);outline-offset:-1.5px}
+.duelchip.expired{color:var(--ink-3)}
+
+/* --- Emotes : le personnage en 2D --- */
+.emo{display:block;color:var(--ink);overflow:visible}
+.emosec{margin-top:20px;padding-top:16px;border-top:1px solid var(--line-2)}
+.emoh{margin:0;font:700 19px/1.1 var(--f-head);color:var(--ink)}
+.emogroup{margin-top:12px}
+.emogroup > small{display:block;margin:0 0 6px;font:600 12.5px/1 var(--f-text);color:var(--ink-2)}
+.emobar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.emobtn{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;padding:6px 2px 8px;border:0;border-radius:10px;
+  background:var(--surface-2);color:var(--ink);font:600 12px/1.15 var(--f-text);text-align:center}
+.emobtn:hover{background:color-mix(in srgb,var(--table) 10%,var(--surface-2))}
+.emobtn .emo{width:58px;height:58px}
+.emobtn span{overflow-wrap:anywhere}
+.emobtn:active .emo{transform:scale(.92)}
+.emofeed{list-style:none;margin:14px 0 0;padding:0}
+.emofeed li{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line-2);
+  font:400 14px/1.3 var(--f-text);color:var(--ink)}
+.emofeed li .emo{width:44px;height:44px}
+.emofeed b{font-weight:600}
+.emofeed time{font:400 12.5px/1 var(--f-text);color:var(--ink-2);white-space:nowrap}
+/* Une emote reçue s'affiche au-dessus du dock (et des messages), quelques secondes. */
+.duelnotice .rn-ico{background:none;box-shadow:none}
+.duelnotice .rn-ico .av{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--red)}
+.emopop{position:fixed;z-index:80;left:50%;bottom:calc(164px + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;gap:12px;
+  width:max-content;max-width:min(92vw,380px);padding:8px 18px 8px 8px;border:0;border-radius:16px;background:var(--surface);color:var(--ink);
+  box-shadow:var(--float);text-align:left;font:400 15px/1.3 var(--f-text)}
+.emopop .emo{flex:none;width:84px;height:84px}
+.emopop b{font:700 17px/1.1 var(--f-head)}
+.emopop small{display:block;margin-top:3px;font:400 12.5px/1.3 var(--f-text);color:var(--ink-2)}
+.emopop.out{opacity:0;transition:opacity .35s ease-in}
+@media (prefers-reduced-motion:no-preference){
+  .emopop{animation:emoIn .45s var(--ease-out) both}
+  .emopop .emo{animation:emoHop .9s var(--ease-out) .15s both}
+}
+@keyframes emoIn{from{opacity:0;transform:translate(-50%,18px) scale(.9)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes emoHop{0%{transform:none}35%{transform:translateY(-12px) rotate(-4deg)}60%{transform:none}78%{transform:translateY(-4px)}100%{transform:none}}
+@media (min-width:860px){ .emopop{bottom:92px} }
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -2186,6 +2230,9 @@ function friendlyError(e) {
   if (/at least \d+ characters/i.test(msg)) return 'Le mot de passe doit faire au moins 6 caractères.';
   if (/Email not confirmed/i.test(msg)) return "Ton email n'est pas encore confirmé. Vérifie ta boîte mail.";
   if (/Score impossible/i.test(msg)) return msg;
+  if (/Doucement|Trop d.emotes/i.test(msg)) return msg;
+  if (/duel_emotes/i.test(msg) && /row-level security/i.test(msg)) return "Les emotes s'envoient pendant un défi accepté, jusqu'à deux jours après le match.";
+  if (/duel_emotes|accepted_at/i.test(msg)) return "Les défis proposés et les emotes ne sont pas encore activés : il faut lancer le script ajout-defis-emotes.sql dans Supabase.";
   if (/duels_une_paire_par_match/i.test(msg)) return 'Vous avez déjà un défi sur ce match.';
   if (/duels/i.test(msg) && /row-level security/i.test(msg)) return "Défi refusé : le match a commencé, ou ton prono n'est pas encore posé.";
   if (/duels|outfit/i.test(msg)) return "Les défis et les accessoires ne sont pas encore activés : il faut lancer le script ajout-defis-accessoires.sql dans Supabase.";
@@ -4824,6 +4871,8 @@ function buildPodium(data) {
     setOutfit: (i, list) => { const ch = chars[i]; if (!ch) return; ch.p.outfit = list || []; wear(ch); },
     setBall: b => { ballRef = b; },
     swing: i => { const ch = chars[i]; if (ch && ch.landed) ch.swingT = .3; },
+    // Une emote : le personnage fait le geste (pas s'il est assis, perdant du défi).
+    doAct: (i, a) => { const ch = chars[i]; if (!ch || !ch.landed || ch.st !== 'idle' || loserOf(ch)) return; ch.act = a; ch.actT = 0; ch.next = 0; if (a === 'spin') jump(ch, 3.3); },
     setPhoto: (i, img) => { const ch = chars[i]; if (!ch) return; ch.p.img = img; drawDecal(ch); },
     setPlayers: ps => chars.forEach((ch, i) => { ch.p = Object.assign({}, ps[i] || EMPTY); drawDecal(ch); setLabel(ch); setHalo(ch); wear(ch); ch.shirtMat.color.set(ch.p.shirt || theme.chip); ch.label.classList.toggle('me', !!ch.p.me); loadPhoto(ch); }),
   };
@@ -5788,9 +5837,9 @@ function podiumSlotState(slot) {
     if (!d) return null;
     const i = duelInfo(d), me = S.session.user.id, m = i.m && (S.matches.find(x => x.id === i.m.id) || i.m);
     const done = ['win', 'loss', 'draw'].includes(i.state);
-    const sub = (pred, pts) => done ? `${pts} pt${Math.abs(pts) > 1 ? 's' : ''}` : pred || (i.state === 'open' ? 'prono caché' : 'pas de prono');
+    const sub = (pred, pts) => done ? `${pts} pt${Math.abs(pts) > 1 ? 's' : ''}` : pred || (i.state === 'open' || i.state === 'proposed' ? 'prono caché' : 'pas de prono');
     return { key: `duel:${d.id}:${i.state}:${S._tabAt}`, theme: (m && THEME[themeKeyFor(m)]) || THEME.ALL, delay: .2,
-      duel: { phase: done ? 'done' : i.state === 'void' ? 'idle' : 'play', winner: i.state === 'win' ? 0 : i.state === 'loss' ? 1 : i.state === 'draw' ? -1 : null },
+      duel: { phase: done ? 'done' : ['void', 'proposed', 'expired'].includes(i.state) ? 'idle' : 'play', winner: i.state === 'win' ? 0 : i.state === 'loss' ? 1 : i.state === 'draw' ? -1 : null },
       players: [scenePlayer(me, S.pseudo, 0, { halo: 0, sub: sub(i.myPred, i.myPts) }), scenePlayer(i.other, i.pseudo, 0, { halo: 0, sub: sub(i.otPred, i.otPts) })] };
   }
   // Un nouveau score exact : tu sautes de joie, tes points au-dessus de la tête.
@@ -6707,9 +6756,23 @@ function faceToFace(uid) {
 // change au classement. Les pronos de l'autre restent cachés jusqu'au match.
 async function loadDuels() {
   try {
-    const r = await fetchAllRows(() => sb.from('duels').select('id,match_id,challenger,opponent,created_at').order('id'));
+    const r = await fetchAllRows(() => sb.from('duels').select('*').order('id'));
     S.duels = r.error ? null : (r.data || []); // table absente (script SQL pas lancé) : les défis restent cachés
   } catch (e) { S.duels = null; }
+  if (S.duels) { await loadEmotes(); checkNewEmotes(); notifyAccepted(); }
+}
+// Un défi compte une fois accepté (sans la colonne accepted_at, script pas encore lancé : comme avant).
+const duelAccepted = d => !('accepted_at' in d) || !!d.accepted_at;
+// Celui qui a lancé le défi apprend qu'il a été accepté (une fois, sur cet appareil).
+function notifyAccepted() {
+  if (!S.duels || !S.session) return;
+  const me = S.session.user.id, mine = S.duels.filter(d => d.challenger === me && d.accepted_at);
+  let seen = null;
+  try { seen = JSON.parse(localStorage.getItem('spin_duel_acc_seen')); } catch (e) { /* ignore */ }
+  const set = new Set(Array.isArray(seen) ? seen : []), fresh = Array.isArray(seen) ? mine.filter(d => !set.has(d.id)) : [];
+  mine.forEach(d => set.add(d.id));
+  try { localStorage.setItem('spin_duel_acc_seen', JSON.stringify([...set])); } catch (e) { /* ignore */ }
+  fresh.slice(0, 2).forEach((d, k) => afterSplash(() => setTimeout(() => toast(`${pseudoMap()[d.opponent] || 'Ton ami'} a accepté ton défi`), 500 + k * 1800)));
 }
 const duelOther = (d, uid) => d.challenger === uid ? d.opponent : d.challenger;
 const myDuels = () => S.duels && S.session ? S.duels.filter(d => d.challenger === S.session.user.id || d.opponent === S.session.user.id) : [];
@@ -6723,6 +6786,11 @@ function duelInfo(d) {
   const fmt = p => p ? `${p.pred_a}–${p.pred_b}` : null;
   const base = { d, m, other, pseudo };
   if (m && m.status === 'cancelled') return { ...base, state: 'void', why: 'Le match a été annulé.' };
+  if (!duelAccepted(d)) {
+    const open = !!m && m.status === 'scheduled' && !isLocked(m);
+    return { ...base, state: open ? 'proposed' : 'expired', myPred: fmt(S.myPreds[d.match_id]),
+      why: d.opponent === me ? "Tu n'as pas accepté le défi avant le début du match : il ne compte pas." : `${pseudo} n'a pas accepté le défi avant le début du match : il ne compte pas.` };
+  }
   if ((m && m.status === 'finished') || hMe || hOt) {
     if (!hMe || !hOt) return { ...base, state: 'void', myPred: fmt(hMe), otPred: fmt(hOt), why: !hMe && !hOt ? "Aucun de vous deux n'avait fait de prono." : !hMe ? "Tu n'avais pas fait de prono." : `${pseudo} n'avait pas fait de prono.` };
     const a = hMe.pt.total, b = hOt.pt.total;
@@ -6734,11 +6802,14 @@ function duelInfo(d) {
   if (S.friends[d.match_id] && (!mine || !ot)) return { ...base, state: 'void', myPred: fmt(mine), otPred: fmt(ot), why: !mine ? "Tu n'avais pas fait de prono." : `${pseudo} n'avait pas fait de prono.` };
   return { ...base, state: 'live', myPred: fmt(mine), otPred: fmt(ot) };
 }
-const DUEL_WORD = { open: 'Défi', live: 'Défi en cours', win: 'Défi gagné', loss: 'Défi perdu', draw: 'Défi nul', void: 'Défi annulé' };
+const DUEL_WORD = { proposed: 'Défi proposé', expired: 'Défi non accepté', open: 'Défi', live: 'Défi en cours', win: 'Défi gagné', loss: 'Défi perdu', draw: 'Défi nul', void: 'Défi annulé' };
 function duelChip(d) {
   const i = duelInfo(d), me = S.session.user.id;
-  const incoming = i.state === 'open' && d.opponent === me && !S.myPreds[d.match_id];
-  const label = incoming ? `${i.pseudo} te défie : fais ton prono` : `${DUEL_WORD[i.state]} ${i.state === 'draw' ? 'avec' : 'contre'} ${i.pseudo}`;
+  const toMe = d.opponent === me;
+  const incoming = toMe && (i.state === 'proposed' || (i.state === 'open' && !S.myPreds[d.match_id]));
+  const label = i.state === 'proposed' ? (toMe ? `${i.pseudo} te propose un défi` : `Défi proposé à ${i.pseudo}`)
+    : i.state === 'expired' ? `Défi non accepté (${i.pseudo})`
+    : incoming ? `${i.pseudo} te défie : fais ton prono` : `${DUEL_WORD[i.state]} ${i.state === 'draw' ? 'avec' : 'contre'} ${i.pseudo}`;
   return `<button class="duelchip ${i.state}${incoming ? ' incoming' : ''}" data-act="duel" data-did="${d.id}">${avatarHtml(i.other, i.pseudo)}<span>${esc(label)}</span></button>`;
 }
 // Sous un match : mes défis, et le bouton pour en lancer un.
@@ -6753,7 +6824,18 @@ function duelRowHtml(m) {
 function duelNotice() {
   if (!S.duels || !S.session) return '';
   const me = S.session.user.id;
-  const list = S.duels.filter(d => d.opponent === me && !S.myPreds[d.match_id]).map(d => ({ d, m: S.matches.find(x => x.id === d.match_id) })).filter(x => x.m && !isLocked(x.m));
+  const withM = list => list.map(d => ({ d, m: S.matches.find(x => x.id === d.match_id) })).filter(x => x.m && !isLocked(x.m));
+  const props = withM(S.duels.filter(d => d.opponent === me && !duelAccepted(d)));
+  if (props.length) {
+    const { d, m } = props[0], who = pseudoMap()[d.challenger] || '?';
+    return `<section class="recapnotice duelnotice" style="${themeVarsCss(themeKeyFor(m))}" aria-label="Défi proposé">
+      <span class="rn-ico" aria-hidden="true">${avatarHtml(d.challenger, who)}</span>
+      <h2 class="recapnotice-title">${esc(who)} te propose un défi${props.length > 1 ? ` (et ${props.length - 1} autre${props.length > 2 ? 's' : ''})` : ''}</h2>
+      <p class="recapnotice-sub">Sur ${esc(m.side_a)} – ${esc(m.side_b)}, ${esc(fmtClose(new Date(m.starts_at).getTime()))}. Il compte seulement si tu l'acceptes avant le début du match.</p>
+      <div class="noticebtns"><button class="btn small" data-act="duelaccept" data-did="${d.id}">Accepter</button><button class="btn small sec" data-act="dueldecline" data-did="${d.id}">Refuser</button><button class="linkbtn" data-act="duel" data-did="${d.id}">Voir le défi</button></div>
+    </section>`;
+  }
+  const list = withM(S.duels.filter(d => d.opponent === me && duelAccepted(d) && !S.myPreds[d.match_id]));
   if (!list.length) return '';
   const { d, m } = list[0], who = pseudoMap()[d.challenger] || '?';
   return `<section class="recapnotice duelnotice" style="${themeVarsCss(themeKeyFor(m))}" aria-label="Défi reçu">
@@ -6776,8 +6858,8 @@ function duelNewModal(mid) {
       <button class="modalclose" data-act="closeduelnew" aria-label="Fermer">${ico('x')}</button>
       <div class="modalhead">
         <div class="modalsub">${esc(m.side_a)} – ${esc(m.side_b)}</div>
-        <div class="modalname">Défier un ami</div>
-        <div class="modalsub">Celui qui prend le plus de points sur ce match gagne le défi. Pour l'honneur : le classement ne change pas.</div>
+        <div class="modalname">Proposer un défi</div>
+        <div class="modalsub">Le défi compte si ton ami l'accepte avant le début du match. Celui qui prend le plus de points sur ce match gagne. Pour l'honneur : le classement ne change pas.</div>
       </div>
       <div class="modalbody">
         ${friends.length ? `<ul class="wlist">${friends.map(r => taken.has(r.user_id)
@@ -6794,7 +6876,23 @@ async function createDuel(mid, uid) {
   if (r.error) { toast(friendlyError(r.error), true); return; }
   S.duels = (S.duels || []).concat([r.data]);
   S.openDuelNew = null; S.openDuel = r.data.id;
-  playSound('confirm'); toast(`Défi lancé contre ${pseudoMap()[uid] || 'ton ami'}`); keepRender();
+  playSound('confirm'); toast(`Défi proposé à ${pseudoMap()[uid] || 'ton ami'}`); keepRender();
+}
+// L'ami défié répond : accepter (le défi compte) ou refuser (il disparaît).
+async function answerDuel(id, yes) {
+  const d = (S.duels || []).find(x => x.id === id);
+  if (!d) return;
+  const r = yes ? await sb.from('duels').update({ accepted_at: new Date().toISOString() }).eq('id', id).select().single()
+    : await sb.from('duels').delete().eq('id', id);
+  if (r.error) { toast(/rows/i.test(r.error.message || '') ? "Trop tard : le match a commencé, le défi ne peut plus être accepté." : friendlyError(r.error), true); return; }
+  if (yes) {
+    d.accepted_at = (r.data && r.data.accepted_at) || new Date().toISOString();
+    playSound('confirm'); toast(S.myPreds[d.match_id] ? 'Défi accepté' : 'Défi accepté : fais ton prono avant le début du match');
+  } else {
+    S.duels = S.duels.filter(x => x.id !== id); if (S.openDuel === id) S.openDuel = null;
+    toast('Défi refusé');
+  }
+  keepRender();
 }
 async function cancelDuel(id) {
   const r = await sb.from('duels').delete().eq('id', id);
@@ -6817,14 +6915,21 @@ function duelModal(id) {
     <span class="dsname">${avatarHtml(who, who === me ? S.pseudo : pseudo)}${esc(pseudo)}</span>
     <b>${pred ? esc(pred) : '–'}</b>
     <small>${pts != null ? `${pts} pt${Math.abs(pts) > 1 ? 's' : ''}` : 'prono'}</small></div>`;
-  const hidden = i.state === 'open' ? 'caché' : null;
-  const verdict = i.state === 'open' ? `Le prono de ${esc(i.pseudo)} reste caché jusqu'au début du match, ${esc(fmtClose(new Date(m.starts_at).getTime()))}.`
+  const toMe = d.opponent === me, when = m ? fmtClose(new Date(m.starts_at).getTime()) : '';
+  const hidden = i.state === 'open' || i.state === 'proposed' ? 'caché' : null;
+  const verdict = i.state === 'proposed' ? (toMe ? `${esc(i.pseudo)} te propose ce défi. Accepte-le avant le début du match, ${esc(when)}, pour qu'il compte.`
+      : `En attente de ${esc(i.pseudo)}. Le défi compte seulement s'il est accepté avant le début du match, ${esc(when)}.`)
+    : i.state === 'expired' ? esc(i.why)
+    : i.state === 'open' ? `Le prono de ${esc(i.pseudo)} reste caché jusqu'au début du match, ${esc(fmtClose(new Date(m.starts_at).getTime()))}.`
     : i.state === 'live' ? 'Le match est en cours : le défi se joue maintenant.'
     : i.state === 'win' ? `Tu gagnes le défi : ${i.myPts} point${i.myPts > 1 ? 's' : ''} contre ${i.otPts}.`
     : i.state === 'loss' ? `${esc(i.pseudo)} gagne le défi : ${i.otPts} point${i.otPts > 1 ? 's' : ''} contre ${i.myPts}.`
     : i.state === 'draw' ? `Égalité : ${i.myPts} point${i.myPts > 1 ? 's' : ''} chacun.`
     : `Défi annulé. ${esc(i.why || '')}`;
-  const canCancel = i.state === 'open';
+  const btns = i.state === 'proposed' && toMe
+    ? `<div class="duelbtns"><button class="btn small" data-act="duelaccept" data-did="${d.id}">Accepter le défi</button><button class="btn small sec" data-act="dueldecline" data-did="${d.id}">Refuser</button></div>`
+    : i.state === 'proposed' ? `<button class="btn small sec" data-act="duelcancel" data-did="${d.id}">Retirer le défi</button>`
+    : i.state === 'open' ? `<button class="btn small sec" data-act="duelcancel" data-did="${d.id}">Annuler le défi</button>` : '';
   return `
   <div class="modalbackdrop" data-act="closeduel">
     <div class="modal duelx" role="dialog" aria-modal="true" aria-label="Défi contre ${esc(i.pseudo)}" data-act="stop" style="${themeVarsCss(m ? themeKeyFor(S.matches.find(x => x.id === m.id) || m) : 'ALL')}">
@@ -6832,14 +6937,15 @@ function duelModal(id) {
       <div class="duelstage"><div class="pod3d" data-kind="duel" data-did="${d.id}"></div></div>
       <div class="modalbody">
         <p class="duelmatch">${m ? `${esc(m.side_a)} – ${esc(m.side_b)}${m.status === 'finished' ? `, score final ${m.score_a}–${m.score_b}` : ''}` : ''}</p>
-        <h2 class="dueltitle">${DUEL_WORD[i.state]}${i.state === 'open' || i.state === 'live' ? ` contre ${esc(i.pseudo)}` : ''}</h2>
+        <h2 class="dueltitle">${i.state === 'proposed' ? (toMe ? `${esc(i.pseudo)} te propose un défi` : `Défi proposé à ${esc(i.pseudo)}`) : `${DUEL_WORD[i.state]}${i.state === 'open' || i.state === 'live' ? ` contre ${esc(i.pseudo)}` : ''}`}</h2>
         <div class="duelboard">
           ${side(me, 'Toi', i.myPred, i.myPts, i.state === 'win')}
           <span class="dvs" aria-hidden="true">contre</span>
           ${side(i.other, i.pseudo, hidden || i.otPred, i.otPts, i.state === 'loss')}
         </div>
         <p class="duelverdict">${verdict}</p>
-        ${canCancel ? `<button class="btn small sec" data-act="duelcancel" data-did="${d.id}">Annuler le défi</button>` : ''}
+        ${btns}
+        ${emoteSection(d, i)}
       </div>
     </div>
   </div>`;
@@ -6858,7 +6964,7 @@ function duelsPanel() {
   if (!S.duels) return '';
   const r = duelRecord(null);
   if (!r.list.length) return '';
-  const order = { open: 0, live: 1 };
+  const order = { proposed: 0, open: 0, live: 1 };
   const list = r.list.slice().sort((a, b) => (order[a.state] ?? 2) - (order[b.state] ?? 2) || b.d.id - a.d.id).slice(0, 8);
   const done = r.win + r.loss + r.draw;
   return `<section class="panel">
@@ -6985,7 +7091,7 @@ function duelsWithHtml(uid) {
   const r = duelRecord(uid);
   if (!r.list.length) return '';
   const pseudo = pseudoMap()[uid] || '?', done = r.win + r.loss + r.draw;
-  const order = { open: 0, live: 1 };
+  const order = { proposed: 0, open: 0, live: 1 };
   const list = r.list.slice().sort((a, b) => (order[a.state] ?? 2) - (order[b.state] ?? 2) || b.d.id - a.d.id).slice(0, 8);
   const lead = r.win > r.loss ? `Tu mènes ${r.win} à ${r.loss}` : r.win < r.loss ? `${esc(pseudo)} mène ${r.loss} à ${r.win}` : `Égalité, ${r.win} partout`;
   return `<section class="modalsec">
@@ -6997,6 +7103,157 @@ function duelsWithHtml(uid) {
     <div class="duelrow col">${list.map(i => duelChip(i.d)).join('')}</div>
   </section>`;
 }
+
+/* =============================================================================
+   Emotes de défi : de petits dessins 2D du personnage de celui qui les envoie
+   (sa photo ou son initiale sur la balle, son maillot, ses accessoires), pour
+   encourager ou chambrer pendant un défi accepté.
+   ========================================================================== */
+const EMOTES = [
+  { id: 'allez', label: 'Allez !', side: 'enc', act: 'cheer' },
+  { id: 'bravo', label: 'Bravo', side: 'enc', act: 'clap' },
+  { id: 'pouce', label: 'Bien joué', side: 'enc', act: 'wave' },
+  { id: 'feu', label: 'En feu', side: 'enc', act: 'cheer' },
+  { id: 'haha', label: 'Haha', side: 'troll', act: 'spin' },
+  { id: 'dodo', label: 'Tu dors ?', side: 'troll', act: 'wave' },
+  { id: 'danse', label: 'Petite danse', side: 'troll', act: 'spin' },
+  { id: 'ouin', label: 'Ouin ouin', side: 'troll', act: 'clap' },
+];
+// Les poses : bouts des bras (épaules en 39,55 et 61,55), inclinaison, raquette, décor.
+const INK = 'currentColor', TEAR = '#5BB3E6';
+const EMO_POSES = {
+  allez: { arms: [[[30, 31]], [[70, 31]]], pad: 180, extra: `<path d="M22 24l-5-4M25 19l-2-6M78 24l5-4M75 19l2-6" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>` },
+  bravo: { arms: [[[47, 61]], [[53, 61]]], extra: `<path d="M50 53v-6M44 55l-4-4M56 55l4-4" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>` },
+  pouce: { arms: [[[33, 72]], [[70, 50]]], pad: 0, thumb: true },
+  feu: { arms: [[[29, 33]], [[71, 33]]], pad: 180, back: `<path d="M27 93C20 76 30 68 27 55c7 8 10-3 8-12 8 9 13-2 11-15 8 11 12 22 12 14 5 9 10 14 9 10 4 12 11 24 1 41Z" fill="#E8892B"/><path d="M35 93c-4-10 2-16 1-24 5 5 7-2 6-8 5 6 8 0 7-7 5 7 7 14 8 9 3 6 7 10 5 8 3 9 5 16-1 22Z" fill="#F6C343"/>` },
+  haha: { arms: [[[44, 68]], [[56, 68]]], tilt: -7, extra: `<text x="13" y="27" transform="rotate(-14 13 27)" font-family="'Barlow Semi Condensed',sans-serif" font-style="italic" font-weight="700" font-size="12" fill="${INK}">HA</text><text x="73" y="19" transform="rotate(12 73 19)" font-family="'Barlow Semi Condensed',sans-serif" font-style="italic" font-weight="700" font-size="14" fill="${INK}">HA</text>`, tears: true },
+  dodo: { arms: [[[37, 75]], [[63, 75]]], pad: 12, head: 18, tilt: 4, extra: `<g font-family="'Barlow Semi Condensed',sans-serif" font-style="italic" font-weight="700" fill="${INK}"><text x="68" y="24" font-size="9">z</text><text x="75" y="16" font-size="12">z</text><text x="83" y="9" font-size="15">Z</text></g>` },
+  danse: { arms: [[[31, 63], [39, 69]], [[73, 29]]], tilt: 8, extra: `<g fill="${INK}" stroke="${INK}" stroke-width="2" stroke-linecap="round"><path d="M16 34V22l9-3v12" fill="none"/><circle cx="14" cy="34.5" r="3" stroke="none"/><circle cx="23" cy="31.5" r="3" stroke="none"/><path d="M84 46V36" fill="none"/><path d="M84 36q5 1 5 6" fill="none"/><circle cx="82" cy="46.5" r="2.8" stroke="none"/></g>` },
+  ouin: { arms: [[[42, 40]], [[58, 40]]], head: -5, front: true, extra: `<g stroke="${TEAR}" stroke-width="2.6" stroke-linecap="round" fill="none"><path d="M34 33q-7 2-11 9"/><path d="M66 33q7 2 11 9"/></g><g fill="${TEAR}"><path d="M20 47q-3 4 0 6 3-2 0-6Z"/><path d="M80 47q-3 4 0 6 3-2 0-6Z"/><path d="M16 39q-2 3 0 4.5 2-1.5 0-4.5Z"/><path d="M84 39q-2 3 0 4.5 2-1.5 0-4.5Z"/></g>` },
+};
+let EMO_N = 0;
+function emoteSvg(kind, uid, title) {
+  const n = ++EMO_N, me = S.session && uid === S.session.user.id;
+  const pseudo = (me ? S.pseudo : pseudoMap()[uid]) || '?', ini = esc(pseudo.trim().charAt(0).toUpperCase() || '?');
+  const shirt = shirtOf(uid) || '#2F6DB5', photo = avatarUrl(uid), wear = new Set((S.outfits && S.outfits[uid]) || []);
+  const P = EMO_POSES[kind] || EMO_POSES.pouce;
+  const SH = [[39, 55], [61, 55]];
+  const armPath = (s, pts) => `<path d="M${s[0]} ${s[1]}${pts.map(p => ` L${p[0]} ${p[1]}`).join('')}" stroke="${shirt}" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+  const end = k => P.arms[k][P.arms[k].length - 1];
+  const hand = ([x, y]) => `${wear.has('poignets') ? `<circle cx="${x}" cy="${y}" r="5.4" fill="none" stroke="#C8202F" stroke-width="2.2"/>` : ''}<circle cx="${x}" cy="${y}" r="4.3" fill="#F4F3EE" stroke="rgba(18,26,38,.2)" stroke-width="1"/>`;
+  const [hx, hy] = end(0), [lx, ly] = end(1);
+  const pad = P.pad == null ? '' : `<g transform="translate(${hx} ${hy}) rotate(${P.pad})"><rect x="-1.4" y="2" width="2.8" height="7" rx="1" fill="#C9A46C"/><circle cy="14" r="6.4" fill="${wear.has('raquette') ? '#D9A93A' : '#C0202A'}"/></g>`;
+  const thumb = P.thumb ? `<rect x="${lx - 1.7}" y="${ly - 10}" width="3.6" height="8" rx="1.8" fill="#F4F3EE" stroke="rgba(18,26,38,.2)" stroke-width="1"/>` : '';
+  const leftHandItem = P.front ? '' : wear.has('cafe') ? `<rect x="${lx + 2.5}" y="${ly - 3}" width="6.5" height="8" rx="1.4" fill="#2D7F4E"/>`
+    : wear.has('lanterne') ? `<circle cx="${lx}" cy="${ly + 9}" r="4.8" fill="#E2782A"/><path d="M${lx - 2} ${ly + 8}h1.2M${lx + 1} ${ly + 8}h1.2" stroke="#1B1322" stroke-width="1.3"/>` : '';
+  const arms = `${armPath(SH[0], P.arms[0])}${armPath(SH[1], P.arms[1])}${pad}${hand(end(0))}${hand(end(1))}${thumb}${leftHandItem}`;
+  const face = photo
+    ? `<clipPath id="emc${n}"><circle cx="50" cy="32" r="11"/></clipPath><image href="${esc(photo)}" x="39" y="21" width="22" height="22" clip-path="url(#emc${n})" preserveAspectRatio="xMidYMid slice"/><circle cx="50" cy="32" r="11" fill="none" stroke="#fff" stroke-width="1.6"/>`
+    : `<circle cx="50" cy="32" r="11" fill="#C8202F"/><text x="50.3" y="36.6" text-anchor="middle" font-family="'Barlow Semi Condensed','Barlow',sans-serif" font-style="italic" font-weight="700" font-size="13" fill="#fff">${ini}</text>`;
+  const hat = [
+    wear.has('casquette') ? '<path d="M34.5 25Q35 14 50 14T65.5 25Z" fill="#1F2A44"/><ellipse cx="50" cy="25" rx="15.5" ry="3" fill="#1F2A44"/>' : '',
+    wear.has('bandeau') ? '<rect x="34" y="18.5" width="32" height="5.5" rx="2.7" fill="#C8202F"/>' : '',
+    wear.has('visiere') ? '<rect x="34" y="19.5" width="32" height="3.6" rx="1.8" fill="#F2F2EE" stroke="rgba(18,26,38,.15)" stroke-width=".8"/><ellipse cx="50" cy="23.5" rx="13" ry="2.8" fill="#2D7F4E"/>' : '',
+    wear.has('chapeau') ? '<ellipse cx="50" cy="18" rx="24" ry="4" fill="#B59A66"/><path d="M39 18V9q0-3 3-3h16q3 0 3 3v9Z" fill="#B59A66"/><rect x="39" y="13.5" width="22" height="3" fill="#4A3B26"/>' : '',
+    wear.has('couronne') ? '<path d="M38.5 17V7.5l5 5 6.5-8 6.5 8 5-5V17Z" fill="#D9A93A" stroke="#B8860B" stroke-width="1"/><circle cx="50" cy="13" r="1.8" fill="#B0122A"/>' : '',
+    wear.has('lunettes') ? '<rect x="39.5" y="27.5" width="9" height="6.5" rx="2.6" fill="#101317"/><rect x="51.5" y="27.5" width="9" height="6.5" rx="2.6" fill="#101317"/><path d="M48.5 29.5h3" stroke="#101317" stroke-width="1.5"/>' : '',
+  ].join('');
+  const tears = P.tears ? `<path d="M36 33q-3 4 0 6 3-2 0-6Z" fill="${TEAR}"/><path d="M64 33q-3 4 0 6 3-2 0-6Z" fill="${TEAR}"/>` : '';
+  const head = `<g transform="rotate(${P.head || 0} 50 40)"><circle cx="50" cy="31" r="16.5" fill="#F6F5F0" stroke="rgba(18,26,38,.16)" stroke-width="1"/>${face}${hat}${tears}</g>`;
+  const shoe = wear.has('baskets') ? '#C8202F' : '#15171B';
+  const body = `${wear.has('cape') ? '<path d="M40 52 31 85q19 5 38 0L60 52Z" fill="#3E7FC9"/>' : ''}
+    <rect x="42" y="77" width="6.5" height="13" rx="3" fill="#252B36"/><rect x="51.5" y="77" width="6.5" height="13" rx="3" fill="#252B36"/>
+    <ellipse cx="45.2" cy="90.5" rx="5.4" ry="2.9" fill="${shoe}"/><ellipse cx="54.8" cy="90.5" rx="5.4" ry="2.9" fill="${shoe}"/>
+    <path d="M41 50Q50 47 59 50L63 60Q66 72 63 79Q50 83 37 79Q34 72 37 60Z" fill="${shirt}"/>
+    <ellipse cx="50" cy="49.5" rx="6" ry="1.9" fill="#F2F2EE"/>
+    ${wear.has('echarpe') ? '<rect x="40.5" y="47" width="19" height="5" rx="2.5" fill="#1B46B4"/><rect x="52.5" y="50" width="5" height="13" rx="2" fill="#1B46B4" transform="rotate(-8 55 50)"/>' : ''}
+    ${wear.has('serviette') ? '<path d="M56 50 64 52 63 66 57.5 65Z" fill="#9CC9E8"/>' : ''}`;
+  return `<svg class="emo" viewBox="0 0 100 100" role="img" aria-label="${esc(title || '')}">
+    ${P.back || ''}<ellipse cx="50" cy="94" rx="19" ry="3" fill="rgba(18,26,38,.14)"/>
+    <g transform="rotate(${P.tilt || 0} 50 90)">${body}${P.front ? head + arms : arms + head}</g>${P.extra || ''}</svg>`;
+}
+
+// --- Chargement, envoi, réception ------------------------------------------------
+async function loadEmotes() {
+  try {
+    const r = await fetchAllRows(() => sb.from('duel_emotes').select('*').order('id'));
+    S.emotes = r.error ? null : (r.data || []); // table absente (script SQL pas lancé) : pas d'emotes
+  } catch (e) { S.emotes = null; }
+}
+// On peut en envoyer dans un défi accepté, jusqu'à deux jours après le début du match.
+function emoteOpen(i) {
+  if (!S.emotes || !i.m || i.state === 'proposed' || i.state === 'expired') return false;
+  return Date.now() < new Date(i.m.starts_at).getTime() + 2 * 864e5;
+}
+const timeAgo = t => {
+  const s = (Date.now() - new Date(t).getTime()) / 1000;
+  if (s < 60) return "à l'instant";
+  if (s < 3600) return `il y a ${Math.floor(s / 60)} min`;
+  if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`;
+  return s < 172800 ? 'hier' : new Date(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+};
+function emoteSection(d, i) {
+  if (!S.emotes) return '';
+  const me = S.session.user.id, open = emoteOpen(i);
+  const feed = S.emotes.filter(e => e.duel_id === d.id).slice(-8).reverse();
+  if (!open && !feed.length) return '';
+  const btn = em => `<button class="emobtn" data-act="emote" data-did="${d.id}" data-kind="${em.id}" aria-label="Envoyer l'emote ${esc(em.label)}">${emoteSvg(em.id, me, em.label)}<span>${esc(em.label)}</span></button>`;
+  return `<section class="emosec">
+    <h3 class="emoh">Emotes</h3>
+    ${open ? `<p class="hint">Pour encourager ou pour chambrer : c'est ton personnage qui l'envoie à ${esc(i.pseudo)}.</p>
+    <div class="emogroup"><small>Encourager</small><div class="emobar">${EMOTES.filter(e => e.side === 'enc').map(btn).join('')}</div></div>
+    <div class="emogroup"><small>Chambrer</small><div class="emobar">${EMOTES.filter(e => e.side === 'troll').map(btn).join('')}</div></div>` : ''}
+    ${feed.length ? `<ul class="emofeed">${feed.map(e => {
+      const em = EMOTES.find(x => x.id === e.kind) || EMOTES[0], mine = e.sender === me;
+      return `<li class="${mine ? 'mine' : ''}">${emoteSvg(e.kind, e.sender, em.label)}<span><b>${mine ? 'Toi' : esc(i.pseudo)}</b> ${esc(em.label)}</span><time>${esc(timeAgo(e.created_at))}</time></li>`;
+    }).join('')}</ul>` : ''}
+  </section>`;
+}
+// Le personnage fait le geste dans la scène 3D du défi, si elle est ouverte.
+function duelAct(did, who, kind) {
+  const p = SCENE3D.podium, em = EMOTES.find(x => x.id === kind);
+  if (em && p && p.api && p.cur && p.cur.startsWith(`duel:${did}:`)) p.api.podium.doAct(who, em.act);
+}
+async function sendEmote(did, kind) {
+  if (S._emoBusy) return;
+  S._emoBusy = true; setTimeout(() => { S._emoBusy = false; }, 2000);
+  const r = await sb.from('duel_emotes').insert({ duel_id: did, sender: S.session.user.id, kind }).select().single();
+  if (r.error) { toast(friendlyError(r.error), true); return; }
+  S.emotes = (S.emotes || []).concat([Object.assign({ created_at: new Date().toISOString() }, r.data)]);
+  duelAct(did, 0, kind); playSound('tick'); keepRender();
+}
+// Les emotes reçues depuis la dernière fois : elles s'affichent à l'écran (3 au plus).
+const EMO_SEEN = 'spin_emote_seen';
+function checkNewEmotes() {
+  if (!S.emotes || !S.session) return;
+  const me = S.session.user.id, recv = S.emotes.filter(e => e.sender !== me);
+  const max = recv.reduce((m, e) => Math.max(m, e.id), 0);
+  let last = null;
+  try { last = localStorage.getItem(EMO_SEEN); } catch (e) { /* ignore */ }
+  try { localStorage.setItem(EMO_SEEN, String(Math.max(max, Number(last) || 0))); } catch (e) { /* ignore */ }
+  if (last === null) return; // première fois : rien d'ancien à montrer
+  const fresh = recv.filter(e => e.id > Number(last)).slice(-3);
+  fresh.forEach((e, k) => afterSplash(() => setTimeout(() => popEmote(e), 700 + k * 2800)));
+}
+function popEmote(e) {
+  const d = (S.duels || []).find(x => x.id === e.duel_id), em = EMOTES.find(x => x.id === e.kind);
+  if (!d || !em) return;
+  const m = matchOf(d.match_id), who = pseudoMap()[e.sender] || '?';
+  const el = document.createElement('button');
+  el.type = 'button'; el.className = 'emopop'; el.setAttribute('role', 'status');
+  el.innerHTML = `${emoteSvg(e.kind, e.sender, em.label)}<span><b>${esc(who)}</b> ${esc(em.label)}${m ? `<small>Défi sur ${esc(m.side_a)} – ${esc(m.side_b)}</small>` : ''}</span>`;
+  el.addEventListener('click', () => { el.remove(); S.openDuel = d.id; keepRender(); });
+  document.body.appendChild(el);
+  duelAct(d.id, 1, e.kind); playSound('tick');
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 4200);
+}
+// Fiche d'un défi ouverte : on regarde s'il y a du nouveau toutes les 15 secondes.
+setInterval(async () => {
+  if (!S.session || !S.openDuel || S.emotes === null || document.visibilityState !== 'visible') return;
+  const before = (S.emotes || []).length;
+  await loadEmotes(); checkNewEmotes();
+  if ((S.emotes || []).length !== before) keepRender();
+}, 15000);
 
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
@@ -8294,6 +8551,9 @@ $app.addEventListener('click', async e => {
   else if (act === 'duel') { S.openDuel = Number(el.dataset.did); keepRender(); }
   else if (act === 'closeduel') { S.openDuel = null; keepRender(); }
   else if (act === 'duelcancel') cancelDuel(Number(el.dataset.did));
+  else if (act === 'duelaccept') answerDuel(Number(el.dataset.did), true);
+  else if (act === 'dueldecline') answerDuel(Number(el.dataset.did), false);
+  else if (act === 'emote') sendEmote(Number(el.dataset.did), el.dataset.kind);
   else if (act === 'acc') toggleAccessory(el.dataset.acc);
   else if (act === 'closeceleb') closeCeleb();
 });
