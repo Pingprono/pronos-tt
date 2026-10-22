@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#E3E8ED">
+<meta name="color-scheme" content="light dark">
 <title>SPIN</title>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1722,6 +1723,102 @@ p.hint.explain{margin:10px 0 0;color:var(--ink-2)}
 .winx .explain{margin-bottom:12px}
 .winx .explain .hint{margin-top:0}
 .winx .explain .winsch{margin:8px 0 0}
+/* =============================================================================
+   Thème de nuit : quand le téléphone est en mode sombre (classe html.dark).
+   ========================================================================== */
+/* Dit aussi aux navigateurs qui le cherchent dans le CSS (Samsung Internet)
+   que le site a son propre mode sombre : ils n'ont pas à le fabriquer. */
+@media (prefers-color-scheme:dark){ html:not(.halloween){color-scheme:dark} }
+html.dark{
+  color-scheme:dark;
+  --ground:#10161D;
+  --ground-2:#0A0F15;
+  --surface:#19212A;
+  --surface-2:#222C37;
+  --ink:#E8ECF1;
+  --ink-2:#AEB7C2;
+  --ink-3:#8C96A2;
+  --line:#38444F;
+  --line-2:#26303A;
+  --red:#DE3C43;
+  --red-hi:#F05A60;
+  --red-deep:#9E1E26;
+  --on-red:#FFFFFF;
+  --dock:#080C11;
+  --focus:#8DBBF2;
+  --float:0 22px 44px -16px rgba(0,0,0,.75),0 3px 8px rgba(0,0,0,.4);
+  --lift:inset 0 1px 0 rgba(255,255,255,.04),0 1px 2px rgba(0,0,0,.4);
+  --explain:#2A2720;
+  --explain-line:#453F31;
+}
+html.dark,html.dark body{background:var(--ground)}
+/* Un peu de lumière qui tombe d'en haut, comme d'une lampe au-dessus des tables. */
+html.dark body{background:linear-gradient(180deg,#17202A 0,var(--ground) 460px) no-repeat,var(--ground)}
+html.dark ::selection{background:rgba(222,60,67,.35);color:var(--ink)}
+html.dark :focus-visible{outline-color:var(--focus)}
+html.dark input,html.dark textarea{caret-color:var(--red)}
+
+/* --- Ce qui posait du texte sombre sur un fond clair fixe --- */
+html.dark .tickeritem{background:var(--dock);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
+html.dark .flipd{color:#1E1912;background:linear-gradient(#F3EBDC 0 50%,#E2D6C1 50% 100%);box-shadow:0 .06em 0 rgba(0,0,0,.45),0 .12em .2em rgba(0,0,0,.35)}
+html.dark .flipd::after{background:rgba(60,40,10,.22)}
+html.dark .medalball,html.dark .rankcell .medal,html.dark .sidelist .medal{color:#1E1912}
+html.dark .btn.light{color:#1A222B;background:linear-gradient(180deg,#F5EDDF,#E2D6C1)}
+html.dark .btn.sec{color:var(--ink);background:linear-gradient(180deg,#2D3946,#24303B);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),inset 0 1px 0 rgba(255,255,255,.06),0 2px 0 #070B10,0 6px 12px -8px rgba(0,0,0,.6)}
+@media (prefers-reduced-motion:no-preference){ html.dark .btn.sec:active{box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 0 0 #070B10} }
+html.dark .toast{background:#F1E9DA;color:#1A222B}
+html.dark .toast.err{background:var(--red);color:var(--on-red)}
+html.dark .badgelock{background:#05080B;color:var(--ink)}
+
+/* --- Liens et textes couleur de table : trop sombres sur la nuit --- */
+html.dark .linkbtn,html.dark .friendstoggle{color:var(--ink);text-decoration-color:var(--red)}
+html.dark .lbfollow,html.dark .fok{color:color-mix(in srgb,var(--chip) 55%,white)}
+html.dark .cmres.win{background:color-mix(in srgb,var(--table) 30%,var(--surface));color:color-mix(in srgb,var(--chip) 45%,white)}
+html.dark .oddsgauge .bar i,html.dark .statlist .bar i{background:color-mix(in srgb,var(--chip) 72%,white)}
+html.dark .statlist .bar.hot i{background:var(--red)}
+html.dark .standings tbody tr.me td,html.dark .sidelist li.me{background:color-mix(in srgb,var(--table) 22%,var(--surface))}
+html.dark .streakbadge.t1{color:#79D29B}
+html.dark .streakbadge.t2{color:#FFAA5E}
+html.dark .streakbadge.t3{color:#C2A6F2}
+html.dark .streakbadge.t4{color:#8DBBF2}
+
+/* --- Reliefs : sur la nuit, une surface en relief est plus claire, un creux plus sombre --- */
+html.dark .pillrow,html.dark .journeerow{box-shadow:inset 0 1px 3px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.03)}
+html.dark .pillrow.seg::before{background:var(--surface-2);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 2px 6px rgba(0,0,0,.5)}
+html.dark .jchip[aria-pressed="true"]{background:var(--surface-2);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 2px 6px rgba(0,0,0,.5)}
+html.dark .pillbtn .cnt{background:rgba(255,255,255,.09)}
+html.dark .ballesstepper,html.dark .oddsgauge .bar,html.dark .statlist .bar,html.dark .laddbar,
+html.dark .streaktile,html.dark .sideballs i,html.dark .toggle,html.dark .tuto-dots i{box-shadow:inset 0 1px 3px rgba(0,0,0,.55)}
+html.dark .ballesbtn{background:#303C49;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 4px rgba(0,0,0,.45)}
+html.dark .recapgrid div,html.dark .rx-stat,html.dark .rx-streak{box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+html.dark .modalbackdrop{background:rgba(3,5,8,.72)}
+html.dark .modalclose.dark,html.dark .rx-close{background:rgba(255,255,255,.08);color:var(--ink)}
+html.dark .badgemodal::before{background:rgba(255,255,255,.28)}
+html.dark input,html.dark select,html.dark textarea{background:#0D1319;
+  box-shadow:inset 0 0 0 1.5px var(--line),inset 0 2px 3px rgba(0,0,0,.35)}
+html.dark input:focus-visible,html.dark select:focus-visible,html.dark textarea:focus-visible{
+  box-shadow:inset 0 0 0 2px var(--focus),0 0 0 4px rgba(141,187,242,.18)}
+html.dark .hero{background:color-mix(in srgb,var(--table) 60%,#05080C);
+  box-shadow:0 20px 36px -20px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.07)}
+html.dark .authstage,html.dark .tuto-art{background:#0D2340}
+html.dark .tuto-spot{box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 0 200vmax rgba(2,4,7,.76)}
+html.dark .tuto-spot.none{box-shadow:0 0 0 0 transparent,0 0 0 200vmax rgba(2,4,7,.76)}
+html.dark .tuto-hint{background:color-mix(in srgb,var(--red) 13%,var(--surface))}
+html.dark .tuto-hint.ok{background:color-mix(in srgb,var(--table) 26%,var(--surface))}
+html.dark .recapx{background:var(--ground)}
+html.dark .rx-close{background:rgba(255,255,255,.08)}
+html.dark .badgezoom{background:radial-gradient(circle at 50% 52%,color-mix(in srgb,var(--ba) 58%,#19212A) 0,color-mix(in srgb,var(--ba) 26%,#141B23) 62%,#131920 100%)}
+html.dark .badgezoom.locked{background:var(--surface-2)}
+html.dark .badgezoom-img{filter:drop-shadow(0 14px 16px rgba(0,0,0,.55))}
+html.dark .race polyline.me,html.dark .racelab.me::before{stroke:var(--focus);background:var(--focus)}
+html.dark .sglegend i.you,html.dark .sg-bars i.you{background:color-mix(in srgb,var(--table) 55%,white)}
+html.dark .acc.on{box-shadow:inset 0 0 0 2px var(--focus)}
+/* « Tendance récente » : le bleu de table et le noir des 0 point se perdaient sur la nuit. */
+html.dark .spark rect[fill="var(--table)"],html.halloween .spark rect[fill="var(--table)"]{fill:color-mix(in srgb,var(--chip) 62%,white)}
+html.dark .sparklegend .dot[style*="var(--table)"],html.halloween .sparklegend .dot[style*="var(--table)"]{background:color-mix(in srgb,var(--chip) 62%,white)!important}
+html.dark .spark rect[fill="var(--ground-2)"],html.halloween .spark rect[fill="var(--ground-2)"]{fill:var(--line)}
+html.dark .sparklegend .dot[style*="var(--ground-2)"],html.halloween .sparklegend .dot[style*="var(--ground-2)"]{background:var(--line)!important}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -1737,6 +1834,23 @@ p.hint.explain{margin:10px 0 0;color:var(--ink-2)}
   document.documentElement.classList.add('halloween');
   var t = document.querySelector('meta[name="theme-color"]');
   if (t) t.content = '#11171E';
+})();
+/* Mode sombre du téléphone (hors Halloween) : le thème de nuit, tout seul. */
+(function () {
+  var root = document.documentElement;
+  var mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+  if (!mq || root.classList.contains('halloween')) return;
+  function apply() {
+    root.classList.toggle('dark', !!mq.matches);
+    var t = document.querySelector('meta[name="theme-color"]');
+    if (t && !document.getElementById('splash')) t.content = mq.matches ? '#10161D' : '#E3E8ED';
+  }
+  if (mq.matches) {
+    root.classList.add('dark');
+    var t = document.querySelector('meta[name="theme-color"]');
+    if (t) t.content = '#10161D';
+  }
+  if (mq.addEventListener) mq.addEventListener('change', apply); else if (mq.addListener) mq.addListener(apply);
 })();
 </script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
