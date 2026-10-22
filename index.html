@@ -1703,6 +1703,25 @@ html.halloween .acc.on{box-shadow:inset 0 0 0 2px var(--red)}
 @media (max-width:440px){.bareme .sch.serie{grid-template-columns:repeat(2,minmax(0,1fr));max-width:230px}}
 .sidelinks{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px}
 .sidecard .sidelinks .linkbtn{margin:0}
+/* Fond des explications : un papier clair le jour, un papier sombre la nuit
+   d'Halloween. Les cases de schéma posées dessus reprennent la carte. */
+:root{--explain:#F1ECDF;--explain-line:#DDD3BD}
+html.halloween{--explain:#2C281F;--explain-line:#463F2F}
+.explain{background:var(--explain);box-shadow:inset 0 0 0 1px var(--explain-line);border-radius:10px;padding:10px 12px}
+p.hint.explain{margin:10px 0 0;color:var(--ink-2)}
+.rules{background:var(--explain);box-shadow:inset 0 0 0 1px var(--explain-line);border-radius:10px;padding:10px 12px;margin:18px 0 4px;max-width:none}
+.rulelist.explain{padding:10px 12px 10px 30px;margin:14px 0 4px;max-width:none}
+.panel.bareme,.sidecard.explaincard{background:var(--explain);box-shadow:inset 0 0 0 1px var(--explain-line),var(--lift)}
+.tuto-card{background:var(--explain);box-shadow:inset 0 0 0 1px var(--explain-line),var(--float)}
+.explain .schc,.bareme .schc,.bareme .bex,.tuto-card .schc{background:var(--surface)}
+.duelhow.explain{padding:12px 12px 10px}
+.duelhow.explain .hint{margin-top:8px}
+.badgeexp{margin:16px auto 0;max-width:36ch;padding:12px 14px}
+.badgeexp .badgehow{margin:0 0 4px}
+.badgeexp .badgehow + .badgedesc + .badgehow{margin-top:10px}
+.winx .explain{margin-bottom:12px}
+.winx .explain .hint{margin-top:0}
+.winx .explain .winsch{margin:8px 0 0}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -3141,7 +3160,7 @@ function sideView() {
       </section>`);
     }
   }
-  out.push(`<section class="sidecard">
+  out.push(`<section class="sidecard explaincard">
     <h3>Barème</h3>
     <ul class="sidescale">
       <li><b>1 pt</b><span>bon vainqueur</span></li>
@@ -3988,7 +4007,7 @@ function badgesPanel() {
     </button>`).join('');
   return `<section class="panel">
     <h3>Badges</h3>
-    <p class="hint" style="margin-top:2px">${unlockedN} sur ${list.length}. Touche un badge pour voir comment le gagner : chacun débloque un accessoire.</p>
+    <p class="hint explain">${unlockedN} sur ${list.length}. Touche un badge pour voir comment le gagner : chacun débloque un accessoire.</p>
     <div class="badgegrid">${cells}</div>
   </section>`;
 }
@@ -6023,7 +6042,7 @@ function myCharPanel() {
       <div class="mychar-pick">
         <div class="wheel" role="slider" tabindex="0" aria-label="Couleur du maillot" aria-valuemin="0" aria-valuemax="359" aria-valuenow="${Math.round(hs.h)}"
           data-h="${hs.h}" data-s="${hs.s}" style="--c:${hex || THEME.ALL.chip}"><i style="${hex ? wheelDot(hs.h, hs.s) : 'display:none'}"></i></div>
-        <div><p class="hint">Touche le cercle pour changer la couleur de ton maillot.</p>
+        <div><p class="hint explain">Touche le cercle pour changer la couleur de ton maillot.</p>
           ${hex ? '<button class="btn small sec" data-act="shirtreset">Couleur du tournoi</button>' : ''}</div>
       </div>
     </div>
@@ -6398,8 +6417,8 @@ function badgeModal(id) {
       <div class="badgemodal-body">
         <span class="badgestatus ${b.unlocked ? 'on' : ''}">${S._newBadge === id ? 'Nouveau badge' : b.unlocked ? 'Débloqué' : 'Pas encore débloqué'}</span>
         <h2 class="badgetitle">${esc(b.name)}</h2>
-        <p class="badgehow">${b.unlocked ? 'Obtenu pour :' : 'Pour le débloquer :'}</p>
-        <p class="badgedesc">${esc(b.desc)}</p>${S.outfitOk ? (a => a ? `<p class="badgehow">Débloque pour ton personnage : <b>${esc(a.name)}</b></p>` : '')(ACCESSORIES.find(x => x.badge === b.id)) : ''}
+        <div class="explain badgeexp"><p class="badgehow">${b.unlocked ? 'Obtenu pour :' : 'Pour le débloquer :'}</p>
+        <p class="badgedesc">${esc(b.desc)}</p>${S.outfitOk ? (a => a ? `<p class="badgehow">Débloque pour ton personnage : <b>${esc(a.name)}</b></p>` : '')(ACCESSORIES.find(x => x.badge === b.id)) : ''}</div>
       </div>
     </div>
   </div>`;
@@ -6526,8 +6545,8 @@ function winnerModal(o) {
         <div class="modalsub">${esc(sub)}</div>
       </div>
       <div class="modalbody">
-        <p class="hint">Le numéro, c'est la tête de série. Moins il est favori, plus il rapporte :</p>
-        <div class="winsch">${schWin()}</div>
+        <div class="explain"><p class="hint">Le numéro, c'est la tête de série. Moins il est favori, plus il rapporte :</p>
+        <div class="winsch">${schWin()}</div></div>
         ${nobody ? '<p class="hint">Personne n’a fait de choix pour ce tableau.</p>' : ''}
         <ul class="wlist">${info.players.map(row).join('')}</ul>
       </div>
@@ -6739,7 +6758,7 @@ function machinePanel(hist) {
     : dis.length ? ` Ta seule fois contre le favori, tu avais ${disYou ? 'raison' : 'tort'}.` : ' Tu as toujours suivi le favori.';
   return `<section class="panel duelpanel" style="${themeVarsCss('ALL')}">
     <h3>Toi contre la machine</h3>
-    <p class="hint">La machine choisit toujours le favori (la meilleure tête de série). Sur tes ${n} pronos WTT.</p>
+    <p class="hint explain">La machine choisit toujours le favori (la meilleure tête de série). Sur tes ${n} pronos WTT.</p>
     ${duelHtml(`${avatarHtml(S.session.user.id, S.pseudo)}Toi`, 'La machine', list, 'Toi contre la machine')}
     <p class="duelverdict">${verdict}${disLine}</p>
   </section>`;
@@ -6956,7 +6975,7 @@ function duelNewModal(mid) {
         <div class="modalname">Proposer un défi</div>
       </div>
       <div class="modalbody">
-        <div class="duelhow">${DUEL_FLOW()}<p class="hint">Pour l'honneur : le classement ne change pas.</p></div>
+        <div class="duelhow explain">${DUEL_FLOW()}<p class="hint">Pour l'honneur : le classement ne change pas.</p></div>
         ${friends.length ? `<ul class="wlist">${friends.map(r => taken.has(r.user_id)
           ? `<li class="wrow out">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span><span class="wpts">déjà défié</span></li>`
           : `<li><button class="wrow" data-act="duelsave" data-id="${mid}" data-uid="${esc(r.user_id)}">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span><span class="wpts">Défier</span></button></li>`).join('')}</ul>`
@@ -7102,7 +7121,7 @@ function accessoriesHtml() {
   const n = ACCESSORIES.filter(a => earned.has(a.badge)).length;
   return `<div class="accwrap">
     <h4 class="subh">Accessoires <small>${n} sur ${ACCESSORIES.length}</small></h4>
-    <p class="hint">1 badge gagné = 1 accessoire. Un seul par endroit : tête, main, pieds…</p>
+    <p class="hint explain">1 badge gagné = 1 accessoire. Un seul par endroit : tête, main, pieds…</p>
     <div class="accgrid">${ACCESSORIES.map(a => {
       const locked = !earned.has(a.badge), worn = on.has(a.id), def = BADGE_DEFS.find(b => b.id === a.badge);
       return `<button class="acc${worn ? ' on' : ''}${locked ? ' locked' : ''}" data-act="${locked ? 'badge' : 'acc'}" data-acc="${a.id}" data-badge="${a.badge}" ${locked ? '' : `aria-pressed="${worn}"`}>
@@ -7317,7 +7336,7 @@ function emoteSection(d, i) {
   const btn = em => `<button class="emobtn" data-act="emote" data-did="${d.id}" data-kind="${em.id}" aria-label="Envoyer l'emote ${esc(em.label)}">${emoteSvg(em.id, me, em.label)}<span>${esc(em.label)}</span></button>`;
   return `<section class="emosec">
     <h3 class="emoh">Emotes</h3>
-    ${open ? `<p class="hint">Touche une emote : ton personnage la joue pour ${esc(i.pseudo)}.</p>
+    ${open ? `<p class="hint explain">Touche une emote : ton personnage la joue pour ${esc(i.pseudo)}.</p>
     <div class="emogroup"><small>Encourager</small><div class="emobar">${EMOTES.filter(e => e.side === 'enc').map(btn).join('')}</div></div>
     <div class="emogroup"><small>Chambrer</small><div class="emobar">${EMOTES.filter(e => e.side === 'troll').map(btn).join('')}</div></div>` : ''}
     ${feed.length ? `<ul class="emofeed">${feed.map(e => {
@@ -7419,7 +7438,7 @@ function baremeHtml() {
 }
 // Les règles du classement du mois, en quatre lignes.
 function monthRulesHtml() {
-  return `<ul class="rulelist">
+  return `<ul class="rulelist explain">
     <li>Les points des matchs joués ce mois-ci (heure de Paris).</li>
     <li>Le vainqueur du tournoi compte le mois de la finale.</li>
     <li>Le 1er à la fin du mois devient champion du mois.</li>
