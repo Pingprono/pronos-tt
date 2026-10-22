@@ -1490,6 +1490,89 @@ button.wrow:hover{background:var(--surface-2)}
 
 html.halloween .race polyline.me,html.halloween .racelab.me::before{stroke:var(--red);background:var(--red)}
 html.halloween .sglegend i.you,html.halloween .sg-bars i.you{background:color-mix(in srgb,var(--table) 55%,white)}
+/* --- Défis entre amis --- */
+.duelrow{display:flex;flex-wrap:wrap;gap:8px;margin:12px 2px 0}
+.duelrow.col{margin-top:10px}
+.duelchip,.duelnew{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:8px;padding:5px 12px 5px 5px;max-width:100%;
+  font:600 13.5px/1.2 var(--f-text);color:var(--ink);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);text-align:left}
+.duelchip span{min-width:0;overflow-wrap:anywhere}
+.duelchip .av{width:24px;height:24px;font-size:12px}
+.duelchip:hover,.duelnew:hover{background:color-mix(in srgb,var(--table) 10%,var(--surface-2))}
+.duelchip.win{box-shadow:inset 0 0 0 1.5px var(--gold)}
+.duelchip.loss,.duelchip.void{color:var(--ink-2)}
+.duelchip.incoming{background:color-mix(in srgb,var(--red) 10%,var(--surface));box-shadow:inset 0 0 0 1.5px var(--red)}
+.duelnew{padding:7px 12px}
+.duelnew .ico{font-size:17px;color:var(--ink-2)}
+.duelnotice .rn-ico .av{width:40px;height:40px;font-size:19px}
+.duelx .modalclose,.celebx .modalclose{background:rgba(18,26,38,.45)}
+.duelx .duelstage,.celebx .celebstage{position:relative;overflow:hidden;border-radius:20px 20px 0 0}
+.duelx .duelstage .pod3d,.celebx .celebstage .pod3d{border-radius:0}
+.duelx .duelstage .pod3d:has(> .scene3d[data-ready]){height:clamp(250px,64vw,330px);background:#7E98AE}
+.duelx .duelstage:not(:has(.scene3d[data-ready])) + .modalbody{padding-top:58px}
+.duelmatch{margin:4px 0 0;font:500 14px/1.35 var(--f-text);color:var(--ink-2)}
+.dueltitle{margin:4px 0 14px;font:700 28px/1.05 var(--f-head);color:var(--ink)}
+.duelboard{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:10px}
+.duelside{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 8px 14px;border-radius:10px;background:var(--surface-2);text-align:center;min-width:0}
+.duelside.win{background:color-mix(in srgb,var(--gold) 20%,var(--surface));box-shadow:inset 0 0 0 1.5px var(--gold)}
+.dsname{display:inline-flex;align-items:center;gap:7px;max-width:100%;font:600 15px/1.2 var(--f-head);color:var(--ink);overflow-wrap:anywhere}
+.dsname .av{width:24px;height:24px;font-size:12px}
+.duelside b{font:700 italic 30px/1 var(--f-head);color:var(--ink)}
+.duelside small{font:500 12.5px/1.2 var(--f-text);color:var(--ink-2)}
+.dvs{align-self:center;font:500 13px/1 var(--f-text);color:var(--ink-2)}
+.duelx .duelverdict{margin-top:14px}
+.duelx .btn.small{margin-top:14px}
+.duelnewx .wrow{grid-template-columns:30px minmax(0,1fr) auto}
+.duelnewx .wrow .av{width:30px;height:30px;font-size:14px}
+.duelnewx button.wrow .wpts{color:var(--red);font-weight:700}
+html.halloween .duelx .duelstage .pod3d:has(> .scene3d[data-ready]),html.halloween .celebx .celebstage .pod3d:has(> .scene3d[data-ready]){background:#09111C}
+
+/* --- Accessoires (dans « Ton personnage ») --- */
+.accwrap{margin-top:20px}
+.accwrap .subh small{font-weight:500;color:var(--ink-3);margin-left:6px}
+.accgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:12px}
+.acc{display:flex;align-items:center;gap:10px;min-width:0;padding:8px 10px 8px 8px;border:0;border-radius:10px;background:var(--surface-2);color:var(--ink);text-align:left;font:inherit}
+.acc:hover{background:color-mix(in srgb,var(--table) 8%,var(--surface-2))}
+.acc.on{background:color-mix(in srgb,var(--table) 13%,var(--surface));box-shadow:inset 0 0 0 2px var(--table)}
+.accimg{position:relative;flex:none;width:38px;height:38px}
+.accimg img{display:block;width:38px;height:38px}
+.acc.locked .accimg img{filter:grayscale(1);opacity:.42}
+.acclock{position:absolute;right:-4px;bottom:-4px;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--surface);color:var(--ink-2)}
+.acclock .ico{font-size:12px}
+.acct{display:flex;flex-direction:column;gap:2px;min-width:0}
+.acct b{font:600 14.5px/1.15 var(--f-head);overflow-wrap:anywhere}
+.acct small{font:400 12px/1.25 var(--f-text);color:var(--ink-2)}
+.acc.locked .acct b{color:var(--ink-2)}
+html.halloween .acc.on{box-shadow:inset 0 0 0 2px var(--red)}
+
+/* --- La fête du score exact --- */
+.celebx .celebstage{background:var(--table)}
+.celebx .celebstage .pod3d:has(> .scene3d[data-ready]){height:clamp(260px,70vw,340px);background:#7E98AE}
+.celebflat{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:190px;color:var(--on-table)}
+.celebflat b{font:700 italic 76px/.9 var(--f-head)}
+.celebflat span{font:500 14px/1 var(--f-text);color:var(--on-table-2)}
+.celebstage:has(.scene3d[data-ready]) .celebflat{display:none}
+.celebtitle{margin:2px 0 6px;font:700 32px/1 var(--f-head);color:var(--ink)}
+.celebmatch{margin:0;font:400 14.5px/1.35 var(--f-text);color:var(--ink-2)}
+.celebmatch b{color:var(--ink);font-weight:600}
+.celebtext{margin:10px 0 0;font:500 15px/1.4 var(--f-text);color:var(--ink)}
+.celebpts{list-style:none;margin:12px 0 0;padding:0}
+.celebpts li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--line-2);font:400 14.5px/1.3 var(--f-text);color:var(--ink-2)}
+.celebpts b{font:700 italic 18px/1 var(--f-head);color:var(--ink)}
+.celebpts li.tot{color:var(--ink);font-weight:600}
+.celebpts li.tot b{color:var(--red);font-size:22px}
+.celebbtns{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.celebbtns .btn.small{margin-top:0}
+/* La bulle au-dessus du personnage (+12) : rouge, comme le score exact. */
+.plabel.bubble{padding:6px 14px 7px;border-radius:10px;background:var(--red);color:var(--on-red)}
+.plabel.bubble b{font:700 italic 32px/1 var(--f-head)}
+.plabel.bubble span{font:600 12px/1.1 var(--f-text);font-style:normal;color:inherit;opacity:.9}
+/* Fiche d'un ami : le score de vos défis, comme un tableau d'affichage. */
+.duelscore{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin:8px 0 2px}
+.duelscore b{font:700 italic 36px/1 var(--f-head);color:var(--ink)}
+.duelscore .lab{font:600 15px/1.2 var(--f-head);color:var(--ink-2)}
+.duelscore .sep{width:14px;height:3px;border-radius:2px;background:var(--ink-3)}
+.duelscore small{flex-basis:100%;font:400 13px/1.3 var(--f-text);color:var(--ink-2)}
+.modalsec .duelrow.col{margin-top:10px}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -1862,6 +1945,7 @@ const S = {
   matches: [], competitors: {}, myPreds: {},
   board: null, boardScope: 'ALL', boardMonth: null, // boardMonth : mois affiché dans « Ce mois » (AAAA-MM)
   winnerPicks: null, winnerPoints: [], openWin: null, // vainqueur du tournoi (null = fonction pas encore activée dans la base)
+  duels: null, outfits: {}, outfitOk: false, openDuel: null, openDuelNew: null, openCeleb: null, celebQueue: [], // défis, accessoires, fête du score exact
   friends: {}, openFriends: {},
   authMode: 'login', adminCircuit: 'WTT', bootError: '',
   _freshMatches: true, // vrai à l'ouverture : la toute première liste a le droit d'entrer en scène
@@ -2102,6 +2186,9 @@ function friendlyError(e) {
   if (/at least \d+ characters/i.test(msg)) return 'Le mot de passe doit faire au moins 6 caractères.';
   if (/Email not confirmed/i.test(msg)) return "Ton email n'est pas encore confirmé. Vérifie ta boîte mail.";
   if (/Score impossible/i.test(msg)) return msg;
+  if (/duels_une_paire_par_match/i.test(msg)) return 'Vous avez déjà un défi sur ce match.';
+  if (/duels/i.test(msg) && /row-level security/i.test(msg)) return "Défi refusé : le match a commencé, ou ton prono n'est pas encore posé.";
+  if (/duels|outfit/i.test(msg)) return "Les défis et les accessoires ne sont pas encore activés : il faut lancer le script ajout-defis-accessoires.sql dans Supabase.";
   if (/winner_picks/i.test(msg) && /row-level security/i.test(msg)) return 'Trop tard : le tableau a commencé, les choix sont figés.';
   if (/winner_pick/i.test(msg)) return "Le vainqueur du tournoi n'est pas encore activé : il faut lancer le script ajout-vainqueur-tournoi.sql dans Supabase.";
   if (/row-level security/i.test(msg)) return "Action refusée : le match a peut-être déjà commencé, ou tu n'as pas les droits.";
@@ -2514,6 +2601,7 @@ async function loadAll() {
   loadWorldRankings().then(() => { if (S.tab === 'rankings') render(); });
   loadAccount().then(render); // idem : pour la pastille de série sur les cartes de match, sans bloquer la connexion
   loadWinners().then(render);
+  loadDuels().then(render);
 }
 // Vrai classement mondial WTT (top 100 de chaque tableau), enregistré par le
 // robot de synchronisation dans world_rankings (voir
@@ -2535,8 +2623,10 @@ const avatarHtml = (uid, pseudo) => `<span class="av" aria-hidden="true">${esc((
 async function loadAvatars() {
   const r = await sb.from('profiles').select('*');
   // Colonnes absentes (scripts SQL pas encore lancés) : ni photo ni maillot, rien d'autre ne change.
-  S.avatars = {}; S.shirts = {};
-  if (!r.error) (r.data || []).forEach(p => { if (p.avatar_v) S.avatars[p.id] = p.avatar_v; if (p.shirt_color) S.shirts[p.id] = p.shirt_color; });
+  S.avatars = {}; S.shirts = {}; S.outfits = {};
+  // Accessoires : seulement si la colonne existe (script ajout-defis-accessoires.sql lancé).
+  S.outfitOk = !r.error && !!(r.data || []).length && 'outfit' in r.data[0];
+  if (!r.error) (r.data || []).forEach(p => { if (p.avatar_v) S.avatars[p.id] = p.avatar_v; if (p.shirt_color) S.shirts[p.id] = p.shirt_color; if (p.outfit && p.outfit.length) S.outfits[p.id] = p.outfit; });
 }
 // La photo choisie est recadrée en carré de 256 px et réenregistrée en JPEG
 // (environ 30 Ko) avant l'envoi : rapide à charger pour tout le monde.
@@ -2624,6 +2714,7 @@ async function loadAccount() {
       }
     } catch (e) { /* stockage indisponible : tant pis pour ce petit souvenir */ }
     checkNewBadges();
+    checkExactScores();
   } catch (e) {
     toast(friendlyError(e), true);
     S.myHistory = S.myHistory || [];
@@ -2721,7 +2812,7 @@ function render() {
         <main class="tab-${S.tab}${Date.now() - (S._tabAt || 0) < 1500 ? ' fresh' : ''}">${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
         <aside class="side" aria-label="En un coup d'œil">${sideView()}</aside>
       </div>
-    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}${S.openWin ? winnerModal(S.openWin) : ''}`;
+    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}${S.openWin ? winnerModal(S.openWin) : ''}${S.openDuelNew ? duelNewModal(S.openDuelNew) : ''}${S.openDuel ? duelModal(S.openDuel) : ''}${S.openCeleb ? celebModal(S.openCeleb) : ''}`;
   document.documentElement.classList.toggle('noscroll', !!S.openRecap);
   if (S.openRecap && !S.recapAnimPlayed) { S.recapAnimPlayed = true; S._podRun = (S._podRun || 0) + 1; mountRecapAnimation(); }
   afterRender();
@@ -3059,7 +3150,7 @@ function matchesView() {
     }).join('');
   }
   const cnt = n => `<span class="cnt">${n}</span>`;
-  return heroCard(up) + halloweenNotice() + recapNotice() + `<div class="filters">`
+  return heroCard(up) + halloweenNotice() + recapNotice() + duelNotice() + `<div class="filters">`
     + segRow([['upcoming', `À venir ${cnt(up.length)}`], ['done', `Terminés ${cnt(doneAll.length)}`]], S.view, 'view')
     + segRow([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit')
     + `</div>` + journeeRow + body;
@@ -3260,6 +3351,7 @@ function matchRow(m, fresh, i, streakInfo) {
       <div class="predstatus">${status}${streakTeaser}</div>
       ${gauge}
       ${ballesStepperHtml(m)}
+      ${duelRowHtml(m)}
     </div>`;
   } else {
     let foot, stamp = '';
@@ -3299,7 +3391,7 @@ function matchRow(m, fresh, i, streakInfo) {
         ? `<ul class="friends">${rows.map(r => `<li><span>${esc(r.profiles && r.profiles.pseudo)}${r.user_id === S.session.user.id ? ' (toi)' : ''}</span><span>${r.pred_a}–${r.pred_b}${r.pt !== null ? ` : ${r.pt} pt${r.pt > 1 ? 's' : ''}` : ''}</span></li>`).join('')}</ul>`
         : `<p class="hint" style="margin-top:8px">Personne n'a fait de prono sur ce match.</p>`;
     }
-    panel = `<div class="predpanel locked"><div class="predresult">${stamp}<div class="rtext">${foot}</div></div>${friends}</div>`;
+    panel = `<div class="predpanel locked"><div class="predresult">${stamp}<div class="rtext">${foot}</div></div>${duelRowHtml(m)}${friends}</div>`;
   }
 
   return `
@@ -3721,7 +3813,7 @@ function checkNewBadges() {
       playSound('milestone'); releaseBats();
       const show = () => {
         // Une autre fenêtre est déjà ouverte : un simple message suffit.
-        if (S.openBadge || S.openRecap || S.openCompetitor || TUTO) { newlyUnlocked.forEach(b => toast(`Nouveau badge débloqué : ${b.name}`)); return; }
+        if (S.openBadge || S.openRecap || S.openCompetitor || S.openCeleb || TUTO) { newlyUnlocked.forEach(b => toast(`Nouveau badge débloqué : ${b.name}`)); return; }
         S.badgeQueue = newlyUnlocked.map(b => b.id);
         openNextNewBadge();
       };
@@ -4341,6 +4433,7 @@ const table = new THREE.Group(); scene.add(table);
    toucher : ils font un saut sur eux-mêmes.
    ========================================================================== */
 const MODE = opts.mode === 'podium' ? 'podium' : 'table';
+let duelOn = false, rallyOn = false, camBase = 0, joyView = false; // défi : la table revient, et parfois l'échange
 let podium = null;
 function buildPodium(data) {
   const root = new THREE.Group(); scene.add(root);
@@ -4377,7 +4470,7 @@ function buildPodium(data) {
   const SOLO_H = .1, soloMat = withGlow(new THREE.MeshPhysicalMaterial({ color: theme.table, roughness: .5, clearcoat: .25 }));
   const soloBase = new THREE.Mesh(new THREE.CylinderGeometry(.34, .38, SOLO_H, 40), soloMat);
   soloBase.position.y = SOLO_H / 2; soloBase.castShadow = soloBase.receiveShadow = true; soloBase.visible = false; root.add(soloBase);
-  let solo = false;
+  let solo = false, layout = 'podium', duel = null, mood = null, ballRef = null;
   for (const place of [1, 2, 3]) {
     const { x, h } = STEPS[place], px = 512;
     const mk = (kind, mw, mh) => { const f = { kind, place, mw, seed: place * 7 + faces.length, tex: mkTex(px, Math.max(64, Math.round(px * mh / mw))) }; faces.push(f); paint(f); return physical(f.tex); };
@@ -4440,11 +4533,111 @@ function buildPodium(data) {
     ch.tex.needsUpdate = true;
   };
   const pick = [];
+  /* --- Les accessoires (gagnés avec les badges) : chacun se pose sur la tête,
+     le corps ou un bras ; la raquette dorée et les baskets changent de matière. --- */
+  const accMats = {};
+  const am = (k, o) => accMats[k] || (accMats[k] = std(o));
+  const goldMat = () => am('gold', { color: 0xD9A93A, metalness: .85, roughness: .3, emissive: 0x3a2600, emissiveIntensity: .2 });
+  const mesh = (geo, mat, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); return m; };
+  const halfDisc = r => new THREE.CylinderGeometry(r, r, .012, 32, 1, false, -Math.PI / 2, Math.PI);
+  const ACC = {
+    bandeau: () => { const m = mesh(new THREE.TorusGeometry(.158, .027, 10, 40), am('red', { color: 0xC8202F, roughness: .85 }), 0, .11, 0); m.rotation.x = Math.PI / 2; return [['head', m]]; },
+    visiere: () => {
+      const g = new THREE.Group(), band = mesh(new THREE.TorusGeometry(.163, .02, 8, 40), am('white', { color: 0xF2F2EE, roughness: .6 }), 0, .1, 0);
+      band.rotation.x = Math.PI / 2; g.add(band);
+      const brim = mesh(halfDisc(.15), am('green', { color: 0x2D7F4E, roughness: .55 }), 0, .1, .1); brim.rotation.x = .18; g.add(brim);
+      return [['head', g]];
+    },
+    casquette: () => {
+      const g = new THREE.Group(), navy = am('navy', { color: 0x1F2A44, roughness: .7 });
+      g.add(mesh(new THREE.SphereGeometry(.2, 32, 12, 0, Math.PI * 2, 0, .98), navy));
+      const brim = mesh(halfDisc(.13), navy, 0, .105, .14); brim.rotation.x = .12; g.add(brim);
+      g.add(mesh(new THREE.SphereGeometry(.016, 10, 8), navy, 0, .2, 0));
+      return [['head', g]];
+    },
+    chapeau: () => {
+      const g = new THREE.Group(), khaki = am('khaki', { color: 0xB59A66, roughness: .9 });
+      g.add(mesh(new THREE.CylinderGeometry(.13, .155, .12, 28), khaki, 0, .2, 0));
+      g.add(mesh(new THREE.CylinderGeometry(.3, .3, .014, 40), khaki, 0, .14, 0));
+      g.add(mesh(new THREE.CylinderGeometry(.157, .157, .03, 28, 1, true), am('band', { color: 0x4A3B26, roughness: .8, side: THREE.DoubleSide }), 0, .158, 0));
+      return [['head', g]];
+    },
+    couronne: () => {
+      const g = new THREE.Group(), gold = goldMat();
+      g.add(mesh(new THREE.CylinderGeometry(.12, .11, .06, 28, 1, true), am('goldD', { color: 0xD9A93A, metalness: .85, roughness: .3, side: THREE.DoubleSide }), 0, .165, 0));
+      for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; g.add(mesh(new THREE.ConeGeometry(.022, .055, 8), gold, Math.sin(a) * .115, .222, Math.cos(a) * .115)); }
+      g.add(mesh(new THREE.SphereGeometry(.016, 10, 8), am('ruby', { color: 0xB0122A, roughness: .2, metalness: .3 }), 0, .165, .118));
+      return [['head', g]];
+    },
+    lunettes: () => {
+      const g = new THREE.Group(), dark = am('lens', { color: 0x101317, roughness: .12, metalness: .4 });
+      for (const sx of [-1, 1]) {
+        const l = mesh(new THREE.SphereGeometry(.05, 18, 12), dark, sx * .066, .035, .172); l.scale.set(1, .78, .34); g.add(l);
+        const arm = mesh(new THREE.BoxGeometry(.008, .009, .16), dark, sx * .132, .045, .08); arm.rotation.y = sx * .35; g.add(arm);
+      }
+      g.add(mesh(new THREE.BoxGeometry(.05, .009, .01), dark, 0, .048, .186));
+      return [['head', g]];
+    },
+    serviette: () => {
+      const g = new THREE.Group(), towel = am('towel', { color: 0x9CC9E8, roughness: .95 });
+      const front = mesh(new THREE.BoxGeometry(.075, .18, .014), towel, .1, .53, .15); front.rotation.x = -.28; g.add(front);
+      const back = mesh(new THREE.BoxGeometry(.075, .2, .014), towel, .1, .52, -.15); back.rotation.x = .28; g.add(back);
+      g.add(mesh(new THREE.BoxGeometry(.075, .014, .3), towel, .1, .625, 0));
+      return [['body', g]];
+    },
+    echarpe: () => {
+      const g = new THREE.Group(), blue = am('scarf', { color: 0x1B46B4, roughness: .9 });
+      const ring = mesh(new THREE.TorusGeometry(.085, .034, 10, 28), blue, 0, .615, 0); ring.rotation.x = Math.PI / 2; g.add(ring);
+      const end = mesh(new THREE.BoxGeometry(.055, .2, .022), blue, .07, .5, .15); end.rotation.set(-.25, 0, .12); g.add(end);
+      g.add(mesh(new THREE.BoxGeometry(.057, .018, .024), am('white', { color: 0xF2F2EE, roughness: .6 }), .082, .43, .168));
+      return [['body', g]];
+    },
+    cape: () => {
+      const m = mesh(new THREE.CylinderGeometry(.15, .27, .5, 24, 1, true, Math.PI / 2 + .3, Math.PI - .6), am('cape', { color: 0x3E7FC9, roughness: .8, side: THREE.DoubleSide }), 0, .37, -.01);
+      return [['body', m]];
+    },
+    poignets: () => [-1, 1].map(sx => [sx < 0 ? 'armR' : 'armL', mesh(new THREE.CylinderGeometry(.05, .05, .042, 18), am('red', { color: 0xC8202F, roughness: .85 }), 0, -.19, 0)]),
+    cafe: () => {
+      const g = new THREE.Group(), white = am('white', { color: 0xF2F2EE, roughness: .6 });
+      g.add(mesh(new THREE.CylinderGeometry(.036, .032, .07, 20), am('mug', { color: 0x2D7F4E, roughness: .45 }), 0, -.27, .05));
+      const top = mesh(new THREE.CircleGeometry(.03, 20), am('coffee', { color: 0x3B2416, roughness: .3 }), 0, -.238, .05); top.rotation.x = -Math.PI / 2; g.add(top);
+      const handle = mesh(new THREE.TorusGeometry(.017, .006, 6, 14), white, .036, -.27, .05); handle.rotation.y = Math.PI / 2; g.add(handle);
+      return [['armL', g]];
+    },
+    lanterne: () => {
+      const g = new THREE.Group();
+      g.add(mesh(new THREE.TorusGeometry(.03, .004, 6, 16, Math.PI), am('wire', { color: 0x2A2F36, metalness: .6, roughness: .4 }), 0, -.29, .02));
+      const p = mesh(pumpkinGeo(.07), am('lantern', { map: pumpkinSkin, roughness: .6, emissive: 0xffa040, emissiveMap: pumpkinFaceTex, emissiveIntensity: 1.5 }), 0, -.35, .02);
+      g.add(p);
+      return [['armL', g]];
+    },
+    raquette: null, baskets: null, // changements de matière, voir wear()
+  };
+  const LIFT = { couronne: .1, chapeau: .1, casquette: .04, visiere: .02, bandeau: .02 };
+  const wear = ch => {
+    const on = new Set(ch.p.outfit || []);
+    for (const id in ACC) {
+      if (!ACC[id] || (!on.has(id) && !ch.acc[id])) continue;
+      if (!ch.acc[id]) ch.acc[id] = ACC[id]().map(([where, obj]) => {
+        obj.traverse(o => { if (o.isMesh) { o.castShadow = true; o.userData.ch = ch; pick.push(o); } });
+        ch.slots[where].add(obj); return obj;
+      });
+      ch.acc[id].forEach(o => { o.visible = on.has(id); });
+    }
+    ch.rubbers.forEach((m, i) => { m.material = on.has('raquette') ? goldMat() : i ? rubberB : rubberR; });
+    ch.shoes.forEach(m => { m.material = on.has('baskets') ? am('redshoe', { color: 0xC8202F, roughness: .5 }) : shoeMat; });
+    ch.lift = Math.max(0, ...[...on].map(id => LIFT[id] || 0));
+  };
   const makeChar = (p, place) => {
     const ch = { p, place, i: place - 1 };
     const g = ch.root = new THREE.Group(), body = ch.body = new THREE.Group(); g.add(body);
     const add = (parent, geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; m.userData.ch = ch; pick.push(m); parent.add(m); return m; };
-    for (const s of [-1, 1]) { add(body, legGeo, pantsMat, s * .07, .135, 0); add(body, shoeGeo, shoeMat, s * .075, .035, .03).scale.set(1, .62, 1.45); }
+    ch.legs = []; ch.shoes = [];
+    for (const s of [-1, 1]) {
+      const hip = new THREE.Group(); hip.position.set(s * .07, .2, 0); body.add(hip); ch.legs.push(hip);
+      add(hip, legGeo, pantsMat, 0, -.065, 0);
+      const shoe = add(hip, shoeGeo, shoeMat, s * .005, -.165, .03); shoe.scale.set(1, .62, 1.45); ch.shoes.push(shoe);
+    }
     ch.shirtMat = std({ color: p.shirt || theme.chip, roughness: .75 });
     add(body, torsoGeo, ch.shirtMat, 0, 0, 0);
     add(body, collarGeo, collarMat, 0, .638, 0).rotation.x = Math.PI / 2;
@@ -4454,7 +4647,7 @@ function buildPodium(data) {
       if (s < 0) { // la raquette, dans la main droite
         const pad = new THREE.Group(); pad.rotation.x = -.45; pv.add(pad);
         add(pad, new THREE.BoxGeometry(.024, .1, .02), wood, 0, -.28, 0);
-        add(pad, blade(.0045), rubberR, 0, 0, 0); add(pad, blade(0), wood, 0, 0, 0); add(pad, blade(-.0045), rubberB, 0, 0, 0);
+        ch.rubbers = [add(pad, blade(.0045), rubberR, 0, 0, 0), add(pad, blade(-.0045), rubberB, 0, 0, 0)]; add(pad, blade(0), wood, 0, 0, 0);
       }
       return { pv, s, rz: s * .14, rx: 0 };
     });
@@ -4465,6 +4658,7 @@ function buildPodium(data) {
     ch.halo = new THREE.Mesh(haloGeo, haloMats[0]); ch.halo.position.y = .27; ch.halo.rotation.x = Math.PI / 2 - .5; ch.head.add(ch.halo);
     ch.glow = new THREE.Sprite(haloGlowMats[0]); ch.glow.scale.set(.5, .3, 1); ch.glow.position.y = .27; ch.head.add(ch.glow);
     setHalo(ch);
+    ch.slots = { head: ch.head, body, armR: ch.arms[0].pv, armL: ch.arms[1].pv }; ch.acc = {}; ch.lift = 0; wear(ch);
     const { x, h } = STEPS[place];
     g.position.set(x, BASE + h, .04); g.rotation.y = place === 2 ? .2 : place === 3 ? -.2 : 0; ch.top = BASE + h;
     root.add(g);
@@ -4479,7 +4673,11 @@ function buildPodium(data) {
     ch.halo.visible = ch.glow.visible = r >= 1 && r <= 3;
     if (ch.halo.visible) { ch.halo.material = haloMats[r - 1]; ch.glow.material = haloGlowMats[r - 1]; }
   };
-  const setLabel = ch => { ch.label.querySelector('b').textContent = ch.p.pseudo + (ch.p.me ? ' (toi)' : ''); ch.label.querySelector('span').textContent = ch.p.pts + ' pts'; };
+  const setLabel = ch => {
+    const p = ch.p; ch.label.classList.toggle('bubble', !!p.bubble);
+    ch.label.querySelector('b').textContent = p.bubble || (p.pseudo + (p.me ? ' (toi)' : ''));
+    ch.label.querySelector('span').textContent = p.bubble ? (p.bubbleSub || '') : p.sub != null ? p.sub : p.pts + ' pts';
+  };
   // La photo du profil, si le joueur en a une (sinon son initiale reste).
   const loadPhoto = ch => {
     const url = ch.p.photo; if (!url) return;
@@ -4493,7 +4691,17 @@ function buildPodium(data) {
 
   /* --- Le jeu des personnages --- */
   const DELAY = { 3: .5, 2: 1.15, 1: 1.9 };
-  const reset = () => chars.forEach(ch => Object.assign(ch, { st: 'wait', t: 0, y: 0, vy: 0, sq: 0, sqT: 9, act: null, actT: 0, next: 0, landed: false, spin: 0 }) && ch.label.classList.remove('on'));
+  const reset = () => chars.forEach(ch => Object.assign(ch, { st: 'wait', t: 0, y: 0, vy: 0, sq: 0, sqT: 9, act: null, actT: 0, next: 0, landed: false, spin: 0, sitK: 0, swingT: 0, dance: 0 }) && ch.label.classList.remove('on'));
+  // Défi : chacun à un bout de la table, tourné vers l'autre et un peu vers nous.
+  const DUEL = [{ z: 1.78, ry: 2.14 }, { z: -1.78, ry: .85 }];
+  const posChar = ch => {
+    if (layout === 'duel') { const d = DUEL[ch.i] || DUEL[0]; ch.top = 0; ch.root.position.set(0, ch.root.position.y, d.z); ch.root.rotation.y = d.ry; }
+    else if (layout === 'solo') { ch.top = SOLO_H; ch.root.position.set(0, ch.root.position.y, .04); ch.root.rotation.y = 0; }
+    else { const { x, h } = STEPS[ch.place]; ch.top = BASE + h; ch.root.position.set(x, ch.root.position.y, .04); ch.root.rotation.y = ch.place === 2 ? .2 : ch.place === 3 ? -.2 : 0; }
+  };
+  // Assis dans l'herbe (k = 1) ou debout (k = 0) : jambes devant, buste plus bas, tête basse.
+  const pose = (ch, k) => { ch.legs.forEach(l => { l.rotation.x = -1.45 * k; }); ch.body.position.y = -.175 * k; ch.head.rotation.x = .38 * k; };
+  const loserOf = ch => layout === 'duel' && duel && duel.phase === 'done' && duel.winner != null && duel.winner !== -1 && duel.winner !== ch.i;
   reset();
   const v = new THREE.Vector3();
   const jump = (ch, vy) => { if (ch.y > 0) return; ch.vy = vy; ch.y = .001; ch.st = 'air'; };
@@ -4502,19 +4710,32 @@ function buildPodium(data) {
     if (!ch.landed) { ch.landed = true; ch.next = .45; setTimeout(() => ch.label.classList.add('on'), 200); toc(ch.place === 1 ? 1500 : 1750); }
   };
   const SIGN = { 1: 'cheer', 2: 'clap', 3: 'wave' };
+  const pickAct = ch => {
+    if (mood === 'joy') return 'joy';
+    if (layout === 'duel') {
+      if (!duel || duel.phase !== 'done') return null;
+      if (duel.winner === -1) return 'clap';
+      if (duel.winner === ch.i) return ++ch.dance % 3 ? 'cheer' : 'spin';
+      return 'sit';
+    }
+    return solo ? 'wave' : SIGN[ch.place];
+  };
   const update = (t, dt, still) => {
     for (const ch of chars) {
       const top = ch.top;
       if (ch.p.empty) { ch.root.visible = false; continue; }
+      const sitting = loserOf(ch);
       if (still) {
         ch.root.visible = true; ch.root.position.y = top; ch.body.scale.set(1, 1, 1); ch.label.classList.add('on');
-        ch.arms.forEach(a => { a.pv.rotation.set(0, 0, ch.place === 1 && !solo ? a.s * 2.75 : a.s * .14); });
+        const up = (ch.place === 1 && layout === 'podium') || mood === 'joy' || (layout === 'duel' && duel && duel.phase === 'done' && duel.winner === ch.i);
+        ch.arms.forEach(a => { a.pv.rotation.set(sitting ? .55 : 0, 0, up ? a.s * 2.75 : a.s * (sitting ? .5 : .14)); });
+        pose(ch, sitting ? 1 : 0);
         continue;
       }
       ch.t += dt;
       if (ch.st === 'wait') {
         ch.root.visible = false;
-        if (ch.t > (solo ? .3 : DELAY[ch.place])) { ch.st = 'air'; ch.y = 3.4; ch.vy = -1.2; ch.root.visible = true; }
+        if (ch.t > (solo ? .3 : layout === 'duel' ? .3 + ch.i * .45 : DELAY[ch.place])) { ch.st = 'air'; ch.y = 3.4; ch.vy = -1.2; ch.root.visible = true; }
       }
       if (ch.st === 'air') { ch.vy -= 9.8 * dt; ch.y += ch.vy * dt; if (ch.y <= 0 && ch.vy < 0) land(ch); }
       // L'écrasement à la réception, qui rebondit un peu.
@@ -4522,29 +4743,44 @@ function buildPodium(data) {
       const breathe = .012 * Math.sin(t * 2.3 + ch.i * 2);
       ch.body.scale.set(1 + k * .7, 1 - k + breathe, 1 + k * .7);
       ch.root.position.y = top + Math.max(0, ch.y);
+      ch.sitK += ((sitting && ch.landed ? 1 : 0) - ch.sitK) * Math.min(1, dt * 4);
+      pose(ch, ch.sitK);
       // Les gestes.
       if (ch.landed && ch.st !== 'wait') {
         ch.next -= dt;
-        if (!ch.act && ch.next <= 0) { ch.act = solo ? 'wave' : SIGN[ch.place]; ch.actT = 0; }
+        if (!ch.act && ch.next <= 0) { ch.act = pickAct(ch); ch.actT = 0; if (!ch.act) ch.next = .5; }
         if (ch.act) ch.actT += dt;
       }
       let tz = [.14, .14], tx = [0, 0];
       const A = ch.act, at = ch.actT;
-      if (A === 'cheer') {
+      if (A === 'cheer' || A === 'joy') {
+        const joy = A === 'joy';
         tz = [2.7, 2.7]; tx = [-.15, -.15];
-        if (ch.st === 'idle' && at > .15 && at < 1.8) jump(ch, 2.7);
-        if (at > 2.2) { ch.act = null; ch.next = rnd(4, 6.5); }
+        if (ch.st === 'idle' && at > .15 && at < (joy ? 3.4 : 1.8)) jump(ch, joy ? 3.1 : 2.7);
+        if (at > (joy ? 3.8 : 2.2)) { ch.act = null; ch.next = joy ? .8 : layout === 'duel' ? .35 : rnd(4, 6.5); }
+      } else if (A === 'sit') {
+        tz = [.5, .5]; tx = [.55, .55];
+        if (!sitting) { ch.act = null; ch.next = .6; }
       } else if (A === 'clap') {
         const o = .5 + .5 * Math.sin(at * 23); tx = [-1.25, -1.25]; tz = [-.08 - .32 * o, -.08 - .32 * o];
-        if (at > 1.5) { ch.act = null; ch.next = rnd(4.5, 7); }
+        if (at > 1.5) { ch.act = null; ch.next = layout === 'duel' ? rnd(1.2, 2.4) : rnd(4.5, 7); }
       } else if (A === 'wave') {
         tz = [.14, 2.45 + .38 * Math.sin(at * 11)]; tx = [0, -.25];
         if (at > 1.8) { ch.act = null; ch.next = rnd(5, 7.5); }
       } else if (A === 'spin') {
         tz = [1.35, 1.35];
         ch.spin = Math.min(1, at / .62);
-        if (at > .8) { ch.act = null; ch.spin = 0; ch.next = rnd(2.5, 4); }
+        if (at > .8) { ch.act = null; ch.spin = 0; ch.next = layout === 'duel' || mood ? .3 : rnd(2.5, 4); }
       }
+      // L'échange du défi : raquette prête, coup quand la balle arrive, et on se place.
+      if (layout === 'duel' && duel && duel.phase === 'play' && ch.landed && !A) {
+        ch.swingT = Math.max(0, ch.swingT - dt);
+        const sw = ch.swingT > 0 ? Math.sin((1 - ch.swingT / .3) * Math.PI) : 0;
+        tz = [.55 + .55 * sw, .22]; tx = [-.45 - 1.15 * sw, -.2];
+        const comes = ballRef && (ch.i === 0 ? ballRef.vel.z > 0 : ballRef.vel.z < 0);
+        const gx = comes ? Math.max(-.5, Math.min(.5, ballRef.pos.x)) : 0;
+        ch.root.position.x += (gx - ch.root.position.x) * Math.min(1, dt * 3.2);
+      } else if (layout === 'duel') ch.root.position.x += (0 - ch.root.position.x) * Math.min(1, dt * 2);
       ch.body.rotation.y = A === 'spin' ? ch.spin * Math.PI * 2 : 0;
       const e = Math.min(1, dt * 14);
       ch.arms.forEach((a, j) => {
@@ -4552,19 +4788,19 @@ function buildPodium(data) {
         a.pv.rotation.x += (tx[j] - a.pv.rotation.x) * e;
       });
       // La tête regarde un peu autour ; les deux autres jettent un œil au premier.
-      const look = ch.place === 1 ? .22 * Math.sin(t * .45) : (ch.place === 2 ? .35 : -.35) * (.5 + .5 * Math.sin(t * .3 + ch.i));
+      const look = layout !== 'podium' ? .14 * Math.sin(t * .45 + ch.i) : ch.place === 1 ? .22 * Math.sin(t * .45) : (ch.place === 2 ? .35 : -.35) * (.5 + .5 * Math.sin(t * .3 + ch.i));
       ch.head.rotation.y += (look - ch.head.rotation.y) * Math.min(1, dt * 3);
       ch.head.rotation.z = .05 * Math.sin(t * .8 + ch.i);
-      ch.halo.position.y = .27 + .012 * Math.sin(t * 2.2 + ch.i * 1.7);
+      ch.halo.position.y = ch.glow.position.y = .27 + ch.lift + .012 * Math.sin(t * 2.2 + ch.i * 1.7);
     }
   };
   // Les étiquettes suivent les têtes à l'écran.
   const place = () => {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     for (const ch of chars) {
-      ch.head.getWorldPosition(v); v.y += .44; v.project(camera);
+      ch.head.getWorldPosition(v); v.y += .44 + ch.lift; v.project(camera);
       ch.label.style.transform = `translate(${((v.x + 1) / 2 * w).toFixed(1)}px,${((1 - v.y) / 2 * h).toFixed(1)}px) translate(-50%,-100%)`;
-      ch.label.style.visibility = v.z < 1 && ch.root.visible && !solo ? 'visible' : 'hidden';
+      ch.label.style.visibility = v.z < 1 && ch.root.visible && (!solo || ch.p.bubble) ? 'visible' : 'hidden';
     }
   };
   const tap = ch => { if (ch && ch.landed && ch.act !== 'spin' && ch.st === 'idle') { ch.act = 'spin'; ch.actT = 0; jump(ch, 3.3); } };
@@ -4576,12 +4812,20 @@ function buildPodium(data) {
     setTheme: th => { theme = th; faces.forEach(paint); soloMat.color.set(th.table); chars.forEach(ch => { if (!ch.p.shirt) ch.shirtMat.color.set(th.chip); }); },
     setShirt: (i, hex) => { const ch = chars[i]; if (!ch) return; ch.p.shirt = hex || null; ch.shirtMat.color.set(hex || theme.chip); },
     // Un seul joueur, au centre, sur son socle (sa fiche) ; sinon le podium à trois marches.
-    setLayout: one => {
-      solo = one; stepsG.visible = !one; soloBase.visible = one;
-      chars.forEach(ch => { const { x, h } = STEPS[ch.place]; ch.top = one ? SOLO_H : BASE + h; ch.root.position.x = one ? 0 : x; ch.root.rotation.y = one ? 0 : ch.place === 2 ? .2 : ch.place === 3 ? -.2 : 0; });
+    // false : le podium à trois marches ; true : un joueur seul sur son socle ; 'duel' : deux joueurs à la table.
+    setLayout: v => {
+      layout = v === 'duel' ? 'duel' : v ? 'solo' : 'podium'; solo = layout === 'solo';
+      stepsG.visible = layout === 'podium'; soloBase.visible = solo;
+      chars.forEach(posChar);
     },
+    // Le défi : { phase: 'play' | 'done' | 'idle', winner: 0 | 1 | -1 (égalité) | null } ; null hors défi.
+    setDuel: d => { duel = d; chars.forEach(ch => { ch.act = null; ch.next = .5; }); },
+    setMood: m => { if (m === mood) return; mood = m; chars.forEach(ch => { ch.act = null; ch.next = .4; }); },
+    setOutfit: (i, list) => { const ch = chars[i]; if (!ch) return; ch.p.outfit = list || []; wear(ch); },
+    setBall: b => { ballRef = b; },
+    swing: i => { const ch = chars[i]; if (ch && ch.landed) ch.swingT = .3; },
     setPhoto: (i, img) => { const ch = chars[i]; if (!ch) return; ch.p.img = img; drawDecal(ch); },
-    setPlayers: ps => chars.forEach((ch, i) => { ch.p = Object.assign({}, ps[i] || EMPTY); drawDecal(ch); setLabel(ch); setHalo(ch); ch.shirtMat.color.set(ch.p.shirt || theme.chip); ch.label.classList.toggle('me', !!ch.p.me); loadPhoto(ch); }),
+    setPlayers: ps => chars.forEach((ch, i) => { ch.p = Object.assign({}, ps[i] || EMPTY); drawDecal(ch); setLabel(ch); setHalo(ch); wear(ch); ch.shirtMat.color.set(ch.p.shirt || theme.chip); ch.label.classList.toggle('me', !!ch.p.me); loadPhoto(ch); }),
   };
 }
 
@@ -4635,6 +4879,7 @@ function planShot(from, side, aim) {
 }
 function serve() { pos.set(rnd(-.3, .3), .95, 1.62); vel.copy(planShot(pos, -1, null)); }
 serve();
+if (podium) podium.setBall({ pos, vel });
 let actx = null;
 function toc(f = 1900) {
   if (!armed) return;
@@ -4654,6 +4899,7 @@ function physics(dt) {
   if (Math.abs(pos.z) > 1.55 && Math.sign(vel.z) === Math.sign(pos.z) && (vel.y < 0 || Math.abs(pos.z) > 1.95)) {
     const side = -Math.sign(pos.z); let aim = null;
     if (target) { aim = { x: target.x, z: Math.sign(target.z) === side ? target.z : -target.z }; target = null; marker.position.x = aim.x; marker.position.z = aim.z; markerT = 2; }
+    if (rallyOn && podium) podium.swing(pos.z > 0 ? 0 : 1);
     vel.copy(planShot(pos, side, aim)); toc(1500); if (armed) armed--;
   }
   if (pos.y < -.2 || Math.abs(pos.z) > 3.2) serve();
@@ -4663,6 +4909,7 @@ function physics(dt) {
 const camera = new THREE.PerspectiveCamera(42, 1, .1, 2000);
 const LOOK = MODE === 'podium' ? new THREE.Vector3(0, 1.0, 0) : new THREE.Vector3(0, .74, -1.05);
 const DEF_EL = MODE === 'podium' ? .1 : .2;
+let defEl = DEF_EL;
 const cam = { az: 0, el: DEF_EL, vaz: 0, vel: 0, idle: 0, drag: null, hx: 0, hy: 0, hxT: 0, hyT: 0, dist: 5.2 };
 let soloView = false; // false, true (au centre) ou 'right' (à droite, le texte de la fiche à gauche)
 function resize() {
@@ -4671,8 +4918,8 @@ function resize() {
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
-  if (MODE === 'podium') LOOK.y = soloView ? .62 : camera.aspect < .75 ? 1.18 : 1.0; // téléphone : le podium un peu plus bas, sous le titre
-  cam.dist = soloView ? Math.max(2.5, .55 / (tanH * .95)) : MODE === 'podium' ? Math.min(9, Math.max(camera.aspect > 1 ? 4.4 : 5.2, 1.8 / (tanH * .95))) : Math.min(6.2, Math.max(4.2, 1.05 / (tanH * .95)));
+  if (MODE === 'podium') LOOK.y = duelOn ? .55 : joyView ? 1.0 : soloView ? .62 : camera.aspect < .75 ? 1.18 : 1.0; // téléphone : le podium un peu plus bas, sous le titre
+  cam.dist = duelOn ? Math.min(10, Math.max(4.0, 2.5 / (tanH * .95))) : joyView ? Math.max(3.3, .7 / (tanH * .95)) : soloView ? Math.max(2.5, .55 / (tanH * .95)) : MODE === 'podium' ? Math.min(9, Math.max(camera.aspect > 1 ? 4.4 : 5.2, 1.8 / (tanH * .95))) : Math.min(6.2, Math.max(4.2, 1.05 / (tanH * .95)));
   const tEl = opts.text && opts.text(), textH = tEl ? tEl.getBoundingClientRect().height : 0;
   const shift = Math.min(.2, Math.max(.04, (textH / h) * .3));
   camera.setViewOffset(w, h, soloView === 'right' ? -w * .22 : 0, -h * shift, w, h);
@@ -4681,7 +4928,7 @@ function resize() {
 const ro = new ResizeObserver(resize); ro.observe(stage);
 function placeCamera(t) {
   const drift = reduce() ? 0 : Math.sin(t * .4) * .06;
-  const az = cam.az + cam.hy + (cam.drag ? 0 : drift), el = cam.el + cam.hx;
+  const az = camBase + cam.az + cam.hy + (cam.drag ? 0 : drift), el = cam.el + cam.hx;
   camera.position.set(LOOK.x + Math.sin(az) * Math.cos(el) * cam.dist, LOOK.y + Math.sin(el) * cam.dist, LOOK.z + Math.cos(az) * Math.cos(el) * cam.dist);
   camera.lookAt(LOOK);
 }
@@ -5370,14 +5617,15 @@ function frame(now) {
   const dt = Math.min(.1, (now - last) / 1000); last = now;
   const t = now / 1000, still = reduce();
   if (!still) U.time.value = t;
-  if (MODE === 'table') {
+  if (MODE === 'table' || rallyOn) {
     if (!still) { acc += dt; while (acc >= STEP) { physics(STEP); acc -= STEP; } axis.crossVectors(up, vel).normalize(); if (axis.lengthSq() > 0) ball.rotateOnWorldAxis(axis, vel.length() * dt * 9); }
     ball.position.copy(pos);
     trail.unshift(pos.clone()); if (trail.length > 20) trail.pop();
     ghosts.forEach((g, i) => { const p = trail[(i + 1) * 3]; g.visible = !!p && !still; if (p) g.position.copy(p); });
     if (markerT > 0) marker.material.opacity = Math.min(.95, marker.material.opacity + dt * 5);
     else if (markerT < 0) { marker.material.opacity = Math.max(0, marker.material.opacity - dt * 1.6); marker.scale.setScalar(1 + (1 - marker.material.opacity) * .8); if (marker.material.opacity === 0) { markerT = 0; marker.scale.setScalar(1); } }
-  } else podium.update(t, dt, still);
+  }
+  if (MODE === 'podium') podium.update(t, dt, still);
   // Le moulin tourne, la brume dérive, les citrouilles vacillent.
   if (night) {
     if (!still) sails.rotation.z = -t * .22;
@@ -5428,7 +5676,7 @@ function frame(now) {
     cam.idle += dt;
     cam.az = Math.max(-1.2, Math.min(1.2, cam.az + cam.vaz * dt)); cam.el = Math.max(.12, Math.min(.95, cam.el + cam.vel * dt));
     cam.vaz *= Math.exp(-dt * 4); cam.vel *= Math.exp(-dt * 4);
-    if (cam.idle > 2.5) { cam.az += (0 - cam.az) * Math.min(1, dt * 1.2); cam.el += (DEF_EL - cam.el) * Math.min(1, dt * 1.2); }
+    if (cam.idle > 2.5) { cam.az += (0 - cam.az) * Math.min(1, dt * 1.2); cam.el += (defEl - cam.el) * Math.min(1, dt * 1.2); }
   }
   cam.hx += (cam.hxT - cam.hx) * Math.min(1, dt * 4); cam.hy += (cam.hyT - cam.hy) * Math.min(1, dt * 4);
   placeCamera(t);
@@ -5457,6 +5705,19 @@ start();
 return {
   setAmb, podium,
   setSolo(v) { soloView = v; podium.setLayout(!!v); resize(); },
+  // « joy » : il saute de joie, la caméra recule pour garder la bulle dans l'image.
+  setMood(m) { podium.setMood(m); joyView = m === 'joy'; resize(); },
+  // Le défi entre deux amis, à la table : null pour revenir au podium.
+  setDuel(d) {
+    duelOn = !!d; rallyOn = duelOn && d.phase === 'play' && !reduce();
+    table.visible = worn.visible = ball.visible = duelOn;
+    if (rallyOn) serve(); else { pos.set(.24, TOP + R, .42); vel.set(0, 0, 0); ball.position.copy(pos); }
+    trail.length = 0; ghosts.forEach(g => { g.visible = false; });
+    if (duelOn) podium.setLayout('duel');
+    podium.setDuel(d);
+    camBase = duelOn ? 1.45 : 0; defEl = duelOn ? .3 : DEF_EL; cam.el = defEl; cam.az = 0;
+    resize();
+  },
   // Relance l'image quand la toile vient d'être posée ailleurs (l'observateur
   // de visibilité ne le signale pas toujours) — seulement si elle est à l'écran.
   wake() { visible = onScreen(); if (visible) start(); else recheck(); },
@@ -5492,7 +5753,7 @@ function scene3dSlot(key, slot, o) {
 }
 // Un joueur tel que le dessine la scène : pseudo, points, photo, maillot.
 const shirtOf = uid => (S.shirts && S.shirts[uid]) || null;
-const scenePlayer = (uid, pseudo, pts, extra) => Object.assign({ pseudo, pts, me: !!S.session && uid === S.session.user.id, photo: avatarUrl(uid), shirt: shirtOf(uid) }, extra);
+const scenePlayer = (uid, pseudo, pts, extra) => Object.assign({ pseudo, pts, me: !!S.session && uid === S.session.user.id, photo: avatarUrl(uid), shirt: shirtOf(uid), outfit: (S.outfits && S.outfits[uid]) || [] }, extra);
 // Rang au classement général (ex aequo compris), et la ligne du joueur.
 function generalRank(uid) {
   const b = S.accountBoard || (S.boardScope === 'ALL' && S.board) || [];
@@ -5521,6 +5782,25 @@ function podiumSlotState(slot) {
       theme: S.boardScope === 'PRO_A' ? THEME.PRO_A : S.boardScope === 'WTT' ? THEME.WTT_DEFAULT : THEME.ALL,
       players: b.map(r => scenePlayer(r.user_id, r.pseudo, r.total_points)), delay: .3 };
   }
+  // Un défi : les deux amis à la table ; l'échange, puis la danse du gagnant et le perdant assis dans l'herbe.
+  if (kind === 'duel') {
+    const d = (S.duels || []).find(x => String(x.id) === slot.dataset.did);
+    if (!d) return null;
+    const i = duelInfo(d), me = S.session.user.id, m = i.m && (S.matches.find(x => x.id === i.m.id) || i.m);
+    const done = ['win', 'loss', 'draw'].includes(i.state);
+    const sub = (pred, pts) => done ? `${pts} pt${Math.abs(pts) > 1 ? 's' : ''}` : pred || (i.state === 'open' ? 'prono caché' : 'pas de prono');
+    return { key: `duel:${d.id}:${i.state}:${S._tabAt}`, theme: (m && THEME[themeKeyFor(m)]) || THEME.ALL, delay: .2,
+      duel: { phase: done ? 'done' : i.state === 'void' ? 'idle' : 'play', winner: i.state === 'win' ? 0 : i.state === 'loss' ? 1 : i.state === 'draw' ? -1 : null },
+      players: [scenePlayer(me, S.pseudo, 0, { halo: 0, sub: sub(i.myPred, i.myPts) }), scenePlayer(i.other, i.pseudo, 0, { halo: 0, sub: sub(i.otPred, i.otPts) })] };
+  }
+  // Un nouveau score exact : tu sautes de joie, tes points au-dessus de la tête.
+  if (kind === 'celeb') {
+    const h = (myJudgedHistory() || []).find(x => String(x.match_id) === slot.dataset.mid);
+    if (!h) return null;
+    const m = S.matches.find(x => x.id === h.match_id) || h.matches;
+    return { key: `celeb:${h.match_id}`, solo: true, mood: 'joy', theme: THEME[themeKeyFor(m)] || THEME.ALL, delay: .2,
+      players: [scenePlayer(S.session.user.id, S.pseudo, 0, { halo: 0, bubble: `+${h.pt.total}`, bubbleSub: 'score exact' })] };
+  }
   // Un joueur seul : sa fiche (personnage à droite), ou toi dans « Mon compte ».
   const id = kind === 'me' ? uid : slot.dataset.uid, g = generalRank(id);
   if (!id) return null;
@@ -5534,7 +5814,8 @@ function mountScenes3D() {
   const auth = document.querySelector('.authstage');
   // Une seule scène pour tous les personnages : elle va là où on regarde
   // (le bilan ou la fiche ouverte d'abord, sinon l'écran en cours).
-  const pod = document.querySelector('.recapx .pod3d') || document.querySelector('.modal .pod3d') || document.querySelector('main .pod3d');
+  const mods = document.querySelectorAll('.modal .pod3d');
+  const pod = document.querySelector('.recapx .pod3d') || mods[mods.length - 1] || document.querySelector('main .pod3d');
   if (SCENE3D.failed || !(auth || pod) || !webglOk()) return;
   if (auth) scene3dSlot('login', auth, { mode: 'table', hint: 'Touche la table pour placer la balle. Glisse pour tourner autour.' });
   if (pod) {
@@ -5545,7 +5826,7 @@ function mountScenes3D() {
       const seen = s.seen || (s.seen = {}), kind = pod.dataset.kind, again = seen[kind] === d.key;
       seen[kind] = s.cur = d.key;
       s.hint.textContent = d.solo ? 'Touche-le pour le faire sauter.' : 'Touche un joueur pour le faire sauter.';
-      s.api.setSolo(d.solo || false); s.api.podium.setTheme(d.theme); s.api.podium.setPlayers(d.players);
+      s.api.setSolo(d.solo || false); s.api.setDuel(d.duel || null); s.api.setMood(d.mood || null); s.api.podium.setTheme(d.theme); s.api.podium.setPlayers(d.players);
       if (again) s.api.podium.skip(); else s.api.podium.replay(d.delay);
     };
     const s = scene3dSlot('podium', pod, { mode: 'podium', hint: '', ready: apply });
@@ -5603,6 +5884,7 @@ function myCharPanel() {
           ${hex ? '<button class="btn small sec" data-act="shirtreset">Couleur du tournoi</button>' : ''}</div>
       </div>
     </div>
+    ${S.outfitOk ? accessoriesHtml() : ''}
   </section>`;
 }
 // La fiche d'un joueur (un appui sur son nom dans le classement).
@@ -5626,7 +5908,7 @@ function playerModal(uid) {
           <div class="statbox"><b>${r.good_winners}/${r.matches_played}</b><span>bons vainqueurs</span></div>
         </div>
       </div>
-      ${(rows.length || faceToFace(uid)) ? `<div class="modalbody">${faceToFace(uid)}${rows.length ? `<section class="modalsec">
+      ${(rows.length || faceToFace(uid) || duelsWithHtml(uid)) ? `<div class="modalbody">${duelsWithHtml(uid)}${faceToFace(uid)}${rows.length ? `<section class="modalsec">
         <h3><span class="secdot" aria-hidden="true"></span>Par circuit</h3>
         <ul class="cmlist">${rows.map(([l, x]) => `<li class="cmrow"><div class="cmopp">${l}</div><div class="cmmeta"><span class="cmdate">${plural(x.total_points, 'point')} · ${x.exact_scores} ${x.exact_scores > 1 ? 'scores exacts' : 'score exact'}</span></div></li>`).join('')}</ul>
       </section>` : ''}</div>` : ''}
@@ -6404,12 +6686,315 @@ function faceToFace(uid) {
     pctRow('Scores exacts', a.exact, a.n, b.exact, b.n),
     numRow('Meilleure série', a.best, b.best),
   ];
-  if (wa + wb) rows.push(numRow('Matchs gagnés en duel', wa, wb));
+  if (wa + wb) rows.push(numRow('Plus de points sur un même match', wa, wb));
+  const dr = S.duels ? duelRecord(uid) : null;
+  if (dr && dr.win + dr.loss) rows.push(numRow('Défis gagnés', dr.win, dr.loss));
   const common = wa + wb + eq;
   return `<section class="modalsec">
     <h3><span class="secdot" aria-hidden="true"></span>Face à face</h3>
     ${duelHtml(`${avatarHtml(me, S.pseudo)}Toi`, `${avatarHtml(uid, pseudo)}${esc(pseudo)}`, rows, `Toi contre ${pseudo}`)}
     ${common ? `<p class="duelverdict plain">Sur les ${common} match${common > 1 ? 's' : ''} que vous avez pronostiqués tous les deux, tu as pris plus de points ${wa} fois, ${esc(pseudo)} ${wb} fois${eq ? `, et autant ${eq} fois` : ''}.</p>` : ''}
+  </section>`;
+}
+
+/* =============================================================================
+   Défis entre amis, accessoires des personnages, et la fête du score exact.
+   ========================================================================== */
+
+// --- Défis --------------------------------------------------------------------
+// Sur un match à venir, tu défies un ami. Celui qui prend le plus de points sur
+// ce match gagne (même calcul que le classement). Pour l'honneur : rien ne
+// change au classement. Les pronos de l'autre restent cachés jusqu'au match.
+async function loadDuels() {
+  try {
+    const r = await fetchAllRows(() => sb.from('duels').select('id,match_id,challenger,opponent,created_at').order('id'));
+    S.duels = r.error ? null : (r.data || []); // table absente (script SQL pas lancé) : les défis restent cachés
+  } catch (e) { S.duels = null; }
+}
+const duelOther = (d, uid) => d.challenger === uid ? d.opponent : d.challenger;
+const myDuels = () => S.duels && S.session ? S.duels.filter(d => d.challenger === S.session.user.id || d.opponent === S.session.user.id) : [];
+const matchOf = id => S.matches.find(x => x.id === id) || ((S.myHistory || []).find(h => h.match_id === id) || {}).matches || null;
+// Où en est un de mes défis : à venir, en cours, gagné, perdu, égalité, ou annulé.
+function duelInfo(d) {
+  const me = S.session.user.id, other = duelOther(d, me), m = matchOf(d.match_id);
+  const by = scoredByUser() || {};
+  const hMe = (by[me] || []).find(h => h.match_id === d.match_id), hOt = (by[other] || []).find(h => h.match_id === d.match_id);
+  const pseudo = pseudoMap()[other] || '?';
+  const fmt = p => p ? `${p.pred_a}–${p.pred_b}` : null;
+  const base = { d, m, other, pseudo };
+  if (m && m.status === 'cancelled') return { ...base, state: 'void', why: 'Le match a été annulé.' };
+  if ((m && m.status === 'finished') || hMe || hOt) {
+    if (!hMe || !hOt) return { ...base, state: 'void', myPred: fmt(hMe), otPred: fmt(hOt), why: !hMe && !hOt ? "Aucun de vous deux n'avait fait de prono." : !hMe ? "Tu n'avais pas fait de prono." : `${pseudo} n'avait pas fait de prono.` };
+    const a = hMe.pt.total, b = hOt.pt.total;
+    return { ...base, state: a > b ? 'win' : a < b ? 'loss' : 'draw', myPts: a, otPts: b, myPred: fmt(hMe), otPred: fmt(hOt) };
+  }
+  const mine = S.myPreds[d.match_id];
+  if (!m || !isLocked(m)) return { ...base, state: 'open', myPred: fmt(mine) };
+  const ot = (S.friends[d.match_id] || []).find(r => r.user_id === other);
+  if (S.friends[d.match_id] && (!mine || !ot)) return { ...base, state: 'void', myPred: fmt(mine), otPred: fmt(ot), why: !mine ? "Tu n'avais pas fait de prono." : `${pseudo} n'avait pas fait de prono.` };
+  return { ...base, state: 'live', myPred: fmt(mine), otPred: fmt(ot) };
+}
+const DUEL_WORD = { open: 'Défi', live: 'Défi en cours', win: 'Défi gagné', loss: 'Défi perdu', draw: 'Défi nul', void: 'Défi annulé' };
+function duelChip(d) {
+  const i = duelInfo(d), me = S.session.user.id;
+  const incoming = i.state === 'open' && d.opponent === me && !S.myPreds[d.match_id];
+  const label = incoming ? `${i.pseudo} te défie : fais ton prono` : `${DUEL_WORD[i.state]} ${i.state === 'draw' ? 'avec' : 'contre'} ${i.pseudo}`;
+  return `<button class="duelchip ${i.state}${incoming ? ' incoming' : ''}" data-act="duel" data-did="${d.id}">${avatarHtml(i.other, i.pseudo)}<span>${esc(label)}</span></button>`;
+}
+// Sous un match : mes défis, et le bouton pour en lancer un.
+function duelRowHtml(m) {
+  if (!S.duels || !S.session) return '';
+  const list = myDuels().filter(d => d.match_id === m.id);
+  const canNew = !isLocked(m) && m.status === 'scheduled' && S.myPreds[m.id] && !S.myPreds[m.id]._pending;
+  if (!list.length && !canNew) return '';
+  return `<div class="duelrow">${list.map(duelChip).join('')}${canNew ? `<button class="duelnew" data-act="duelnew" data-id="${m.id}">${ico('ping-pong')}Défier un ami</button>` : ''}</div>`;
+}
+// En haut de l'onglet Matchs : un ami te défie et tu n'as pas encore pronostiqué.
+function duelNotice() {
+  if (!S.duels || !S.session) return '';
+  const me = S.session.user.id;
+  const list = S.duels.filter(d => d.opponent === me && !S.myPreds[d.match_id]).map(d => ({ d, m: S.matches.find(x => x.id === d.match_id) })).filter(x => x.m && !isLocked(x.m));
+  if (!list.length) return '';
+  const { d, m } = list[0], who = pseudoMap()[d.challenger] || '?';
+  return `<section class="recapnotice duelnotice" style="${themeVarsCss(themeKeyFor(m))}" aria-label="Défi reçu">
+    <span class="rn-ico" aria-hidden="true">${avatarHtml(d.challenger, who)}</span>
+    <h2 class="recapnotice-title">${esc(who)} te défie${list.length > 1 ? ` (et ${list.length - 1} autre${list.length > 2 ? 's' : ''})` : ''}</h2>
+    <p class="recapnotice-sub">Sur ${esc(m.side_a)} – ${esc(m.side_b)}, ${esc(fmtClose(new Date(m.starts_at).getTime()))}. Fais ton prono avant le début du match.</p>
+    <button class="btn small" data-act="gotomatch" data-id="${m.id}">Voir le match</button>
+  </section>`;
+}
+// Choisir l'ami à défier.
+function duelNewModal(mid) {
+  const m = S.matches.find(x => x.id === mid);
+  if (!m) return '';
+  const me = S.session.user.id;
+  const taken = new Set(myDuels().filter(d => d.match_id === mid).map(d => duelOther(d, me)));
+  const friends = (S.accountBoard || S.board || []).filter(r => r.user_id !== me).slice().sort((a, b) => a.pseudo.localeCompare(b.pseudo));
+  return `
+  <div class="modalbackdrop" data-act="closeduelnew">
+    <div class="modal duelnewx" role="dialog" aria-modal="true" aria-label="Défier un ami" data-act="stop" style="${themeVarsCss(themeKeyFor(m))}">
+      <button class="modalclose" data-act="closeduelnew" aria-label="Fermer">${ico('x')}</button>
+      <div class="modalhead">
+        <div class="modalsub">${esc(m.side_a)} – ${esc(m.side_b)}</div>
+        <div class="modalname">Défier un ami</div>
+        <div class="modalsub">Celui qui prend le plus de points sur ce match gagne le défi. Pour l'honneur : le classement ne change pas.</div>
+      </div>
+      <div class="modalbody">
+        ${friends.length ? `<ul class="wlist">${friends.map(r => taken.has(r.user_id)
+          ? `<li class="wrow out">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span><span class="wpts">déjà défié</span></li>`
+          : `<li><button class="wrow" data-act="duelsave" data-id="${mid}" data-uid="${esc(r.user_id)}">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span><span class="wpts">Défier</span></button></li>`).join('')}</ul>`
+          : '<p class="hint">Personne à défier pour l’instant : invite d’abord tes amis.</p>'}
+      </div>
+    </div>
+  </div>`;
+}
+async function createDuel(mid, uid) {
+  const me = S.session.user.id;
+  const r = await sb.from('duels').insert({ match_id: mid, challenger: me, opponent: uid }).select().single();
+  if (r.error) { toast(friendlyError(r.error), true); return; }
+  S.duels = (S.duels || []).concat([r.data]);
+  S.openDuelNew = null; S.openDuel = r.data.id;
+  playSound('confirm'); toast(`Défi lancé contre ${pseudoMap()[uid] || 'ton ami'}`); keepRender();
+}
+async function cancelDuel(id) {
+  const r = await sb.from('duels').delete().eq('id', id);
+  if (r.error) { toast(friendlyError(r.error), true); return; }
+  S.duels = (S.duels || []).filter(d => d.id !== id); S.openDuel = null;
+  toast('Défi annulé'); keepRender();
+}
+// La fiche d'un défi : vos deux personnages à la table, et le résultat.
+function duelModal(id) {
+  const d = (S.duels || []).find(x => x.id === id);
+  if (!d) return '';
+  const i = duelInfo(d), m = i.m, me = S.session.user.id;
+  // Match commencé : on va chercher les pronos (visibles de tous à partir de là).
+  if (m && i.state === 'live' && !S.friends[d.match_id] && !S._duelFetch) {
+    S._duelFetch = true;
+    sb.from('predictions').select('user_id,pred_a,pred_b,balles_staked,profiles(pseudo)').eq('match_id', d.match_id)
+      .then(r => { S._duelFetch = false; if (!r.error) { S.friends[d.match_id] = r.data || []; keepRender(); } });
+  }
+  const side = (who, pseudo, pred, pts, win) => `<div class="duelside${win ? ' win' : ''}">
+    <span class="dsname">${avatarHtml(who, who === me ? S.pseudo : pseudo)}${esc(pseudo)}</span>
+    <b>${pred ? esc(pred) : '–'}</b>
+    <small>${pts != null ? `${pts} pt${Math.abs(pts) > 1 ? 's' : ''}` : 'prono'}</small></div>`;
+  const hidden = i.state === 'open' ? 'caché' : null;
+  const verdict = i.state === 'open' ? `Le prono de ${esc(i.pseudo)} reste caché jusqu'au début du match, ${esc(fmtClose(new Date(m.starts_at).getTime()))}.`
+    : i.state === 'live' ? 'Le match est en cours : le défi se joue maintenant.'
+    : i.state === 'win' ? `Tu gagnes le défi : ${i.myPts} point${i.myPts > 1 ? 's' : ''} contre ${i.otPts}.`
+    : i.state === 'loss' ? `${esc(i.pseudo)} gagne le défi : ${i.otPts} point${i.otPts > 1 ? 's' : ''} contre ${i.myPts}.`
+    : i.state === 'draw' ? `Égalité : ${i.myPts} point${i.myPts > 1 ? 's' : ''} chacun.`
+    : `Défi annulé. ${esc(i.why || '')}`;
+  const canCancel = i.state === 'open';
+  return `
+  <div class="modalbackdrop" data-act="closeduel">
+    <div class="modal duelx" role="dialog" aria-modal="true" aria-label="Défi contre ${esc(i.pseudo)}" data-act="stop" style="${themeVarsCss(m ? themeKeyFor(S.matches.find(x => x.id === m.id) || m) : 'ALL')}">
+      <button class="modalclose" data-act="closeduel" aria-label="Fermer">${ico('x')}</button>
+      <div class="duelstage"><div class="pod3d" data-kind="duel" data-did="${d.id}"></div></div>
+      <div class="modalbody">
+        <p class="duelmatch">${m ? `${esc(m.side_a)} – ${esc(m.side_b)}${m.status === 'finished' ? `, score final ${m.score_a}–${m.score_b}` : ''}` : ''}</p>
+        <h2 class="dueltitle">${DUEL_WORD[i.state]}${i.state === 'open' || i.state === 'live' ? ` contre ${esc(i.pseudo)}` : ''}</h2>
+        <div class="duelboard">
+          ${side(me, 'Toi', i.myPred, i.myPts, i.state === 'win')}
+          <span class="dvs" aria-hidden="true">contre</span>
+          ${side(i.other, i.pseudo, hidden || i.otPred, i.otPts, i.state === 'loss')}
+        </div>
+        <p class="duelverdict">${verdict}</p>
+        ${canCancel ? `<button class="btn small sec" data-act="duelcancel" data-did="${d.id}">Annuler le défi</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+// Bilan des défis contre un ami (fiche) ou contre tout le monde (Mon compte).
+function duelRecord(otherId) {
+  const r = { win: 0, loss: 0, draw: 0, list: [] };
+  for (const d of myDuels()) {
+    if (otherId && duelOther(d, S.session.user.id) !== otherId) continue;
+    const i = duelInfo(d); r.list.push(i);
+    if (r[i.state] !== undefined) r[i.state]++;
+  }
+  return r;
+}
+function duelsPanel() {
+  if (!S.duels) return '';
+  const r = duelRecord(null);
+  if (!r.list.length) return '';
+  const order = { open: 0, live: 1 };
+  const list = r.list.slice().sort((a, b) => (order[a.state] ?? 2) - (order[b.state] ?? 2) || b.d.id - a.d.id).slice(0, 8);
+  const done = r.win + r.loss + r.draw;
+  return `<section class="panel">
+    <h3>Tes défis</h3>
+    ${done ? `<p class="hint">${r.win} gagné${r.win > 1 ? 's' : ''}, ${r.loss} perdu${r.loss > 1 ? 's' : ''}${r.draw ? `, ${r.draw} nul${r.draw > 1 ? 's' : ''}` : ''}.</p>` : '<p class="hint">Tes défis apparaissent ici, avec leur résultat une fois le match joué.</p>'}
+    <div class="duelrow col">${list.map(i => duelChip(i.d)).join('')}</div>
+  </section>`;
+}
+
+// --- Accessoires -------------------------------------------------------------
+// Chaque badge débloque un accessoire pour ton personnage. Un seul par
+// emplacement (tête, yeux, cou, dos, main, poignets, raquette, pieds).
+const ACCESSORIES = [
+  { id: 'casquette', name: 'Casquette', slot: 'tete', badge: 'veteran' },
+  { id: 'bandeau', name: 'Bandeau', slot: 'tete', badge: 'increvable' },
+  { id: 'visiere', name: 'Visière', slot: 'tete', badge: 'sniper' },
+  { id: 'chapeau', name: "Chapeau d'explorateur", slot: 'tete', badge: 'outsider' },
+  { id: 'couronne', name: 'Couronne', slot: 'tete', badge: 'trone' },
+  { id: 'lunettes', name: 'Lunettes de soleil', slot: 'yeux', badge: 'lynx' },
+  { id: 'echarpe', name: 'Écharpe de club', slot: 'cou', badge: 'expertproa' },
+  { id: 'serviette', name: 'Serviette', slot: 'cou', badge: 'tablerase' },
+  { id: 'cape', name: 'Cape', slot: 'dos', badge: 'nuage' },
+  { id: 'cafe', name: 'Tasse de café', slot: 'main', badge: 'levetot' },
+  { id: 'lanterne', name: 'Lanterne citrouille', slot: 'main', badge: 'citrouille' },
+  { id: 'poignets', name: 'Poignets éponge', slot: 'poignets', badge: 'mur' },
+  { id: 'raquette', name: 'Raquette dorée', slot: 'raquette', badge: 'expertwtt' },
+  { id: 'baskets', name: 'Baskets rouges', slot: 'pieds', badge: 'rival' },
+];
+const SLOT_WORD = { tete: 'Tête', yeux: 'Yeux', cou: 'Cou', dos: 'Dos', main: 'Main gauche', poignets: 'Poignets', raquette: 'Raquette', pieds: 'Pieds' };
+// Badges gagnés : ceux d'aujourd'hui, plus ceux déjà vus un jour sur cet appareil (un accessoire gagné reste gagné).
+function earnedBadges() {
+  const set = new Set();
+  try { (JSON.parse(localStorage.getItem('spin_badges_seen') || '[]') || []).forEach(id => set.add(id)); } catch (e) { /* ignore */ }
+  try { (computeBadges() || []).forEach(b => { if (b.unlocked) set.add(b.id); }); } catch (e) { /* ignore */ }
+  return set;
+}
+const myOutfit = () => (S.outfits && S.session && S.outfits[S.session.user.id]) || [];
+function accessoriesHtml() {
+  const earned = earnedBadges(), on = new Set(myOutfit());
+  const n = ACCESSORIES.filter(a => earned.has(a.badge)).length;
+  return `<div class="accwrap">
+    <h4 class="subh">Accessoires <small>${n} sur ${ACCESSORIES.length}</small></h4>
+    <p class="hint">Chaque badge débloque un accessoire. Un seul par emplacement : un seul chapeau, une seule chose dans la main…</p>
+    <div class="accgrid">${ACCESSORIES.map(a => {
+      const locked = !earned.has(a.badge), worn = on.has(a.id), def = BADGE_DEFS.find(b => b.id === a.badge);
+      return `<button class="acc${worn ? ' on' : ''}${locked ? ' locked' : ''}" data-act="${locked ? 'badge' : 'acc'}" data-acc="${a.id}" data-badge="${a.badge}" ${locked ? '' : `aria-pressed="${worn}"`}>
+        <span class="accimg">${badgeIcon(a.badge, '')}${locked ? `<i class="acclock">${BADGE_LOCK_SVG}</i>` : ''}</span>
+        <span class="acct"><b>${esc(a.name)}</b><small>${locked ? `Badge « ${esc(def ? def.name : a.badge)} »` : worn ? 'Porté' : SLOT_WORD[a.slot]}</small></span></button>`;
+    }).join('')}</div>
+  </div>`;
+}
+async function toggleAccessory(id) {
+  const a = ACCESSORIES.find(x => x.id === id);
+  if (!a || !earnedBadges().has(a.badge)) return;
+  const uid = S.session.user.id, prev = myOutfit();
+  const next = prev.includes(id) ? prev.filter(x => x !== id) : prev.filter(x => (ACCESSORIES.find(y => y.id === x) || {}).slot !== a.slot).concat([id]);
+  const preview = list => { const p = SCENE3D.podium; if (p && p.api && p.cur && p.cur.startsWith('me:')) p.api.podium.setOutfit(0, list); };
+  (S.outfits = S.outfits || {})[uid] = next; preview(next); playSound('tick'); keepRender();
+  const r = await sb.from('profiles').update({ outfit: next.length ? next : null }).eq('id', uid);
+  if (r.error) { S.outfits[uid] = prev; preview(prev); toast(friendlyError(r.error), true); keepRender(); }
+}
+
+// --- La fête du score exact ---------------------------------------------------
+// À l'ouverture de l'appli, un nouveau score exact : ton personnage saute de
+// joie, ses points au-dessus de la tête. Mémorisé sur cet appareil, pour ne
+// fêter chaque score exact qu'une fois.
+const EXACT_SEEN = 'spin_exact_seen';
+const exactSeen = () => { try { const v = JSON.parse(localStorage.getItem(EXACT_SEEN)); return Array.isArray(v) ? v : null; } catch (e) { return null; } };
+const markExactSeen = ids => { try { const s = new Set(exactSeen() || []); ids.forEach(i => s.add(i)); localStorage.setItem(EXACT_SEEN, JSON.stringify([...s])); } catch (e) { /* ignore */ } };
+function checkExactScores() {
+  const hist = myJudgedHistory();
+  if (!hist) return;
+  const exact = hist.filter(h => h.pt && h.pt.exact);
+  if (exactSeen() === null) markExactSeen(exact.filter(h => Date.now() - new Date(h.matches.starts_at).getTime() > 3 * 864e5).map(h => h.match_id)); // première fois : seulement les 3 derniers jours
+  const seen = new Set(exactSeen() || []), fresh = exact.filter(h => !seen.has(h.match_id)).map(h => h.match_id);
+  const queued = new Set(S.celebQueue || []);
+  S.celebQueue = (S.celebQueue || []).concat(fresh.filter(id => !queued.has(id) && id !== S.openCeleb));
+  if (S.celebQueue.length) afterSplash(() => setTimeout(tryOpenCeleb, 900));
+}
+function tryOpenCeleb(tries = 0) {
+  if (!S.celebQueue || !S.celebQueue.length || S.openCeleb) return;
+  if (!S.session || S.openBadge || S.openRecap || S.openCompetitor || S.openPlayer || S.openWin || S.openDuel || S.openDuelNew || TUTO) {
+    if (tries < 90) setTimeout(() => tryOpenCeleb(tries + 1), 1000);
+    return;
+  }
+  const id = S.celebQueue.shift();
+  S.openCeleb = id; markExactSeen([id]);
+  playSound('milestone'); keepRender();
+}
+function closeCeleb() {
+  S.openCeleb = null; keepRender();
+  if (S.celebQueue && S.celebQueue.length) setTimeout(tryOpenCeleb, 350);
+}
+function celebModal(mid) {
+  const h = (myJudgedHistory() || []).find(x => x.match_id === mid);
+  if (!h) return '';
+  const m = S.matches.find(x => x.id === mid) || h.matches, pt = h.pt, more = (S.celebQueue || []).length;
+  const lines = [['Score exact', 3]];
+  if (pt.streakBonus) lines.push([`Bonus de série (${pt.streakBefore} d'affilée)`, pt.streakBonus]);
+  if (pt.ballesBonus) lines.push([`Balles misées (${pt.balles})`, pt.ballesBonus]);
+  if (pt.bonus) lines.push(['Bonus outsider', pt.bonus]);
+  return `
+  <div class="modalbackdrop" data-act="closeceleb">
+    <div class="modal celebx" role="dialog" aria-modal="true" aria-label="Score exact" data-act="stop" style="${themeVarsCss(themeKeyFor(m))}">
+      <button class="modalclose" data-act="closeceleb" aria-label="Fermer">${ico('x')}</button>
+      <div class="celebstage"><div class="pod3d" data-kind="celeb" data-mid="${mid}"></div><div class="celebflat" aria-hidden="true"><b>+${pt.total}</b><span>points</span></div></div>
+      <div class="modalbody">
+        <h2 class="celebtitle">Score exact</h2>
+        <p class="celebmatch"><b>${esc(m.side_a)} – ${esc(m.side_b)}</b>, ${esc(fmtDay(m.starts_at))}</p>
+        <p class="celebtext">Tu avais annoncé ${h.pred_a}–${h.pred_b}, et c'est le score final.</p>
+        <ul class="celebpts">${lines.map(([k, v]) => `<li><span>${esc(k)}</span><b>+${v}</b></li>`).join('')}<li class="tot"><span>Total</span><b>+${pt.total} pts</b></li></ul>
+        <div class="celebbtns">
+          <button class="btn small" data-act="exportmatch" data-id="${mid}">${ico('share-network')}Partager en image</button>
+          <button class="btn small sec" data-act="closeceleb">${more ? `Score exact suivant (${more})` : 'Continuer'}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Fiche d'un ami : vos défis à tous les deux. Pour l'honneur : rien ne compte au classement.
+function duelsWithHtml(uid) {
+  if (!S.duels || !S.session || uid === S.session.user.id) return '';
+  const r = duelRecord(uid);
+  if (!r.list.length) return '';
+  const pseudo = pseudoMap()[uid] || '?', done = r.win + r.loss + r.draw;
+  const order = { open: 0, live: 1 };
+  const list = r.list.slice().sort((a, b) => (order[a.state] ?? 2) - (order[b.state] ?? 2) || b.d.id - a.d.id).slice(0, 8);
+  const lead = r.win > r.loss ? `Tu mènes ${r.win} à ${r.loss}` : r.win < r.loss ? `${esc(pseudo)} mène ${r.loss} à ${r.win}` : `Égalité, ${r.win} partout`;
+  return `<section class="modalsec">
+    <h3><span class="secdot" aria-hidden="true"></span>Vos défis</h3>
+    ${done ? `<div class="duelscore" role="img" aria-label="${lead}${r.draw ? `, ${r.draw} nul${r.draw > 1 ? 's' : ''}` : ''}">
+      <span class="lab">Toi</span><b>${r.win}</b><i class="sep" aria-hidden="true"></i><b>${r.loss}</b><span class="lab">${esc(pseudo)}</span>
+      <small>${lead}${r.draw ? `, et ${r.draw} défi${r.draw > 1 ? 's' : ''} nul${r.draw > 1 ? 's' : ''}` : ''}. Pour l'honneur : les défis ne comptent pas au classement.</small></div>`
+    : `<p class="hint">Pas encore de défi terminé entre vous. Pour l'honneur : les défis ne comptent pas au classement.</p>`}
+    <div class="duelrow col">${list.map(i => duelChip(i.d)).join('')}</div>
   </section>`;
 }
 
@@ -6643,6 +7228,7 @@ function accountView() {
   ${originPanel(finished, winPts)}
   ${gridPanel(finished)}
   ${winnerHistoryPanel()}
+  ${duelsPanel()}
   ${badgesPanel()}
   ${sparkline}
   ${byCircuit.length ? `
@@ -7665,9 +8251,9 @@ $app.addEventListener('click', async e => {
     if (el.dataset.tab !== S.tab) playSound('tick'); // tap discret, seulement quand on change vraiment d'onglet
     S.tab = el.dataset.tab;
     S._tabAt = Date.now();
-    if (S.tab === 'matches') S._freshMatches = true;
-    if (S.tab === 'board') { S.board = null; navigate(render); await Promise.all([loadBoard(), loadWinners()]); }
-    if (S.tab === 'account') { S.myHistory = null; navigate(render); await Promise.all([loadAccount(), loadWinners()]); }
+    if (S.tab === 'matches') { S._freshMatches = true; loadDuels().then(keepRender); }
+    if (S.tab === 'board') { S.board = null; navigate(render); await Promise.all([loadBoard(), loadWinners(), loadDuels()]); }
+    if (S.tab === 'account') { S.myHistory = null; navigate(render); await Promise.all([loadAccount(), loadWinners(), loadDuels()]); }
     navigate(render); window.scrollTo(0, 0);
   }
   else if (act === 'view') { S.view = v; S._freshMatches = true; navigate(render); }
@@ -7702,11 +8288,21 @@ $app.addEventListener('click', async e => {
   else if (act === 'closewin') { S.openWin = null; keepRender(); }
   else if (act === 'wsave') saveWinnerPick(el.dataset.comp, el.dataset.draw, el.dataset.pick);
   else if (act === 'boardmonth') { S.boardMonth = v; navigate(render); }
+  else if (act === 'duelnew') { S.openDuelNew = id; keepRender(); }
+  else if (act === 'closeduelnew') { S.openDuelNew = null; keepRender(); }
+  else if (act === 'duelsave') createDuel(id, el.dataset.uid);
+  else if (act === 'duel') { S.openDuel = Number(el.dataset.did); keepRender(); }
+  else if (act === 'closeduel') { S.openDuel = null; keepRender(); }
+  else if (act === 'duelcancel') cancelDuel(Number(el.dataset.did));
+  else if (act === 'acc') toggleAccessory(el.dataset.acc);
+  else if (act === 'closeceleb') closeCeleb();
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && S.openCompetitor) { S.openCompetitor = null; keepRender(); }
-  if (e.key === 'Escape' && S.openPlayer) { S.openPlayer = null; keepRender(); }
+  if (e.key === 'Escape' && S.openPlayer && !S.openDuel) { S.openPlayer = null; keepRender(); }
   if (e.key === 'Escape' && S.openWin) { S.openWin = null; keepRender(); }
+  if (e.key === 'Escape' && (S.openDuel || S.openDuelNew)) { S.openDuel = S.openDuelNew = null; keepRender(); }
+  if (e.key === 'Escape' && S.openCeleb) closeCeleb();
   if (e.key === 'Escape' && S.openBadge) closeBadge();
   if (e.key === 'Escape' && S.openRecap) { stopRecapRun(); S.openRecap = null; keepRender(); }
 });
