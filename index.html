@@ -1386,8 +1386,8 @@ html.halloween .pod3d:has(> .scene3d[data-ready]){background:#09111C}
 .wpick-t b{font:700 18px/1.15 var(--f-head);color:var(--ink);overflow-wrap:anywhere}
 .wpick-t span{font:400 13px/1.35 var(--f-text);color:var(--ink-2)}
 .wpick.todo b{color:var(--red)}
-.wpick.empty b,.wpick.lost b{color:var(--ink-2)}
-.wpick.lost .ico,.wpick.empty .ico{color:var(--ink-3)}
+.wpick.none b,.wpick.lost b{color:var(--ink-2)}
+.wpick.lost .ico,.wpick.none .ico{color:var(--ink-3)}
 .wpick.won .wpick-t span{color:var(--ink);font-weight:600}
 /* La feuille de choix : la tête de série devient la balle blanche une fois choisie. */
 .winx .modalname{font-size:27px;margin-top:6px}
@@ -1473,7 +1473,7 @@ button.wrow:hover{background:var(--surface-2)}
 .race svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .race line{stroke:var(--line-2);stroke-width:1;vector-effect:non-scaling-stroke}
 .race polyline{fill:none;stroke:var(--line);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
-.race polyline.lead{stroke:var(--ink-2);stroke-width:2}
+.race polyline.leader{stroke:var(--ink-2);stroke-width:2}
 .race polyline.me{stroke:var(--table);stroke-width:3.5}
 .racelab{position:absolute;right:0;width:80px;transform:translateY(-50%);display:flex;align-items:baseline;gap:5px;
   font:600 13px/1.1 var(--f-text);color:var(--ink-2);white-space:nowrap;overflow:hidden}
@@ -1617,6 +1617,12 @@ html.halloween .acc.on{box-shadow:inset 0 0 0 2px var(--red)}
 @keyframes emoIn{from{opacity:0;transform:translate(-50%,18px) scale(.9)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
 @keyframes emoHop{0%{transform:none}35%{transform:translateY(-12px) rotate(-4deg)}60%{transform:none}78%{transform:translateY(-4px)}100%{transform:none}}
 @media (min-width:860px){ .emopop{bottom:92px} }
+/* Fenêtre redessinée sur place : elle ne remonte pas une seconde fois. */
+.modalbackdrop.still,.modal.still,.recapx.still{animation:none!important}
+/* Petites cibles : une zone de toucher plus haute que le texte. */
+.namebtn{padding:5px 0;margin:-5px 0}
+.friendstoggle{position:relative}
+.friendstoggle::after{content:"";position:absolute;inset:-7px -6px}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -2608,7 +2614,7 @@ function myJudgedHistory() {
 /* ---------- Chargement des données ---------- */
 async function reloadMatches() {
   const since = new Date(Date.now() - 90 * 864e5).toISOString();
-  const r = await sb.from('matches').select('*').gte('starts_at', since).order('starts_at', { ascending: true }).limit(500);
+  const r = await fetchAllRows(() => sb.from('matches').select('*').gte('starts_at', since).order('starts_at', { ascending: true }).order('id'));
   if (r.error) throw r.error;
   S.matches = r.data || [];
 }
@@ -2836,6 +2842,8 @@ function render() {
   // partout, y compris sur une carte de match au thème WTT_*/PRO_A dont les
   // couleurs, elles, ne doivent jamais bouger.
   if (!S.session) { $app.innerHTML = authView(); afterRender(); return; }
+  const sheetKey = m => m.className.replace(/ still\b/g, '') + '|' + (m.getAttribute('aria-label') || '');
+  const sheets = [...document.querySelectorAll('.modal, .recapx')].map(m => [sheetKey(m), m.scrollTop]);
   const todo = S.matches.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
   const tabs = [['matches', 'Matchs'], ['board', 'Amis'], ['rankings', 'Classements'], ['account', 'Mon compte']];
   if (S.isAdmin) tabs.push(['admin', 'Admin']);
@@ -2861,6 +2869,13 @@ function render() {
       </div>
     </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}${S.openWin ? winnerModal(S.openWin) : ''}${S.openDuelNew ? duelNewModal(S.openDuelNew) : ''}${S.openDuel ? duelModal(S.openDuel) : ''}${S.openCeleb ? celebModal(S.openCeleb) : ''}`;
   document.documentElement.classList.toggle('noscroll', !!S.openRecap);
+  if (sheets.length) document.querySelectorAll('.modal, .recapx').forEach(m => {
+    const old = sheets.find(s => s[0] === sheetKey(m));
+    if (!old) return;
+    m.classList.add('still');
+    if (m.parentElement && m.parentElement.classList.contains('modalbackdrop')) m.parentElement.classList.add('still');
+    m.scrollTop = old[1];
+  });
   if (S.openRecap && !S.recapAnimPlayed) { S.recapAnimPlayed = true; S._podRun = (S._podRun || 0) + 1; mountRecapAnimation(); }
   afterRender();
   maybeStartTuto();
@@ -2965,10 +2980,12 @@ function dropBall(id, a, b) {
 // règle CSS .me svg existante à réutiliser).
 function themeToggleBtn() { return ''; } // un seul thème pour l'instant
 // Points et rang, toujours visibles en haut (mobile) : touche pour voir le classement.
+const generalBoard = () => ((S.boardScope === 'ALL' || S.boardScope === 'MONTH') && S.board ? S.board : S.accountBoard) || null;
 function myStatusChip() {
-  const mine = S.board && S.session && S.board.find(r => r.user_id === S.session.user.id);
+  const b = generalBoard();
+  const mine = b && S.session && b.find(r => r.user_id === S.session.user.id);
   if (!mine) return '';
-  return `<button class="mystatus" data-act="tab" data-tab="board" aria-label="${mine.total_points} points, ${ordinalRank(S.board, mine)} du classement : voir le classement"><b>${mine.total_points}</b>pts · ${ordinalRank(S.board, mine)}</button>`;
+  return `<button class="mystatus" data-act="tab" data-tab="board" aria-label="${mine.total_points} points, ${ordinalRank(b, mine)} du classement : voir le classement"><b>${mine.total_points}</b>pts · ${ordinalRank(b, mine)}</button>`;
 }
 // Bouton son activé/coupé : même style/emplacement que le bouton de thème
 // (bouton icône .linkbtn), préférence persistée en localStorage sur le même
@@ -3003,9 +3020,10 @@ function sideView() {
   if (!S.session) return '';
   const out = [];
   const uid = S.session.user.id;
-  if (S.tab !== 'board' && S.board && S.board.length) {
+  const gb = generalBoard();
+  if (S.tab !== 'board' && gb && gb.length) {
     let prev = null, rank = 0;
-    const ranked = S.board.map((r, i) => { const k = r.total_points + '/' + r.exact_scores; if (k !== prev) { rank = i + 1; prev = k; } return { ...r, rank }; });
+    const ranked = gb.map((r, i) => { const k = r.total_points + '/' + r.exact_scores; if (k !== prev) { rank = i + 1; prev = k; } return { ...r, rank }; });
     const meIdx = ranked.findIndex(r => r.user_id === uid);
     const shown = ranked.slice(0, 5);
     if (meIdx >= 5) shown.push(ranked[meIdx]);
@@ -3154,8 +3172,8 @@ function matchesView() {
     const nums = [...new Set(list.map(journeeOf).filter(n => n !== null))].sort((a, b) => a - b);
     if (nums.length) {
       if (S.proJournee === null || !nums.includes(S.proJournee)) {
-        const nextUp = up.map(journeeOf).find(n => n !== null);
-        S.proJournee = nextUp ?? nums[nums.length - 1];
+        const pick = (S.view === 'upcoming' ? up : done).map(journeeOf).find(n => n !== null);
+        S.proJournee = pick ?? nums[nums.length - 1];
       }
       journeeRow = `<div class="journeerow" role="group" aria-label="Journée">
         ${nums.map(n => `<button class="jchip" data-act="journee" data-v="${n}" aria-pressed="${S.proJournee === n}">Journée ${n}</button>`).join('')}
@@ -6385,14 +6403,14 @@ function winnerStrip(competition) {
     const ifWins = `+${winnerPtsForSeed(p && p.seed)} pts ${fem ? 'si elle gagne' : "s'il gagne"}`;
     let name, sub, cls = '';
     if (info.final) {
-      if (!mine) { name = 'Pas de choix'; sub = `${info.final.winner} a gagné`; cls = ' empty'; }
+      if (!mine) { name = 'Pas de choix'; sub = `${info.final.winner} a gagné`; cls = ' none'; }
       else if (mine.pick === info.final.winner) { name = mine.pick; sub = `Trouvé : +${winnerPtsForSeed(info.final.seed)} pts`; cls = ' won'; }
       else { name = mine.pick; sub = `Raté : ${info.final.winner} a gagné`; cls = ' lost'; }
     } else if (info.open) {
       name = mine ? mine.pick : 'Choisis ton vainqueur';
       sub = mine ? `${ifWins}, modifiable jusqu'à ${fmtClose(info.closesAt)}` : `De 5 à 15 pts à gagner, jusqu'à ${fmtClose(info.closesAt)}`;
       if (!mine) cls = ' todo';
-    } else if (!mine) { name = 'Pas de choix'; sub = 'Les choix sont fermés : vois ceux des amis'; cls = ' empty'; }
+    } else if (!mine) { name = 'Pas de choix'; sub = 'Les choix sont fermés : vois ceux des amis'; cls = ' none'; }
     else if (p && p.out) { name = mine.pick; sub = `${fem ? 'Éliminée' : 'Éliminé'} en ${p.out}`; cls = ' lost'; }
     else { name = mine.pick; sub = `Encore en lice, ${ifWins}`; }
     return `<button class="wpick${cls}" data-act="wpick" data-comp="${esc(competition)}" data-draw="${esc(info.draw)}">
@@ -6536,7 +6554,7 @@ function raceChart(rows, k) {
   const max = Math.max(1, ...lines.map(l => l.cum[D]));
   const X = d => d / D * 100, Y = v => 100 - v / max * 100;
   const lead = rows[0].user_id;
-  const cls = l => l.r.user_id === uid ? 'me' : l.r.user_id === lead ? 'lead' : '';
+  const cls = l => l.r.user_id === uid ? 'me' : l.r.user_id === lead ? 'leader' : '';
   const order = lines.slice().sort((a, b) => (cls(a) ? 1 : 0) - (cls(b) ? 1 : 0) || (cls(a) === 'me') - (cls(b) === 'me'));
   const svg = `<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
     ${[25, 50, 75].map(y => `<line x1="0" x2="100" y1="${y}" y2="${y}"/>`).join('')}
@@ -8513,7 +8531,7 @@ $app.addEventListener('click', async e => {
     if (S.tab === 'account') { S.myHistory = null; navigate(render); await Promise.all([loadAccount(), loadWinners(), loadDuels()]); }
     navigate(render); window.scrollTo(0, 0);
   }
-  else if (act === 'view') { S.view = v; S._freshMatches = true; navigate(render); }
+  else if (act === 'view') { S.view = v; S._freshMatches = true; S.proJournee = null; navigate(render); }
   else if (act === 'circuit') { S.circuit = v; S._freshMatches = true; S.proJournee = null; navigate(render); }
   else if (act === 'journee') { S.proJournee = +v; S._freshMatches = true; navigate(render); }
   else if (act === 'boardscope') { S.boardScope = v; S.board = null; navigate(render); await loadBoard(); navigate(render); }
