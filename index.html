@@ -1623,6 +1623,86 @@ html.halloween .acc.on{box-shadow:inset 0 0 0 2px var(--red)}
 .namebtn{padding:5px 0;margin:-5px 0}
 .friendstoggle{position:relative}
 .friendstoggle::after{content:"";position:absolute;inset:-7px -6px}
+/* Personnage-guide et schémas d'explication. */
+.guy{display:block;flex:none;width:72px;height:72px;color:var(--ink);overflow:visible}
+
+/* Écrans vides : le personnage remplace la balle qui saute. */
+.empty.guyempty::before{content:none;display:none}
+.empty.guyempty{gap:6px;padding-top:26px}
+.empty.guyempty .guy{width:104px;height:104px}
+.empty.guyempty p{margin:0;max-width:34ch}
+
+/* Bandeaux : le personnage à la place de l'icône. */
+.rn-ico.guyico{background:none;box-shadow:none;width:58px;height:58px;margin:-6px 0 0 -4px}
+.rn-ico.guyico .guy,.rn-ico.guyico .emo{width:64px;height:64px}
+
+/* Petites cases de schéma : un chiffre, ce qu'il veut dire. */
+.sch{display:flex;flex-wrap:wrap;gap:6px}
+.schc{display:inline-flex;flex-direction:column;justify-content:center;gap:2px;min-width:64px;padding:7px 10px 8px;border-radius:8px;
+  background:var(--surface-2);color:var(--ink)}
+.schc b{font:700 italic 19px/1 var(--f-head);color:var(--ink);white-space:nowrap}
+.schc small{font:500 12px/1.2 var(--f-text);color:var(--ink-2)}
+.schc.hot b{color:var(--red)}
+.schc .ballesdots{padding:0;gap:3px}
+.schc .ballesdots i{width:11px;height:11px}
+.schc .ballesdots i.on{box-shadow:inset 0 0 0 1px rgba(18,26,38,.3),0 1px 2px rgba(18,26,38,.25)}
+.sch:not(.serie) .schc:has(.ballesdots){flex-direction:row;align-items:center;gap:8px}
+.sch.serie{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));max-width:340px}
+.sch.serie .schc{min-width:0;box-shadow:inset 3px 0 0 var(--tier);padding-left:11px}
+.schflow{list-style:none;margin:0;padding:0;display:grid;gap:6px;counter-reset:sf}
+.schflow li{counter-increment:sf;display:flex;align-items:center;gap:10px;font:500 14px/1.3 var(--f-text);color:var(--ink)}
+.schflow li::before{content:counter(sf);flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  background:var(--table);color:#fff;font:700 italic 13px/1 var(--f-head)}
+
+/* Le barème (onglet Amis). */
+.bareme{margin-top:18px}
+.bhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-6px 0 4px}
+.bhead .guy{width:66px;height:66px;margin:-4px -4px -8px 0}
+.bsteps{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:16px}
+.bsteps>li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px}
+.bn{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--surface);font:700 italic 15px/1 var(--f-head)}
+.bsteps h4{margin:3px 0 8px;font:700 17px/1.15 var(--f-head);color:var(--ink)}
+.brow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 10px}
+.bk{flex:0 0 100%;font:600 13px/1.2 var(--f-text);color:var(--ink)}
+.bnote{font:400 12.5px/1.3 var(--f-text);color:var(--ink-2)}
+.bsub{margin:0;font:400 13.5px/1.45 var(--f-text);color:var(--ink-2)}
+.bex{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:16px 0 8px;padding:10px 12px;border-radius:10px;background:var(--surface-2);
+  font:500 14px/1.4 var(--f-text);color:var(--ink)}
+.bex span{font:600 12.5px/1 var(--f-text);color:var(--ink-2)}
+.bex b{font:700 italic 17px/1 var(--f-head)}
+.rulelist{margin:14px 2px 4px;padding:0 0 0 18px;color:var(--ink-2);font:400 13.5px/1.55 var(--f-text);max-width:60ch}
+
+/* Sous un match terminé : le calcul des points. */
+.ptsum{display:flex;flex-wrap:wrap;gap:4px}
+.ptsum i{font:400 12.5px/1.2 var(--f-text);font-style:normal;color:var(--ink-2);background:var(--surface-2);border-radius:6px;padding:3px 7px}
+.ptsum b{font-weight:700;color:var(--ink)}
+
+/* Tuto : le personnage guide chaque étape. */
+.tuto-top{display:flex;align-items:center;gap:10px}
+.tuto-guy{width:76px;height:76px;margin:-8px -2px -6px -8px}
+.tuto-sch{margin-top:12px}
+.tuto-note{margin:8px 0 0!important;font:400 13px/1.4 var(--f-text)!important;color:var(--ink-2)}
+.tuto-art.welcome{position:relative}
+.tuto-art.welcome .tuto-hero{position:absolute;left:6px;bottom:-4px;width:118px;height:118px;color:#fff}
+.tuto-art.faceoff{display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:8px 10px 2px;background:var(--table)}
+.tuto-art.faceoff .guy{width:96px;height:96px;color:#fff}
+.tuto-art.faceoff b{align-self:center;font:700 italic 20px/1 var(--f-head);color:#fff;opacity:.85;margin:0 2px 18px}
+.tuto-art.emorow{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:10px 6px 8px;background:var(--surface-2)}
+.tuto-art.emorow span{display:flex;flex-direction:column;align-items:center;gap:2px;font:500 12px/1.2 var(--f-text);color:var(--ink-2)}
+.tuto-art.emorow .guy{width:66px;height:66px}
+@media (prefers-reduced-motion:no-preference){
+  .tuto-card.enter .tuto-guy,.tuto-card.enter .tuto-hero{animation:emoHop .8s var(--ease-out) .12s both}
+}
+
+/* Connexion : un personnage invité salue. */
+.authguy{display:flex;align-items:flex-end;gap:10px;margin:-8px 0 8px}
+.authguy .guy{width:76px;height:76px;margin-left:-10px}
+.authguy .authhead{margin-bottom:12px}
+.winsch{margin:8px 0 14px}
+.duelhow{margin:2px 0 16px}.duelhow .hint{margin-top:8px}
+@media (max-width:440px){.bareme .sch.serie{grid-template-columns:repeat(2,minmax(0,1fr));max-width:230px}}
+.sidelinks{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px}
+.sidecard .sidelinks .linkbtn{margin:0}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -2517,7 +2597,7 @@ function ballesStepperHtml(m) {
       <span class="ballesdots" aria-hidden="true">${Array.from({ length: BALLES_MAX_PER_MATCH }, (_, i) => `<i class="${i < staked ? 'on' : ''}"></i>`).join('')}</span><b class="sr-only">${staked}</b>
       <button type="button" class="ballesbtn" data-act="balles" data-id="${m.id}" data-v="${staked + 1}" aria-label="Ajouter une balle" ${locked || staked >= cap ? 'disabled' : ''}>+</button>
     </div>
-    <small class="ballespct">${staked > 0 ? `×${ballesMult(staked)} si gagnant (+${pct}%)` : `jusqu'à ${cap} ici`}</small>
+    <small class="ballespct">${staked > 0 ? `×${ballesMult(staked)} si gagnant` : !cap ? 'plus de balle pour ce tournoi' : cap === 1 ? '1 balle : ×2' : `1 à ${cap} balles : ×2 à ×${cap + 1}`}</small>
   </div>`;
 }
 // À partir d'un historique déjà trié chronologiquement (du plus ancien au
@@ -3071,7 +3151,7 @@ function sideView() {
       <li><b>+5 pts</b><span>au plus, avec l'outsider (WTT)</span></li>
       <li><b>5 à 15</b><span>pour le vainqueur du tournoi (WTT)</span></li>
     </ul>
-    <button class="linkbtn" data-act="tuto">Revoir le tuto</button>
+    <span class="sidelinks"><button class="linkbtn" data-act="bareme">Tout le barème</button><button class="linkbtn" data-act="tuto">Revoir le tuto</button></span>
   </section>`);
   return out.join('');
 }
@@ -3106,7 +3186,7 @@ function authView() {
       <div class="authstage-in">
         <div class="authlogo">${MARK(28, true)}Pronostics de tennis de table</div>
         <h1 class="authtitle">${esc(APP_NAME)}</h1>
-        <p>Entre amis, sur le WTT et la Pro A. Trouve le vainqueur, vise le score exact, et prends un bonus quand l'outsider passe.</p>
+        <p>Les pronos de ping entre amis, sur le WTT et la Pro A. Trouve le vainqueur, vise le score exact.</p>
       </div>
       <div class="court" aria-hidden="true">
         <div class="court-table"><div class="court-net"></div></div>
@@ -3116,7 +3196,7 @@ function authView() {
     <div class="authform-col">
       <div class="auth">
         <form id="authform" class="panel">
-          <h2 class="authhead">${su ? 'Créer ton compte' : 'Connexion'}</h2>
+          <div class="authguy">${guy('salut', { uid: null })}<h2 class="authhead">${su ? 'Créer ton compte' : 'Connexion'}</h2></div>
           ${su ? `<label for="pseudo">Pseudo</label><input id="pseudo" required minlength="2" maxlength="20" autocomplete="nickname">` : ''}
           <label for="email">Email</label><input id="email" type="email" required autocomplete="email">
           <label for="pw">Mot de passe</label><input id="pw" type="password" required minlength="6" autocomplete="${su ? 'new-password' : 'current-password'}">
@@ -3185,9 +3265,9 @@ function matchesView() {
   const streakInfo = myStreakInfo();
   let body = '';
   if (!shown.length) {
-    body = `<div class="empty">${S.view === 'upcoming'
-      ? (S.isAdmin ? "Aucun match à venir. Ajoute le premier dans l'onglet Admin." : (S.circuit === 'PRO_A' ? "Aucun match à venir pour cette journée." : "Aucun match à venir pour le moment. Ils apparaissent ici dès qu'ils sont ajoutés."))
-      : (S.circuit === 'PRO_A' ? "Aucun match terminé pour cette journée." : "Aucun match terminé pour l'instant.")}</div>`;
+    body = S.view === 'upcoming'
+      ? emptyBox('dodo', S.isAdmin ? "Aucun match à venir. Ajoute le premier dans l'onglet Admin." : S.circuit === 'PRO_A' ? 'Aucun match à venir pour cette journée.' : 'Pas de match à venir pour l’instant. Ils arrivent ici dès qu’ils sont ajoutés.')
+      : emptyBox('pense', S.circuit === 'PRO_A' ? 'Aucun match terminé pour cette journée.' : 'Aucun match terminé pour l’instant.');
   } else {
     // Groupé par compétition (comme un bandeau de championnat Flashscore),
     // puis par jour à l'intérieur de chaque compétition.
@@ -3263,7 +3343,7 @@ function halloweenNotice() {
     <button class="recapnotice-close" data-act="hwdismiss" aria-label="Masquer ce bandeau">${ico('x')}</button>
     <span class="rn-ico" aria-hidden="true"><svg viewBox="0 0 512 512"><use href="#gi-lantern" width="512" height="512"/></svg></span>
     <h2 class="recapnotice-title">Édition Halloween</h2>
-    <p class="recapnotice-sub">Jusqu'au 1er novembre : balles citrouilles, pronos ratés sous une pierre tombale, chauves-souris à chaque palier de série.</p>
+    <p class="recapnotice-sub">Jusqu'au 1er novembre : balles citrouilles, tombes pour les pronos ratés, chauves-souris pour les séries.</p>
   </section>`;
 }
 function recapNotice() {
@@ -3274,7 +3354,7 @@ function recapNotice() {
   const themeKey = Object.keys(THEME).find(k => THEME[k] === data.theme) || 'ALL';
   return `<section class="recapnotice" style="${themeVarsCss(themeKey)}" aria-label="Récap disponible">
     <button class="recapnotice-close" data-act="recapdismiss" data-key="${esc(g.key)}" data-circuit="${esc(g.circuit)}" aria-label="Masquer ce bandeau">${ico('x')}</button>
-    <span class="rn-ico" aria-hidden="true">${ico('trophy.f')}</span>
+    <span class="rn-ico guyico" aria-hidden="true">${guy('trophee')}</span>
     <h2 class="recapnotice-title">${esc(g.key)}</h2>
     <p class="recapnotice-sub">Le récap est prêt : ton rang, tes points et le podium entre amis.</p>
     <button class="btn small" data-act="recap" data-key="${esc(g.key)}" data-circuit="${esc(g.circuit)}">Voir le récap</button>
@@ -3399,7 +3479,7 @@ function matchRow(m, fresh, i, streakInfo) {
         <div class="bar"><i style="--w:${pickProb}%;width:${pickProb}%"></i></div><b>${pickProb}%</b>
       </div>` : '';
     const status = awaiting
-      ? `<span>${mine ? `Ton prono : <b>${mine.pred_a}–${mine.pred_b}</b>. ` : ''}Résultat pas encore reçu : les points arrivent dès qu'il est connu.</span>`
+      ? `<span>${mine ? `Ton prono : <b>${mine.pred_a}–${mine.pred_b}</b>. ` : ''}En attente du résultat.</span>`
       : locked
       ? `<span>${mine ? `Ton prono : <b>${mine.pred_a}–${mine.pred_b}</b>` : "Trop tard, pas de prono."}</span>`
       : `<span>${mine ? `Prono : <b>${mine.pred_a}–${mine.pred_b}</b>, modifiable jusqu'au début du match.` : 'Touche un score pour pronostiquer.'}</span>`;
@@ -3437,12 +3517,8 @@ function matchRow(m, fresh, i, streakInfo) {
       if (pt !== null) {
         stamp = ptsBlock(pt, det);
       }
-      const bonusBits = [];
-      if (det && det.streakBonus) bonusBits.push(`bonus série +${det.streakBonus}`);
-      if (det && det.ballesBonus) bonusBits.push(`bonus balles (${det.balles}) +${det.ballesBonus}`);
-      if (det && det.bonus) bonusBits.push(`bonus outsider +${det.bonus}`);
       foot = `<span>${mine ? `Ton prono <b>${mine.pred_a}–${mine.pred_b}</b>` : `Tu n'as pas fait de prono.`}</span>
-        ${bonusBits.length ? `<span>dont ${bonusBits.join(', ')}</span>` : ''}
+        ${ptsSumHtml(det)}
         <span class="rlinks">
           <button class="friendstoggle" data-act="friends" data-id="${m.id}">${S.openFriends[m.id] ? 'Masquer' : 'Voir'} les pronos des amis</button>
           ${mine ? `<button class="friendstoggle" data-act="exportmatch" data-id="${m.id}">Partager en image</button>` : ''}
@@ -3549,7 +3625,7 @@ function boardView() {
   const exportBtn = `<button class="btn small sec" data-act="exportboard">${ico('share-network')}Partager en image</button>`;
   if (S.board === null) return seg + '<div class="loading">Chargement…</div>';
   if (S.boardScope === 'MONTH') return `<div class="boardtools">${seg}${exportBtn}</div>` + monthView();
-  if (!S.board.length) return seg + `<div class="empty">Pas encore de points. Le classement se remplit dès que les premiers matchs sont terminés.</div>${rules()}`;
+  if (!S.board.length) return seg + emptyBox('loupe', 'Pas encore de points : le classement démarre au premier match terminé.') + rules();
   return `<div class="boardtools">${seg}${exportBtn}</div>${boardPodium(S.board)}${standingsTable(S.board)}` + rules();
 }
 // Rang dans un tableau : pastille de médaille pour le podium.
@@ -3572,7 +3648,7 @@ function boardPodium(board) {
   </div>`;
   return `<div class="boardpod"><div class="pod3d" data-kind="board"></div><div class="podium" aria-label="Podium">${col(top[1], 2)}${col(top[0], 1)}${col(top[2], 3)}</div></div>`;
 }
-const rules = () => `<p class="rules">Barème : 1 point pour le bon vainqueur, 3 points pour le score exact. En WTT, un pronostic gagnant sur l'outsider (moins bien classé au tirage au sort) rapporte un bonus, d'autant plus grand que l'écart de tête de série est important (jusqu'à +5 points). Bonus de série : plus tu enchaînes les pronos gagnants d'affilée, plus le prochain rapporte gros (jusqu'à +75 % à partir d'une grosse série) — vois l'onglet "Mon compte" pour ta série en cours. Balles : à chaque tournoi WTT tu reçois 4 balles (2 par journée de Pro A) à miser sur tes pronos, 3 au maximum sur un même match ; si le prono est gagnant, chaque balle ajoute ×1 (1 balle = ×2, 2 = ×3, 3 = ×4), sinon elles sont perdues. Le bonus de série et les balles s'additionnent. Vainqueur du tournoi (WTT) : avant le premier match d'un tableau, choisis qui va le gagner ; 5 points si c'est une tête de série 1 ou 2, 10 points de 3 à 8, 15 points au-delà ou sans tête de série. En cas d'égalité au classement, le plus de scores exacts passe devant.</p>`;
+const rules = () => baremeHtml();
 
 /* --- Classements WTT (mondial, messieurs/dames séparés) et Pro A
    (championnat) : à distinguer du classement des amis (points de
@@ -3585,7 +3661,7 @@ function rankingsView() {
     const list = Object.values(S.competitors)
       .filter(c => c.circuit === 'PRO_A' && c.ranking != null)
       .sort((a, b) => a.ranking - b.ranking || a.name.localeCompare(b.name));
-    if (!list.length) return seg + `<div class="empty">Aucun classement Pro A pour l'instant. Il se remplit dès que la saison commence.</div>`;
+    if (!list.length) return seg + emptyBox('pense', 'Pas encore de classement Pro A : il arrive avec la saison.');
     const rows = list.map(c => {
       const topClass = c.ranking === 1 ? ' top1' : c.ranking === 2 ? ' top2' : c.ranking === 3 ? ' top3' : '';
       return `<tr class="lbrow" data-act="competitor" data-id="${c.id}" tabindex="0" aria-label="Voir le détail de l'équipe ${esc(c.name)}">
@@ -3600,7 +3676,7 @@ function rankingsView() {
     // sont la "vue équipe" : pas besoin d'un onglet séparé, la donnée est
     // déjà structurée par équipe depuis le robot de synchronisation (FFTT).
     return seg + `<table class="standings"><thead><tr><th>Rang</th><th>Équipe</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>`
-      + `<p class="rules">Classement Pro A messieurs par équipe, mis à jour par le robot de synchronisation. Touche une équipe pour voir son effectif et son calendrier.</p>`;
+      + `<p class="rules">Pro A messieurs, mis à jour automatiquement. Touche une équipe pour voir ses joueurs et ses matchs.</p>`;
   }
 
   // WTT : classement mondial, messieurs et dames séparés (déduits automatiquement
@@ -3624,7 +3700,7 @@ function rankingsView() {
         <td class="ptscell">${r.points != null ? `${r.points}<small>pts</small>` : ''}</td></tr>`;
     }).join('');
     return seg + genderSeg + `<table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>`
-      + `<p class="rules">Classement mondial WTT officiel (${genreLbl}), top ${world.length}, mis à jour automatiquement par le robot de synchronisation. Touche un nom marqué « voir la fiche » pour son calendrier et ses résultats.</p>`;
+      + `<p class="rules">Classement mondial officiel (${genreLbl}), top ${world.length}, mis à jour automatiquement. Touche un nom marqué « voir la fiche » pour ses matchs.</p>`;
   }
   const pool = Object.values(S.competitors).filter(c => c.circuit === 'WTT' && c.gender === S.rankGender);
   const withWorld = pool.filter(c => c.world_ranking != null).sort((a, b) => a.world_ranking - b.world_ranking || a.name.localeCompare(b.name));
@@ -3633,7 +3709,7 @@ function rankingsView() {
   const usingFallback = !withWorld.length && !!fallback.length;
   const genreLabel = S.rankGender === 'M' ? 'messieurs' : 'dames';
   if (!list.length) {
-    return seg + genderSeg + `<div class="empty">Aucun classement ${genreLabel} pour l'instant.${S.isAdmin ? " Il se remplit automatiquement à la prochaine synchronisation WTT." : ''}</div>`;
+    return seg + genderSeg + emptyBox('pense', `Pas encore de classement ${genreLabel}.${S.isAdmin ? ' Il arrive à la prochaine synchronisation WTT.' : ''}`);
   }
   const rows = list.map(c => {
     const rk = usingFallback ? c.ranking : c.world_ranking;
@@ -3645,8 +3721,8 @@ function rankingsView() {
       <td class="ptscell">${(usingFallback ? null : c.world_ranking_points) ? `${c.world_ranking_points}<small>pts</small>` : ''}</td></tr>`;
   }).join('');
   const note = usingFallback
-    ? `<p class="rules">Classement mondial pas encore synchronisé pour ce tableau : tête de série des tournois suivis affichée en attendant.</p>`
-    : `<p class="rules">Classement mondial WTT officiel (${genreLabel}), mis à jour automatiquement par le robot de synchronisation.</p>`;
+    ? `<p class="rules">Classement mondial pas encore reçu : en attendant, la tête de série des tournois suivis.</p>`
+    : `<p class="rules">Classement mondial officiel (${genreLabel}), mis à jour automatiquement.</p>`;
   return seg + genderSeg + `<table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>` + note;
 }
 
@@ -3725,12 +3801,12 @@ function allUsersPointsByMatch() {
 const BADGE_DEFS = [
   {
     id: 'lynx', name: 'Œil de lynx', colorA: '#FCEBB0', colorB: '#C9922E',
-    desc: '90%+ de bons vainqueurs sur au moins 15 pronostics jugés.',
+    desc: '90 % de bons vainqueurs, sur 15 pronos au moins.',
     test: ctx => ctx.n >= 15 && (ctx.goodN / ctx.n) >= 0.9,
   },
   {
     id: 'sniper', name: 'Sniper', colorA: '#F3C9A0', colorB: '#A8472A',
-    desc: '5 scores exacts sur une fenêtre de 10 pronostics consécutifs jugés.',
+    desc: '5 scores exacts sur 10 pronos de suite.',
     test: ctx => {
       for (let i = 0; i + 10 <= ctx.finished.length; i++) {
         if (ctx.finished.slice(i, i + 10).filter(h => h.pt.exact).length >= 5) return true;
@@ -3740,7 +3816,7 @@ const BADGE_DEFS = [
   },
   {
     id: 'mur', name: 'Le Mur', colorA: '#D9DEE6', colorB: '#51637A',
-    desc: 'Ne jamais finir à 0 point sur une série de 10 matchs jugés d’affilée.',
+    desc: '10 pronos de suite sans jamais faire 0.',
     test: ctx => {
       let best = 0, cur = 0;
       for (const h of ctx.finished) { cur = h.pt.total > 0 ? cur + 1 : 0; best = Math.max(best, cur); }
@@ -3749,12 +3825,12 @@ const BADGE_DEFS = [
   },
   {
     id: 'nuage', name: 'Sur un nuage', colorA: '#BFE0F7', colorB: '#3E7FC9',
-    desc: 'Atteindre une série de 10 pronostics gagnants d’affilée (palier bleu).',
+    desc: '10 pronos gagnants d’affilée.',
     test: ctx => ctx.bestStreak >= 10,
   },
   {
     id: 'tablerase', name: 'Table rase', colorA: '#D8C7F2', colorB: '#6B3FA0',
-    desc: 'Reconstruire une série de 5+ pronostics gagnants juste après une série totalement cassée à 0.',
+    desc: 'Après une série retombée à 0, en refaire une de 5.',
     test: ctx => {
       const f = ctx.finished;
       for (let i = 0; i < f.length; i++) {
@@ -3771,7 +3847,7 @@ const BADGE_DEFS = [
   },
   {
     id: 'increvable', name: 'Increvable', colorA: '#CFEAD0', colorB: '#3D8A4E',
-    desc: 'Pronostic posé sur 100% des matchs d’un tournoi WTT entier.',
+    desc: 'Un prono sur chaque match d’un tournoi WTT.',
     test: () => {
       const byComp = {};
       for (const m of S.matches) {
@@ -3783,33 +3859,33 @@ const BADGE_DEFS = [
   },
   {
     id: 'veteran', name: 'Vétéran', colorA: '#E4D9B8', colorB: '#8A6A33',
-    desc: '200 pronostics faits au total, tous circuits confondus.',
+    desc: '200 pronos au total.',
     test: () => (S.myHistory || []).length >= 200,
   },
   {
     id: 'levetot', name: 'Lève-tôt', colorA: '#FFE3A8', colorB: '#D98A1E',
-    desc: 'Pronostic posé plus de 48h avant le début du match, dix fois.',
+    desc: '10 pronos posés plus de 48 h avant le match.',
     test: () => (S.myHistory || []).filter(h => h.created_at && h.matches && h.matches.starts_at &&
       (new Date(h.matches.starts_at) - new Date(h.created_at)) >= 48 * 3600 * 1000).length >= 10,
   },
   {
     id: 'expertwtt', name: 'Expert WTT', colorA: '#D8C9F5', colorB: '#5B2FA8',
-    desc: 'Précision sur WTT nettement meilleure que la moyenne du groupe.',
+    desc: 'Bien au-dessus de la moyenne du groupe en WTT.',
     test: ctx => { const c = circuitAccuracy(ctx, 'WTT'); return !!c && (c.myAcc - c.avgAcc) >= 0.15; },
   },
   {
     id: 'expertproa', name: 'Expert Pro A', colorA: '#BFD0F7', colorB: '#1E4FD1',
-    desc: 'Précision sur Pro A nettement meilleure que la moyenne du groupe.',
+    desc: 'Bien au-dessus de la moyenne du groupe en Pro A.',
     test: ctx => { const c = circuitAccuracy(ctx, 'PRO_A'); return !!c && (c.myAcc - c.avgAcc) >= 0.15; },
   },
   {
     id: 'outsider', name: 'Chasseur d’outsider', colorA: '#E6DEC2', colorB: '#7A6B3A',
-    desc: 'Le bonus "outsider" a été touché au moins 5 fois.',
+    desc: 'Toucher 5 fois le bonus outsider.',
     test: ctx => ctx.finished.filter(h => h.pt.bonus > 0).length >= 5,
   },
   {
     id: 'rival', name: 'Le Rival', colorA: '#F2C6C6', colorB: '#8E1F2B',
-    desc: 'Être en tête, en points cumulés, sur au moins 10 matchs jugés en commun avec un ami.',
+    desc: 'Devant un ami sur 10 matchs en commun ou plus.',
     test: ctx => {
       const all = allUsersPointsByMatch();
       const mine = all[ctx.uid];
@@ -3828,12 +3904,12 @@ const BADGE_DEFS = [
   },
   {
     id: 'trone', name: 'Trône de courte durée', colorA: '#FBE9A9', colorB: '#B8860B',
-    desc: 'Avoir été 1er du classement général à un moment donné (même sans l’être resté).',
+    desc: 'Avoir été 1er du général, même un seul jour.',
     test: () => { try { return localStorage.getItem('spin_was_first') === '1'; } catch (e) { return false; } },
   },
   {
     id: 'citrouille', name: 'Citrouille d’or', colorA: '#FFD78A', colorB: '#C9711E',
-    desc: 'Atteindre le palier le plus rare (bleu) de la série au moins une fois.',
+    desc: 'Atteindre le palier bleu de la série (10 d’affilée).',
     test: ctx => ctx.bestStreak >= 10,
   },
 ];
@@ -3912,7 +3988,7 @@ function badgesPanel() {
     </button>`).join('');
   return `<section class="panel">
     <h3>Badges</h3>
-    <p class="hint" style="margin-top:2px">${unlockedN}/${list.length} badge${unlockedN > 1 ? 's' : ''} débloqué${unlockedN > 1 ? 's' : ''}. Touche un badge pour l'agrandir et voir comment le décrocher.</p>
+    <p class="hint" style="margin-top:2px">${unlockedN} sur ${list.length}. Touche un badge pour voir comment le gagner : chacun débloque un accessoire.</p>
     <div class="badgegrid">${cells}</div>
   </section>`;
 }
@@ -5947,7 +6023,7 @@ function myCharPanel() {
       <div class="mychar-pick">
         <div class="wheel" role="slider" tabindex="0" aria-label="Couleur du maillot" aria-valuemin="0" aria-valuemax="359" aria-valuenow="${Math.round(hs.h)}"
           data-h="${hs.h}" data-s="${hs.s}" style="--c:${hex || THEME.ALL.chip}"><i style="${hex ? wheelDot(hs.h, hs.s) : 'display:none'}"></i></div>
-        <div><p class="hint">Touche le cercle pour choisir la couleur de ton maillot. Elle se voit sur les podiums et sur ta fiche.</p>
+        <div><p class="hint">Touche le cercle pour changer la couleur de ton maillot.</p>
           ${hex ? '<button class="btn small sec" data-act="shirtreset">Couleur du tournoi</button>' : ''}</div>
       </div>
     </div>
@@ -6323,7 +6399,7 @@ function badgeModal(id) {
         <span class="badgestatus ${b.unlocked ? 'on' : ''}">${S._newBadge === id ? 'Nouveau badge' : b.unlocked ? 'Débloqué' : 'Pas encore débloqué'}</span>
         <h2 class="badgetitle">${esc(b.name)}</h2>
         <p class="badgehow">${b.unlocked ? 'Obtenu pour :' : 'Pour le débloquer :'}</p>
-        <p class="badgedesc">${esc(b.desc)}</p>
+        <p class="badgedesc">${esc(b.desc)}</p>${S.outfitOk ? (a => a ? `<p class="badgehow">Débloque pour ton personnage : <b>${esc(a.name)}</b></p>` : '')(ACCESSORIES.find(x => x.badge === b.id)) : ''}
       </div>
     </div>
   </div>`;
@@ -6408,9 +6484,9 @@ function winnerStrip(competition) {
       else { name = mine.pick; sub = `Raté : ${info.final.winner} a gagné`; cls = ' lost'; }
     } else if (info.open) {
       name = mine ? mine.pick : 'Choisis ton vainqueur';
-      sub = mine ? `${ifWins}, modifiable jusqu'à ${fmtClose(info.closesAt)}` : `De 5 à 15 pts à gagner, jusqu'à ${fmtClose(info.closesAt)}`;
+      sub = mine ? `${ifWins}, modifiable jusqu'à ${fmtClose(info.closesAt)}` : `5 à 15 pts à gagner, choix ouvert jusqu'à ${fmtClose(info.closesAt)}`;
       if (!mine) cls = ' todo';
-    } else if (!mine) { name = 'Pas de choix'; sub = 'Les choix sont fermés : vois ceux des amis'; cls = ' none'; }
+    } else if (!mine) { name = 'Pas de choix'; sub = 'Choix fermés : touche pour voir ceux des amis'; cls = ' none'; }
     else if (p && p.out) { name = mine.pick; sub = `${fem ? 'Éliminée' : 'Éliminé'} en ${p.out}`; cls = ' lost'; }
     else { name = mine.pick; sub = `Encore en lice, ${ifWins}`; }
     return `<button class="wpick${cls}" data-act="wpick" data-comp="${esc(competition)}" data-draw="${esc(info.draw)}">
@@ -6438,8 +6514,8 @@ function winnerModal(o) {
   };
   const nobody = !info.open && !Object.keys(byPick).length;
   const sub = info.final ? `${info.final.winner} a gagné le tableau.`
-    : info.open ? `Tu peux changer d'avis jusqu'à ${fmtClose(info.closesAt)}, au premier match du tableau.`
-    : 'Les choix sont figés depuis le premier match. Voici ceux de tout le monde.';
+    : info.open ? `Modifiable jusqu'au premier match du tableau, ${fmtClose(info.closesAt)}.`
+    : 'Choix figés depuis le premier match. Voici ceux de tout le monde.';
   return `
   <div class="modalbackdrop" data-act="closewin">
     <div class="modal winx" role="dialog" aria-modal="true" aria-label="Vainqueur du ${esc(o.draw.toLowerCase())}" data-act="stop" style="${themeVarsCss(m0 ? themeKeyFor(m0) : 'WTT_DEFAULT')}">
@@ -6450,7 +6526,8 @@ function winnerModal(o) {
         <div class="modalsub">${esc(sub)}</div>
       </div>
       <div class="modalbody">
-        <p class="hint">Le numéro est la tête de série. Le vainqueur rapporte 5 pts s'il est tête de série 1 ou 2, 10 pts de 3 à 8, 15 pts au-delà ou sans tête de série.</p>
+        <p class="hint">Le numéro, c'est la tête de série. Moins il est favori, plus il rapporte :</p>
+        <div class="winsch">${schWin()}</div>
         ${nobody ? '<p class="hint">Personne n’a fait de choix pour ce tableau.</p>' : ''}
         <ul class="wlist">${info.players.map(row).join('')}</ul>
       </div>
@@ -6568,7 +6645,7 @@ function raceChart(rows, k) {
   const aria = `${esc(rows[0].pseudo)} en tête avec ${rows[0].total_points} points${me && me.r.user_id !== lead ? `, toi ${me.cum[D]} points` : ''}.`;
   return `<section class="panel racepanel">
     <h3>La course du mois</h3>
-    <p class="hint">Les points de chacun, jour après jour${cur ? ", jusqu'à aujourd'hui" : ''}. Ta ligne est en couleur.</p>
+    <p class="hint">Les points de chacun, jour après jour. Ta ligne est en couleur.</p>
     <div class="race" role="img" aria-label="${aria}"><div class="raceplot">${svg}</div>${labHtml}</div>
     <div class="raceaxis"><span>1er ${monthWord(k)}</span><span>${cur ? "aujourd'hui" : `${D} ${monthWord(k)}`}</span></div>
   </section>`;
@@ -6592,8 +6669,8 @@ function monthView() {
   const ms = monthsAvailable(), cur = k === curMonthKey();
   const chips = ms.length > 1 ? `<div class="journeerow" role="group" aria-label="Mois">${ms.map(x => `<button class="jchip" data-act="boardmonth" data-v="${x}" aria-pressed="${x === k}">${monthLabel(x)}</button>`).join('')}</div>` : '';
   const line = `<p class="monthline"><b>${monthLabel(k)}</b> ${cur ? `en cours, jusqu'au ${daysIn(k)} ${monthWord(k)}.` : 'terminé.'}</p>`;
-  const rule = `<p class="rules">Le classement du mois compte les points des matchs joués pendant le mois (heure de Paris) et les vainqueurs de tournoi dont la finale a eu lieu ce mois-là. Ta série continue d'un mois à l'autre. Le premier à la fin du mois entre dans les champions du mois.</p>`;
-  if (!rows.length) return chips + line + `<div class="empty">${cur ? "Personne n'a encore marqué de points ce mois-ci. Le classement se remplit dès le premier match terminé." : 'Aucun point marqué ce mois-là.'}</div>` + championsPanel() + rule;
+  const rule = monthRulesHtml() + baremeHtml();
+  if (!rows.length) return chips + line + emptyBox('loupe', cur ? 'Personne n’a encore marqué ce mois-ci. Ça démarre au premier match terminé.' : 'Aucun point marqué ce mois-là.') + championsPanel() + rule;
   return chips + line + boardPodium(rows) + standingsTable(rows) + raceChart(rows, k) + championsPanel() + rule;
 }
 // Le tableau du classement (général, par circuit ou du mois).
@@ -6655,14 +6732,14 @@ function machinePanel(hist) {
   if (n > last.length) list.push(pctRow(`Sur tes ${last.length} derniers`, last.filter(r => r.you).length, last.length, last.filter(r => r.mach).length, last.length));
   if (dis.length) list.push(numRow("Quand vous n'êtes pas d'accord", disYou, dis.length - disYou));
   const a = pctOf(you, n), b = pctOf(mach, n);
-  const verdict = a > b ? `Tu fais mieux que la machine : ${a} % de bons vainqueurs contre ${b} %.`
-    : a < b ? `La machine fait mieux que toi pour l'instant : ${b} % de bons vainqueurs contre ${a} %.`
-    : `Égalité avec la machine : ${a} % de bons vainqueurs chacun.`;
-  const disLine = dis.length > 1 ? ` Sur les ${dis.length} matchs où tu ne suivais pas le favori, tu avais raison ${disYou} fois.`
-    : dis.length ? ` Le seul match où tu ne suivais pas le favori, tu avais ${disYou ? 'raison' : 'tort'}.` : ' Tu as toujours suivi le favori.';
+  const verdict = a > b ? `Tu bats la machine : ${a} % contre ${b} %.`
+    : a < b ? `La machine mène : ${b} % contre ${a} %.`
+    : `Égalité : ${a} % chacun.`;
+  const disLine = dis.length > 1 ? ` Contre le favori, tu as eu raison ${disYou} fois sur ${dis.length}.`
+    : dis.length ? ` Ta seule fois contre le favori, tu avais ${disYou ? 'raison' : 'tort'}.` : ' Tu as toujours suivi le favori.';
   return `<section class="panel duelpanel" style="${themeVarsCss('ALL')}">
     <h3>Toi contre la machine</h3>
-    <p class="hint">La machine joue toujours le favori : la meilleure tête de série du tableau. Comparé sur tes ${n} pronos WTT jugés.</p>
+    <p class="hint">La machine choisit toujours le favori (la meilleure tête de série). Sur tes ${n} pronos WTT.</p>
     ${duelHtml(`${avatarHtml(S.session.user.id, S.pseudo)}Toi`, 'La machine', list, 'Toi contre la machine')}
     <p class="duelverdict">${verdict}${disLine}</p>
   </section>`;
@@ -6671,11 +6748,11 @@ function machinePanel(hist) {
 function originPanel(hist, winPts) {
   const sum = f => hist.reduce((s, h) => s + (f(h.pt) || 0), 0);
   const parts = [
-    ['Pronos', sum(p => p.base), 'var(--table)', 'Le barème : 1 pt le bon vainqueur, 3 pts le score exact'],
-    ['Série', sum(p => p.streakBonus), '#2D7F4E', 'Le bonus des pronos gagnants d’affilée'],
-    ['Balles', sum(p => p.ballesBonus), '#D9761E', 'Ce que tes balles ont ajouté'],
-    ['Outsider', sum(p => p.bonus), 'var(--ink-3)', "Le bonus quand l'outsider passe (WTT)"],
-    ['Vainqueurs de tournoi', winPts || 0, 'var(--gold)', 'Tes vainqueurs de tableau trouvés'],
+    ['Pronos', sum(p => p.base), 'var(--table)', '1 pt le vainqueur, 3 pts le score exact'],
+    ['Série', sum(p => p.streakBonus), '#2D7F4E', 'Pronos gagnants d’affilée'],
+    ['Balles', sum(p => p.ballesBonus), '#D9761E', 'Le gain de tes mises'],
+    ['Outsider', sum(p => p.bonus), 'var(--ink-3)', 'Le moins bien classé a gagné (WTT)'],
+    ['Vainqueurs de tournoi', winPts || 0, 'var(--gold)', 'Tes vainqueurs trouvés'],
   ].filter(p => p[1] > 0);
   const total = parts.reduce((s, p) => s + p[1], 0);
   if (!total) return '';
@@ -6686,7 +6763,7 @@ function originPanel(hist, winPts) {
     <h3>D'où viennent tes points</h3>
     <div class="mix" role="img" aria-label="${parts.map(p => `${p[0]} : ${p[1]} points`).join(', ')}">${parts.map(p => `<i style="flex:${p[1]} 1 0;background:${p[2]}"></i>`).join('')}</div>
     <ul class="mixlegend">${parts.map(p => `<li><i style="background:${p[2]}" aria-hidden="true"></i><span>${p[0]}<small>${p[3]}</small></span><b>${p[1]}<small>pts</small></b><em>${pctOf(p[1], total)} %</em></li>`).join('')}</ul>
-    ${staked ? `<p class="hint">Tu as misé ${staked} balle${staked > 1 ? 's' : ''} sur des matchs déjà joués : ${wonStaked} sur des pronos gagnants (${pctOf(wonStaked, staked)} %), qui t'ont rapporté ${balles ? balles[1] : 0} pts en plus.</p>` : ''}
+    ${staked ? `<p class="hint">Balles misées : ${staked}, dont ${wonStaked} sur des pronos gagnants. Gain : +${balles ? balles[1] : 0} pts.</p>` : ''}
   </section>`;
 }
 // Ta grille des scores : ce que tu annonces, comparé à ce qui arrive vraiment.
@@ -6704,12 +6781,12 @@ function gridPanel(hist) {
   const rows = cats.map((c, i) => ({ c, py: pctOf(you[i], n), pr: pctOf(real[i], n), used: you[i] + real[i] })).filter(r => r.used);
   const gap = rows.slice().sort((a, b) => Math.abs(b.py - b.pr) - Math.abs(a.py - a.pr))[0];
   const g = gap && Math.abs(gap.py - gap.pr) >= 8 ? gap : null;
-  const verdict = !g ? 'Tes scores collent à la réalité : pas plus de 8 points d’écart sur chaque ligne.'
-    : g.py > g.pr ? `Tu annonces « ${g.c[0].toLowerCase()} » plus souvent que ça n'arrive : ${g.py} % de tes pronos, ${g.pr} % des vrais scores.`
-    : `« ${g.c[0]} » arrive plus souvent que tu ne l'annonces : ${g.pr} % des vrais scores, ${g.py} % de tes pronos.`;
+  const verdict = !g ? 'Tes scores collent à la réalité.'
+    : g.py > g.pr ? `Tu annonces trop souvent « ${g.c[0].toLowerCase()} » : ${g.py} % de tes pronos, ${g.pr} % en vrai.`
+    : `Pas assez de « ${g.c[0].toLowerCase()} » : ${g.pr} % en vrai, ${g.py} % de tes pronos.`;
   return `<section class="panel">
     <h3>Ta grille des scores</h3>
-    <p class="hint">Sur tes ${n} pronos jugés : les scores que tu annonces, et ceux qui sont vraiment tombés.</p>
+    <p class="hint">Tes scores annoncés face aux vrais scores, sur ${n} pronos.</p>
     <div class="sglegend"><span><i class="you"></i>Tes pronos</span><span><i class="real"></i>Les vrais scores</span></div>
     <ul class="sgrid">${rows.map(r => `<li>
       <span class="sg-k">${r.c[0]}<small>${r.c[1]}</small></span>
@@ -6760,7 +6837,7 @@ function faceToFace(uid) {
   return `<section class="modalsec">
     <h3><span class="secdot" aria-hidden="true"></span>Face à face</h3>
     ${duelHtml(`${avatarHtml(me, S.pseudo)}Toi`, `${avatarHtml(uid, pseudo)}${esc(pseudo)}`, rows, `Toi contre ${pseudo}`)}
-    ${common ? `<p class="duelverdict plain">Sur les ${common} match${common > 1 ? 's' : ''} que vous avez pronostiqués tous les deux, tu as pris plus de points ${wa} fois, ${esc(pseudo)} ${wb} fois${eq ? `, et autant ${eq} fois` : ''}.</p>` : ''}
+    ${common ? `<p class="duelverdict plain">Sur vos ${common} match${common > 1 ? 's' : ''} en commun : tu as fait mieux ${wa} fois, ${esc(pseudo)} ${wb} fois${eq ? `, égalité ${eq} fois` : ''}.</p>` : ''}
   </section>`;
 }
 
@@ -6847,9 +6924,9 @@ function duelNotice() {
   if (props.length) {
     const { d, m } = props[0], who = pseudoMap()[d.challenger] || '?';
     return `<section class="recapnotice duelnotice" style="${themeVarsCss(themeKeyFor(m))}" aria-label="Défi proposé">
-      <span class="rn-ico" aria-hidden="true">${avatarHtml(d.challenger, who)}</span>
+      <span class="rn-ico guyico" aria-hidden="true">${guy('garde', { uid: d.challenger, flip: true })}</span>
       <h2 class="recapnotice-title">${esc(who)} te propose un défi${props.length > 1 ? ` (et ${props.length - 1} autre${props.length > 2 ? 's' : ''})` : ''}</h2>
-      <p class="recapnotice-sub">Sur ${esc(m.side_a)} – ${esc(m.side_b)}, ${esc(fmtClose(new Date(m.starts_at).getTime()))}. Il compte seulement si tu l'acceptes avant le début du match.</p>
+      <p class="recapnotice-sub">Sur ${esc(m.side_a)} – ${esc(m.side_b)}, ${esc(fmtClose(new Date(m.starts_at).getTime()))}. Accepte avant le match pour qu'il compte.</p>
       <div class="noticebtns"><button class="btn small" data-act="duelaccept" data-did="${d.id}">Accepter</button><button class="btn small sec" data-act="dueldecline" data-did="${d.id}">Refuser</button><button class="linkbtn" data-act="duel" data-did="${d.id}">Voir le défi</button></div>
     </section>`;
   }
@@ -6857,9 +6934,9 @@ function duelNotice() {
   if (!list.length) return '';
   const { d, m } = list[0], who = pseudoMap()[d.challenger] || '?';
   return `<section class="recapnotice duelnotice" style="${themeVarsCss(themeKeyFor(m))}" aria-label="Défi reçu">
-    <span class="rn-ico" aria-hidden="true">${avatarHtml(d.challenger, who)}</span>
+    <span class="rn-ico guyico" aria-hidden="true">${guy('garde', { uid: d.challenger, flip: true })}</span>
     <h2 class="recapnotice-title">${esc(who)} te défie${list.length > 1 ? ` (et ${list.length - 1} autre${list.length > 2 ? 's' : ''})` : ''}</h2>
-    <p class="recapnotice-sub">Sur ${esc(m.side_a)} – ${esc(m.side_b)}, ${esc(fmtClose(new Date(m.starts_at).getTime()))}. Fais ton prono avant le début du match.</p>
+    <p class="recapnotice-sub">Sur ${esc(m.side_a)} – ${esc(m.side_b)}, ${esc(fmtClose(new Date(m.starts_at).getTime()))}. Fais ton prono avant le match.</p>
     <button class="btn small" data-act="gotomatch" data-id="${m.id}">Voir le match</button>
   </section>`;
 }
@@ -6877,13 +6954,13 @@ function duelNewModal(mid) {
       <div class="modalhead">
         <div class="modalsub">${esc(m.side_a)} – ${esc(m.side_b)}</div>
         <div class="modalname">Proposer un défi</div>
-        <div class="modalsub">Le défi compte si ton ami l'accepte avant le début du match. Celui qui prend le plus de points sur ce match gagne. Pour l'honneur : le classement ne change pas.</div>
       </div>
       <div class="modalbody">
+        <div class="duelhow">${DUEL_FLOW()}<p class="hint">Pour l'honneur : le classement ne change pas.</p></div>
         ${friends.length ? `<ul class="wlist">${friends.map(r => taken.has(r.user_id)
           ? `<li class="wrow out">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span><span class="wpts">déjà défié</span></li>`
           : `<li><button class="wrow" data-act="duelsave" data-id="${mid}" data-uid="${esc(r.user_id)}">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span><span class="wpts">Défier</span></button></li>`).join('')}</ul>`
-          : '<p class="hint">Personne à défier pour l’instant : invite d’abord tes amis.</p>'}
+          : emptyBox('pense', 'Personne à défier pour l’instant : invite d’abord tes amis.')}
       </div>
     </div>
   </div>`;
@@ -6935,11 +7012,11 @@ function duelModal(id) {
     <small>${pts != null ? `${pts} pt${Math.abs(pts) > 1 ? 's' : ''}` : 'prono'}</small></div>`;
   const toMe = d.opponent === me, when = m ? fmtClose(new Date(m.starts_at).getTime()) : '';
   const hidden = i.state === 'open' || i.state === 'proposed' ? 'caché' : null;
-  const verdict = i.state === 'proposed' ? (toMe ? `${esc(i.pseudo)} te propose ce défi. Accepte-le avant le début du match, ${esc(when)}, pour qu'il compte.`
-      : `En attente de ${esc(i.pseudo)}. Le défi compte seulement s'il est accepté avant le début du match, ${esc(when)}.`)
+  const verdict = i.state === 'proposed' ? (toMe ? `Accepte avant le match (${esc(when)}) pour qu'il compte.`
+      : `En attente de ${esc(i.pseudo)} : il doit accepter avant le match (${esc(when)}).`)
     : i.state === 'expired' ? esc(i.why)
-    : i.state === 'open' ? `Le prono de ${esc(i.pseudo)} reste caché jusqu'au début du match, ${esc(fmtClose(new Date(m.starts_at).getTime()))}.`
-    : i.state === 'live' ? 'Le match est en cours : le défi se joue maintenant.'
+    : i.state === 'open' ? `Le prono de ${esc(i.pseudo)} reste caché jusqu'au match (${esc(fmtClose(new Date(m.starts_at).getTime()))}).`
+    : i.state === 'live' ? 'Match en cours : le défi se joue maintenant.'
     : i.state === 'win' ? `Tu gagnes le défi : ${i.myPts} point${i.myPts > 1 ? 's' : ''} contre ${i.otPts}.`
     : i.state === 'loss' ? `${esc(i.pseudo)} gagne le défi : ${i.otPts} point${i.otPts > 1 ? 's' : ''} contre ${i.myPts}.`
     : i.state === 'draw' ? `Égalité : ${i.myPts} point${i.myPts > 1 ? 's' : ''} chacun.`
@@ -6987,7 +7064,7 @@ function duelsPanel() {
   const done = r.win + r.loss + r.draw;
   return `<section class="panel">
     <h3>Tes défis</h3>
-    ${done ? `<p class="hint">${r.win} gagné${r.win > 1 ? 's' : ''}, ${r.loss} perdu${r.loss > 1 ? 's' : ''}${r.draw ? `, ${r.draw} nul${r.draw > 1 ? 's' : ''}` : ''}.</p>` : '<p class="hint">Tes défis apparaissent ici, avec leur résultat une fois le match joué.</p>'}
+    ${done ? `<p class="hint">${r.win} gagné${r.win > 1 ? 's' : ''}, ${r.loss} perdu${r.loss > 1 ? 's' : ''}${r.draw ? `, ${r.draw} nul${r.draw > 1 ? 's' : ''}` : ''}. Pour l'honneur : hors classement.</p>` : '<p class="hint">Le résultat arrive après le match. Pour l’honneur : hors classement.</p>'}
     <div class="duelrow col">${list.map(i => duelChip(i.d)).join('')}</div>
   </section>`;
 }
@@ -7025,7 +7102,7 @@ function accessoriesHtml() {
   const n = ACCESSORIES.filter(a => earned.has(a.badge)).length;
   return `<div class="accwrap">
     <h4 class="subh">Accessoires <small>${n} sur ${ACCESSORIES.length}</small></h4>
-    <p class="hint">Chaque badge débloque un accessoire. Un seul par emplacement : un seul chapeau, une seule chose dans la main…</p>
+    <p class="hint">1 badge gagné = 1 accessoire. Un seul par endroit : tête, main, pieds…</p>
     <div class="accgrid">${ACCESSORIES.map(a => {
       const locked = !earned.has(a.badge), worn = on.has(a.id), def = BADGE_DEFS.find(b => b.id === a.badge);
       return `<button class="acc${worn ? ' on' : ''}${locked ? ' locked' : ''}" data-act="${locked ? 'badge' : 'acc'}" data-acc="${a.id}" data-badge="${a.badge}" ${locked ? '' : `aria-pressed="${worn}"`}>
@@ -7149,25 +7226,46 @@ const EMO_POSES = {
   danse: { arms: [[[31, 63], [39, 69]], [[73, 29]]], tilt: 8, extra: `<g fill="${INK}" stroke="${INK}" stroke-width="2" stroke-linecap="round"><path d="M16 34V22l9-3v12" fill="none"/><circle cx="14" cy="34.5" r="3" stroke="none"/><circle cx="23" cy="31.5" r="3" stroke="none"/><path d="M84 46V36" fill="none"/><path d="M84 36q5 1 5 6" fill="none"/><circle cx="82" cy="46.5" r="2.8" stroke="none"/></g>` },
   ouin: { arms: [[[42, 40]], [[58, 40]]], head: -5, front: true, extra: `<g stroke="${TEAR}" stroke-width="2.6" stroke-linecap="round" fill="none"><path d="M34 33q-7 2-11 9"/><path d="M66 33q7 2 11 9"/></g><g fill="${TEAR}"><path d="M20 47q-3 4 0 6 3-2 0-6Z"/><path d="M80 47q-3 4 0 6 3-2 0-6Z"/><path d="M16 39q-2 3 0 4.5 2-1.5 0-4.5Z"/><path d="M84 39q-2 3 0 4.5 2-1.5 0-4.5Z"/></g>` },
 };
+// Poses du personnage-guide (tuto, écrans vides, bandeaux). Mêmes règles ;
+// padHand : main qui tient la raquette, point : index tendu, hold : objet tenu
+// (dessiné par-dessus, penche avec le corps), extra : effets autour.
+const GOLD = '#D9A93A', GOLD_D = '#B8860B', LENS = '#3A4250';
+Object.assign(EMO_POSES, {
+  salut: { arms: [[[33, 72]], [[69, 45], [74, 28]]], pad: 0, extra: `<path d="M81 23q3 3 2 8M86 18q5 5 3 13" stroke="${INK}" stroke-width="2" stroke-linecap="round" fill="none"/>` },
+  montre: { arms: [[[34, 71]], [[77, 50]]], pad: 0, point: true, tilt: -3 },
+  score: { arms: [[[27, 40], [30, 17]], [[73, 40], [70, 17]]], hold: `<rect x="21" y="1" width="58" height="16" rx="2.5" fill="#F6F5F0" stroke="rgba(18,26,38,.3)" stroke-width="1.2"/><text x="50" y="13.6" text-anchor="middle" font-family="'Barlow Semi Condensed',sans-serif" font-style="italic" font-weight="700" font-size="13.5" fill="#C8202F">3 – 1</text>` },
+  balles: { arms: [[[30, 64], [25, 51]], [[70, 64], [75, 51]]], extra: `<path d="M25 46Q50-18 75 46" stroke="${INK}" stroke-opacity=".28" stroke-width="1.4" stroke-dasharray="2 4" fill="none"/><g fill="#F39A2B" stroke="#B9661A" stroke-width=".9"><circle cx="22" cy="36" r="4.4"/><circle cx="41" cy="8.5" r="4.4"/><circle cx="76" cy="27" r="4.4"/></g>` },
+  trophee: { arms: [[[33, 72]], [[70, 45], [72, 31]]], pad: 0, hold: `<path d="M65 13q-5 0-5 4t6 5M79 13q5 0 5 4t-6 5" stroke="${GOLD_D}" stroke-width="1.8" fill="none"/><path d="M63 9h18v4.5q0 8.5-9 9.5-9-1-9-9.5Z" fill="${GOLD}" stroke="${GOLD_D}" stroke-width="1"/><rect x="70.4" y="22.5" width="3.2" height="4.5" fill="${GOLD_D}"/><rect x="66.5" y="26.5" width="11" height="3.2" rx="1" fill="${GOLD_D}"/>` },
+  garde: { arms: [[[37, 68], [46, 64]], [[70, 64], [76, 53]]], padHand: 1, pad: -140, tilt: 5 },
+  cadeau: { arms: [[[33, 71]], [[67, 71]]], hold: `<rect x="35" y="61" width="30" height="20" rx="2" fill="#C8202F"/><rect x="33.5" y="56.5" width="33" height="6" rx="1.5" fill="#DA3A47"/><rect x="48" y="56.5" width="4" height="24.5" fill="#F2C14E"/><path d="M50 56.5q-8-9-11-3.5t11 3.5M50 56.5q8-9 11-3.5t-11 3.5" stroke="#F2C14E" stroke-width="2.4" fill="none"/>` },
+  loupe: { arms: [[[34, 71]], [[66, 46], [67, 36]]], pad: 0, tilt: -3, head: -5, hold: `<path d="M68.5 33.5 72 28" stroke="${LENS}" stroke-width="3.4" stroke-linecap="round"/><circle cx="76" cy="21" r="8" fill="rgba(150,205,240,.38)" stroke="${LENS}" stroke-width="2.6"/>` },
+  pense: { arms: [[[44, 67], [55, 64]], [[67, 60], [58, 47]]], front: true, head: 4, extra: `<text x="71" y="17" font-family="'Barlow Semi Condensed',sans-serif" font-style="italic" font-weight="700" font-size="17" fill="${INK}">?</text>` },
+});
 let EMO_N = 0;
-function emoteSvg(kind, uid, title) {
-  const n = ++EMO_N, me = S.session && uid === S.session.user.id;
-  const pseudo = (me ? S.pseudo : pseudoMap()[uid]) || '?', ini = esc(pseudo.trim().charAt(0).toUpperCase() || '?');
-  const shirt = shirtOf(uid) || '#2F6DB5', photo = avatarUrl(uid), wear = new Set((S.outfits && S.outfits[uid]) || []);
+// o.flip : regarde vers la gauche (le visage reste à l'endroit) ; o.deco : purement décoratif.
+// Sans uid : le personnage invité de l'écran de connexion (un visage souriant).
+function emoteSvg(kind, uid, title, o = {}) {
+  const n = ++EMO_N, guest = !uid, me = !guest && S.session && uid === S.session.user.id;
+  const pseudo = guest ? '' : (me ? S.pseudo : pseudoMap()[uid]) || '?', ini = esc(pseudo.trim().charAt(0).toUpperCase() || '?');
+  const shirt = (!guest && shirtOf(uid)) || '#2F6DB5', photo = guest ? null : avatarUrl(uid), wear = new Set(guest ? [] : (S.outfits && S.outfits[uid]) || []);
   const P = EMO_POSES[kind] || EMO_POSES.pouce;
   const SH = [[39, 55], [61, 55]];
   const armPath = (s, pts) => `<path d="M${s[0]} ${s[1]}${pts.map(p => ` L${p[0]} ${p[1]}`).join('')}" stroke="${shirt}" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
   const end = k => P.arms[k][P.arms[k].length - 1];
   const hand = ([x, y]) => `${wear.has('poignets') ? `<circle cx="${x}" cy="${y}" r="5.4" fill="none" stroke="#C8202F" stroke-width="2.2"/>` : ''}<circle cx="${x}" cy="${y}" r="4.3" fill="#F4F3EE" stroke="rgba(18,26,38,.2)" stroke-width="1"/>`;
-  const [hx, hy] = end(0), [lx, ly] = end(1);
+  const ph = P.padHand || 0, [hx, hy] = end(ph), [lx, ly] = end(1 - ph);
   const pad = P.pad == null ? '' : `<g transform="translate(${hx} ${hy}) rotate(${P.pad})"><rect x="-1.4" y="2" width="2.8" height="7" rx="1" fill="#C9A46C"/><circle cy="14" r="6.4" fill="${wear.has('raquette') ? '#D9A93A' : '#C0202A'}"/></g>`;
   const thumb = P.thumb ? `<rect x="${lx - 1.7}" y="${ly - 10}" width="3.6" height="8" rx="1.8" fill="#F4F3EE" stroke="rgba(18,26,38,.2)" stroke-width="1"/>` : '';
-  const leftHandItem = P.front ? '' : wear.has('cafe') ? `<rect x="${lx + 2.5}" y="${ly - 3}" width="6.5" height="8" rx="1.4" fill="#2D7F4E"/>`
+  const point = P.point ? `<rect x="${lx + 2.4}" y="${ly - 1.7}" width="7.5" height="3.4" rx="1.7" fill="#F4F3EE" stroke="rgba(18,26,38,.2)" stroke-width="1"/>` : '';
+  const leftHandItem = P.front || P.hold || P.point ? '' : wear.has('cafe') ? `<rect x="${lx + 2.5}" y="${ly - 3}" width="6.5" height="8" rx="1.4" fill="#2D7F4E"/>`
     : wear.has('lanterne') ? `<circle cx="${lx}" cy="${ly + 9}" r="4.8" fill="#E2782A"/><path d="M${lx - 2} ${ly + 8}h1.2M${lx + 1} ${ly + 8}h1.2" stroke="#1B1322" stroke-width="1.3"/>` : '';
-  const arms = `${armPath(SH[0], P.arms[0])}${armPath(SH[1], P.arms[1])}${pad}${hand(end(0))}${hand(end(1))}${thumb}${leftHandItem}`;
-  const face = photo
+  const arms = `${armPath(SH[0], P.arms[0])}${armPath(SH[1], P.arms[1])}${pad}${hand(end(0))}${hand(end(1))}${thumb}${point}${leftHandItem}`;
+  const faceIn = guest
+    ? `<ellipse cx="44.5" cy="29.5" rx="1.7" ry="2.3" fill="#1B2230"/><ellipse cx="55.5" cy="29.5" rx="1.7" ry="2.3" fill="#1B2230"/><path d="M44 35.5q6 5 12 0" stroke="#1B2230" stroke-width="1.8" fill="none" stroke-linecap="round"/>`
+    : photo
     ? `<clipPath id="emc${n}"><circle cx="50" cy="32" r="11"/></clipPath><image href="${esc(photo)}" x="39" y="21" width="22" height="22" clip-path="url(#emc${n})" preserveAspectRatio="xMidYMid slice"/><circle cx="50" cy="32" r="11" fill="none" stroke="#fff" stroke-width="1.6"/>`
     : `<circle cx="50" cy="32" r="11" fill="#C8202F"/><text x="50.3" y="36.6" text-anchor="middle" font-family="'Barlow Semi Condensed','Barlow',sans-serif" font-style="italic" font-weight="700" font-size="13" fill="#fff">${ini}</text>`;
+  const face = o.flip ? `<g transform="translate(100 0) scale(-1 1)">${faceIn}</g>` : faceIn;
   const hat = [
     wear.has('casquette') ? '<path d="M34.5 25Q35 14 50 14T65.5 25Z" fill="#1F2A44"/><ellipse cx="50" cy="25" rx="15.5" ry="3" fill="#1F2A44"/>' : '',
     wear.has('bandeau') ? '<rect x="34" y="18.5" width="32" height="5.5" rx="2.7" fill="#C8202F"/>' : '',
@@ -7186,9 +7284,10 @@ function emoteSvg(kind, uid, title) {
     <ellipse cx="50" cy="49.5" rx="6" ry="1.9" fill="#F2F2EE"/>
     ${wear.has('echarpe') ? '<rect x="40.5" y="47" width="19" height="5" rx="2.5" fill="#1B46B4"/><rect x="52.5" y="50" width="5" height="13" rx="2" fill="#1B46B4" transform="rotate(-8 55 50)"/>' : ''}
     ${wear.has('serviette') ? '<path d="M56 50 64 52 63 66 57.5 65Z" fill="#9CC9E8"/>' : ''}`;
-  return `<svg class="emo" viewBox="0 0 100 100" role="img" aria-label="${esc(title || '')}">
+  const fig = `<g transform="rotate(${P.tilt || 0} 50 90)">${body}${P.front ? head + arms : arms + head}${P.hold || ''}</g>`;
+  return `<svg class="emo${o.cls ? ' ' + o.cls : ''}" viewBox="0 0 100 100" ${o.deco ? 'aria-hidden="true"' : `role="img" aria-label="${esc(title || '')}"`}>
     ${P.back || ''}<ellipse cx="50" cy="94" rx="19" ry="3" fill="rgba(18,26,38,.14)"/>
-    <g transform="rotate(${P.tilt || 0} 50 90)">${body}${P.front ? head + arms : arms + head}</g>${P.extra || ''}</svg>`;
+    ${o.flip ? `<g transform="translate(100 0) scale(-1 1)">${fig}</g>` : fig}${P.extra || ''}</svg>`;
 }
 
 // --- Chargement, envoi, réception ------------------------------------------------
@@ -7218,7 +7317,7 @@ function emoteSection(d, i) {
   const btn = em => `<button class="emobtn" data-act="emote" data-did="${d.id}" data-kind="${em.id}" aria-label="Envoyer l'emote ${esc(em.label)}">${emoteSvg(em.id, me, em.label)}<span>${esc(em.label)}</span></button>`;
   return `<section class="emosec">
     <h3 class="emoh">Emotes</h3>
-    ${open ? `<p class="hint">Pour encourager ou pour chambrer : c'est ton personnage qui l'envoie à ${esc(i.pseudo)}.</p>
+    ${open ? `<p class="hint">Touche une emote : ton personnage la joue pour ${esc(i.pseudo)}.</p>
     <div class="emogroup"><small>Encourager</small><div class="emobar">${EMOTES.filter(e => e.side === 'enc').map(btn).join('')}</div></div>
     <div class="emogroup"><small>Chambrer</small><div class="emobar">${EMOTES.filter(e => e.side === 'troll').map(btn).join('')}</div></div>` : ''}
     ${feed.length ? `<ul class="emofeed">${feed.map(e => {
@@ -7273,6 +7372,70 @@ setInterval(async () => {
   if ((S.emotes || []).length !== before) keepRender();
 }, 15000);
 
+/* =============================================================================
+   Le personnage-guide et les schémas d'explication.
+   Ton personnage 2D (le même que celui des emotes : ta photo ou ton initiale,
+   ton maillot, tes accessoires) accompagne le tuto, les écrans vides et les
+   bandeaux. Les règles sont montrées en petits schémas plutôt qu'en phrases.
+   ========================================================================== */
+const myUid = () => (S.session ? S.session.user.id : null);
+// Ton personnage dans une pose (décoratif : le texte à côté dit déjà tout).
+function guy(pose, o = {}) {
+  return emoteSvg(pose, o.uid !== undefined ? o.uid : myUid(), '', { deco: true, cls: 'guy' + (o.cls ? ' ' + o.cls : ''), flip: o.flip });
+}
+// Écran vide : le personnage et une phrase.
+function emptyBox(pose, html) {
+  return `<div class="empty guyempty">${guy(pose)}<p>${html}</p></div>`;
+}
+
+// --- Petits schémas ----------------------------------------------------------
+const schPts = () => `<div class="sch"><span class="schc"><b>1 pt</b><small>bon vainqueur</small></span><span class="schc hot"><b>3 pts</b><small>score exact</small></span></div>`;
+const ballsRow = n => `<span class="ballesdots" aria-hidden="true">${'<i class="on"></i>'.repeat(n)}</span>`;
+const schBalles = () => `<div class="sch" role="img" aria-label="1 balle : points ×2. 2 balles : ×3. 3 balles : ×4.">${[1, 2, 3].map(n => `<span class="schc">${ballsRow(n)}<b>×${n + 1}</b></span>`).join('')}</div>`;
+const SERIE_STEPS = [[3, 15, 1], [5, 28, 2], [7, 45, 3], [10, 60, 4]];
+const schSerie = () => `<div class="sch serie" role="img" aria-label="${SERIE_STEPS.map(([n, p]) => `${n} d'affilée : +${p} %`).join(', ')}, jusqu'à +75 %.">${SERIE_STEPS.map(([n, p, t]) => `<span class="schc" style="--tier:${FLAME_COLORS[t]}"><small>dès ${n}</small><b>+${p} %</b></span>`).join('')}</div>`;
+const schWin = () => `<div class="sch" role="img" aria-label="Tête de série 1 ou 2 : 5 points. De 3 à 8 : 10 points. Au-delà ou sans tête de série : 15 points."><span class="schc"><small>tête de série 1–2</small><b>5 pts</b></span><span class="schc"><small>3 à 8</small><b>10 pts</b></span><span class="schc"><small>les autres</small><b>15 pts</b></span></div>`;
+// Une suite d'étapes (vraiment dans l'ordre).
+const schFlow = steps => `<ol class="schflow">${steps.map(s => `<li>${s}</li>`).join('')}</ol>`;
+const DUEL_FLOW = () => schFlow(['Tu proposes un match', 'Ton ami accepte avant le début', 'Le plus de points gagne']);
+
+// --- Le barème complet (onglet Amis) -----------------------------------------
+function baremeHtml() {
+  return `<section class="panel bareme" id="bareme">
+    <div class="bhead"><h3>Comment on marque</h3>${guy('score')}</div>
+    <ol class="bsteps">
+      <li><span class="bn" aria-hidden="true">1</span><div><h4>Ton prono</h4>${schPts()}</div></li>
+      <li><span class="bn" aria-hidden="true">2</span><div><h4>Prono gagnant ? Ça grimpe</h4>
+        <div class="brow"><span class="bk">Série de pronos gagnants</span>${schSerie()}<small class="bnote">jusqu'à +75 %</small></div>
+        <div class="brow"><span class="bk">Balles</span>${schBalles()}<small class="bnote">raté : balles perdues</small></div>
+        <p class="bsub">Série et balles s'additionnent.</p></div></li>
+      <li><span class="bn" aria-hidden="true">3</span><div><h4>En plus, en WTT</h4>
+        <div class="brow"><span class="bk">Outsider</span><p class="bsub">Le moins bien classé gagne et tu l'avais dit : +1 pt par 4 places d'écart, 5 au plus.</p></div>
+        <div class="brow"><span class="bk">Vainqueur du tournoi</span>${schWin()}</div></div></li>
+    </ol>
+    <p class="bex"><span>Exemple</span>score exact + 2 balles = 3 × 3 = <b>9 pts</b></p>
+    <p class="bsub">À égalité au classement, le plus de scores exacts passe devant.</p>
+  </section>`;
+}
+// Les règles du classement du mois, en quatre lignes.
+function monthRulesHtml() {
+  return `<ul class="rulelist">
+    <li>Les points des matchs joués ce mois-ci (heure de Paris).</li>
+    <li>Le vainqueur du tournoi compte le mois de la finale.</li>
+    <li>Le 1er à la fin du mois devient champion du mois.</li>
+    <li>Ta série continue d'un mois à l'autre.</li>
+  </ul>`;
+}
+// Sous un match terminé : le calcul de tes points, terme à terme.
+function ptsSumHtml(det) {
+  if (!det || !det.total) return '';
+  const parts = [`<i><b>${det.base}</b> ${det.exact ? 'score exact' : 'bon vainqueur'}</i>`];
+  if (det.streakBonus) parts.push(`<i><b>+${det.streakBonus}</b> série</i>`);
+  if (det.ballesBonus) parts.push(`<i><b>+${det.ballesBonus}</b> balle${det.balles > 1 ? 's' : ''}</i>`);
+  if (det.bonus) parts.push(`<i><b>+${det.bonus}</b> outsider</i>`);
+  return parts.length > 1 ? `<span class="ptsum">${parts.join(' ')}</span>` : '';
+}
+
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
   // entièrement terminé (voir isTournamentFinished) : pas de bilan sur
@@ -7319,7 +7482,7 @@ function accountView() {
   if (finished === null) return '<div class="loading">Chargement…</div>';
 
   if (!finished.length) {
-    return `<header class="pagehead"><h1>Mon compte</h1><p>Pas encore de match terminé sur lequel tu as pronostiqué : tes statistiques apparaissent ici dès que tes premiers pronos sont jugés.</p></header>${myCharPanel()}${settingsPanel()}`;
+    return `<header class="pagehead"><h1>Mon compte</h1><p>Tes stats, tes badges et ton personnage.</p></header>${emptyBox('loupe', 'Tes stats arrivent dès que ton premier prono est jugé.')}${myCharPanel()}${settingsPanel()}`;
   }
 
   const n = finished.length;
@@ -7396,7 +7559,7 @@ function accountView() {
   const sparkline = sparkN.length > 1 ? `
   <section class="panel">
     <h3>Tendance récente</h3>
-    <p class="hint" style="margin-top:2px">Points marqués sur chacun de tes ${sparkN.length} derniers pronos jugés.</p>
+    <p class="hint" style="margin-top:2px">Tes points sur tes ${sparkN.length} derniers pronos.</p>
     <svg class="spark" viewBox="0 0 ${sparkW} ${sparkH}" preserveAspectRatio="none" role="img" aria-label="Évolution des points sur les derniers pronos">${sparkBars}</svg>
     <div class="sparklegend"><span><i class="dot" style="background:var(--red)"></i>Score exact</span><span><i class="dot" style="background:var(--table)"></i>Bon vainqueur</span><span><i class="dot" style="background:var(--ground-2)"></i>0 point</span></div>
   </section>` : '';
@@ -7437,7 +7600,7 @@ function accountView() {
   const seasonPanel = (tournamentRows || journeeRows) ? `
   <section class="panel">
     <h3>Par tournoi / saison</h3>
-    <p class="hint" style="margin-top:2px">Le détail de tes points, tournoi WTT par tournoi WTT et journée par journée en Pro A.</p>
+    <p class="hint" style="margin-top:2px">Tes points par tournoi WTT et par journée de Pro A.</p>
     ${tournamentRows ? `<h4 class="subh">WTT</h4><div class="laddwrap compact">${tournamentRows}</div>` : ''}
     ${journeeRows ? `<h4 class="subh">Pro A</h4><div class="laddwrap compact">${journeeRows}</div>` : ''}
   </section>` : '';
@@ -7470,7 +7633,7 @@ function accountView() {
   const playerPanel = playerList.length ? `
   <section class="panel">
     <h3>Par adversaire</h3>
-    <p class="hint" style="margin-top:2px">Ta justesse de pronostic (bon vainqueur, score exact ou pas) face aux joueurs/équipes que tu as croisés au moins ${MIN_SAMPLE} fois.</p>
+    <p class="hint" style="margin-top:2px">Ta justesse face aux joueurs et équipes vus au moins ${MIN_SAMPLE} fois.</p>
     <h4 class="subh">Tes meilleures lectures</h4>
     <ul class="cmlist">${bestReads.map(playerRow).join('')}</ul>
     ${worstReads.length && worstReads[0].name !== bestReads[0].name ? `<h4 class="subh">Tes angles morts</h4><ul class="cmlist">${worstReads.map(playerRow).join('')}</ul>` : ''}
@@ -7478,7 +7641,7 @@ function accountView() {
 
   const ordinal = r => r + (r === 1 ? 'er' : 'e');
   return `
-  <header class="pagehead"><h1>Mon compte</h1><p>Tes statistiques de pronostics, sur toute la durée du jeu.</p></header>
+  <header class="pagehead"><h1>Mon compte</h1><p>Tes stats depuis le début.</p></header>
   <section class="acchero" style="${themeVarsCss('ALL')}">
     <div class="acchero-row">
       <div class="big"><span data-count="${total}">${total}</span><small>points</small></div>
@@ -7538,8 +7701,10 @@ function settingsPanel() {
     <ul class="settings">
       <li><span class="k">Sons<small>Un petit bruit quand tu poses un prono ou débloques un badge.</small></span>
         <button class="toggle" role="switch" aria-checked="${S.soundOn}" aria-label="Sons" data-act="soundtoggle"></button></li>
-      <li><span class="k">Prise en main<small>Revoir le tuto : comment marquer des points.</small></span>
-        <button class="btn small sec" data-act="tuto">Revoir le tuto</button></li>
+      <li><span class="k">Tuto<small>La visite guidée, en 1 minute.</small></span>
+        <button class="btn small sec" data-act="tuto">Revoir</button></li>
+      <li><span class="k">Barème<small>Comment on marque des points.</small></span>
+        <button class="btn small sec" data-act="bareme">Voir</button></li>
       ${HALLOWEEN ? `<li><span class="k">Décor d'Halloween<small>Jusqu'au 1er novembre, puis l'appli reprend son thème habituel. Dessins : game-icons.net (Delapouite, Lorc), licence CC BY 3.0.</small></span></li>` : ''}
       <li class="photorow"><span class="k">${avatarHtml(S.session.user.id, S.pseudo)}<span>Photo de profil<small>Elle remplace ton initiale, pour toi et pour tes amis.</small></span></span>
         <span class="photobtns"><button class="btn small sec" data-act="avatarpick">${avatarUrl(S.session.user.id) ? 'Changer' : 'Ajouter une photo'}</button>${avatarUrl(S.session.user.id) ? '<button class="btn small sec" data-act="avatarremove">Retirer</button>' : ''}
@@ -7641,31 +7806,56 @@ function recapNewBadges(key, circuit) {
    la première connexion sur cet appareil, puis à la demande depuis
    Mon compte > Réglages. "Passer" ou Échap ferme tout. */
 const TUTO_KEY = 'spin_tuto_done';
+/* Neuf étapes sur les vrais écrans, avec ton personnage pour guide : un
+   projecteur éclaire l'élément dont on parle, une carte explique en une ou
+   deux phrases et un petit schéma. À l'étape « Fais ton prono », on le fait
+   pour de vrai. Les étapes des fonctions pas encore activées dans la base
+   (vainqueur, défis, emotes) sont sautées. */
 const TUTO_STEPS = [
-  { art: 'welcome', title: 'Bienvenue sur SPIN', next: 'Commencer',
-    text: "Le jeu de pronostics de ping-pong entre amis, sur le circuit WTT et la Pro A. Une minute pour voir comment marquer des points." },
-  { target: 'hero', title: 'Le match du moment',
-    text: "En haut, le match en direct, ou le prochain à pronostiquer avec son compte à rebours. « Pronostiquer » t'emmène directement dessus." },
-  { target: 'table', title: 'Touche un score', interactive: true,
-    text: "Chaque match a sa table, un joueur de chaque côté du filet. Touche le score que tu prévois : <b>1 point</b> pour le bon vainqueur, <b>3 points</b> pour le score exact." },
-  { target: 'balles', title: 'Tes balles',
-    text: "4 balles par tournoi WTT, 2 par journée de Pro A. Misées sur un prono (3 au plus), elles le font valoir <b>×2, ×3 ou ×4</b> s'il est gagnant. S'il est perdu, les balles aussi." },
-  { art: 'streak', title: 'Les bonus',
-    text: "Enchaîne les pronos gagnants : dès 3 d'affilée, chaque nouveau prono gagnant rapporte plus, jusqu'à <b>+75 %</b>. En WTT, gagner avec l'outsider rapporte aussi jusqu'à <b>+5 points</b>." },
-  { target: 'nav', title: "Le reste de l'appli", next: "C'est parti",
-    text: "<b>Amis</b> : le classement entre vous. <b>Classements</b> : le mondial WTT et la Pro A. <b>Mon compte</b> : tes stats, tes badges et le récap animé de chaque tournoi. Ce tuto s'y trouve aussi, dans Réglages." },
+  { id: 'welcome', art: 'welcome', next: 'Commencer',
+    title: () => `Salut ${esc(S.pseudo || '')} !`,
+    text: "SPIN, ce sont des pronos de ping entre amis, sur le WTT et la Pro A. En 1 minute, voici comment marquer des points." },
+  { id: 'table', target: 'table', pose: 'score', interactive: true, title: 'Fais ton prono',
+    text: 'Touche le score que tu prévois.', sch: schPts },
+  { id: 'balles', target: 'balles', pose: 'balles', title: 'Mise des balles',
+    text: 'Sûr de toi ? Mets 1 à 3 balles sur un prono : s’il est gagnant, ses points sont multipliés.',
+    sch: () => schBalles() + '<p class="tuto-note">Prono raté : balles perdues. Tu en as 4 par tournoi WTT, 2 par journée de Pro A.</p>' },
+  { id: 'serie', pose: 'feu', title: 'Enchaîne les bons pronos',
+    text: 'Dès 3 pronos gagnants d’affilée, le suivant rapporte plus.',
+    sch: () => schSerie() + '<p class="tuto-note">Et en WTT, si l’outsider gagne et que tu l’avais dit : jusqu’à +5 pts.</p>' },
+  { id: 'winner', target: 'wpick', pose: 'trophee', need: () => S.winnerPicks !== null, title: 'Le vainqueur du tournoi',
+    text: 'En WTT, choisis qui va gagner le tableau, avant son premier match.', sch: schWin },
+  { id: 'duel', target: 'duel', art: 'duel', need: () => S.duels !== null, title: 'Défie un ami',
+    text: 'Sur un match, vous comparez vos points.', sch: () => DUEL_FLOW() + '<p class="tuto-note">Pour l’honneur : ça ne compte pas au classement.</p>' },
+  { id: 'emotes', art: 'emotes', need: () => S.duels !== null && S.emotes !== null, title: 'Encourage ou chambre',
+    text: 'Pendant un défi, envoie des emotes à ton ami. C’est ton personnage qui les joue.' },
+  { id: 'board', target: 'nav-board', pose: 'allez', title: 'Les classements',
+    text: 'Dans Amis : le général, le mois, le WTT et la Pro A. Le 1er à la fin du mois devient champion du mois.' },
+  { id: 'perso', target: 'nav-account', pose: 'cadeau', next: "C'est parti", title: 'Ton personnage',
+    text: () => S.outfitOk ? 'Chaque badge gagné lui débloque un accessoire. Habille-le dans Mon compte.' : 'Tes stats, tes badges et la couleur de ton maillot sont dans Mon compte.',
+    sch: () => '<p class="tuto-note">Le barème complet est en bas de l’onglet Amis. Ce tuto reste dans Mon compte, Réglages.</p>' },
 ];
-let TUTO = null; // { i, el, picked }
+let TUTO = null; // { i, el, picked, steps, mid }
 function tutoTarget(name) {
-  if (name === 'hero') return document.querySelector('.hero');
+  const row = TUTO && TUTO.mid ? document.querySelector(`.mrow[data-mid="${TUTO.mid}"]`) : null;
   if (name === 'table') { const b = document.querySelector('.mrow .scorebtn:not([disabled])'); return b ? b.closest('.table3d') : null; }
-  if (name === 'balles') return document.querySelector('.ballesbudget');
-  if (name === 'nav') return document.querySelector('.nav');
+  if (name === 'balles') return (row && row.querySelector('.ballesrow')) || document.querySelector('.ballesbudget');
+  if (name === 'wpick') return document.querySelector('.wpicks');
+  if (name === 'duel') return (row && row.querySelector('.duelnew')) || document.querySelector('.duelnew');
+  if (name === 'nav-board') return document.querySelector('.navitem[data-tab="board"]');
+  if (name === 'nav-account') return document.querySelector('.navitem[data-tab="account"]');
   return null;
 }
+// Un ami pour l'illustration du défi (sinon, un personnage invité).
+function tutoFriend() {
+  const me = myUid(), b = S.accountBoard || S.board || [];
+  const f = b.find(r => r.user_id !== me);
+  return f ? f.user_id : null;
+}
 function tutoArt(kind) {
-  if (kind === 'welcome') return `<div class="tuto-art" aria-hidden="true"><div class="court"><div class="court-table"><div class="court-net"></div></div><div class="rally"><span class="shadow"></span><span class="ball"></span></div></div></div>`;
-  if (kind === 'streak') return `<div class="tuto-art streak" aria-hidden="true"><div class="tuto-balls">${[0, 1, 2, 3, 4].map(i => `<i style="--d:${150 + i * 120}ms"></i>`).join('')}</div><b>+28 %</b></div>`;
+  if (kind === 'welcome') return `<div class="tuto-art welcome" aria-hidden="true"><div class="court"><div class="court-table"><div class="court-net"></div></div><div class="rally"><span class="shadow"></span><span class="ball"></span></div></div>${guy('salut', { cls: 'tuto-hero' })}</div>`;
+  if (kind === 'duel') return `<div class="tuto-art faceoff" aria-hidden="true">${guy('garde')}<b>contre</b>${guy('garde', { uid: tutoFriend(), flip: true })}</div>`;
+  if (kind === 'emotes') return `<div class="tuto-art emorow" aria-hidden="true">${['allez', 'bravo', 'haha', 'ouin'].map(k => `<span>${guy(k)}<small>${esc((EMOTES.find(e => e.id === k) || {}).label || '')}</small></span>`).join('')}</div>`;
   return '';
 }
 function maybeStartTuto() {
@@ -7687,7 +7877,7 @@ function startTuto() {
   el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'tuto-title');
   el.innerHTML = '<div class="tuto-spot none"></div><div class="tuto-card"></div>';
   document.body.appendChild(el);
-  TUTO = { i: 0, el, picked: false };
+  TUTO = { i: 0, el, picked: false, mid: null, steps: TUTO_STEPS.filter(s => !s.need || s.need()) };
   el.addEventListener('click', onTutoClick);
   window.addEventListener('scroll', onTutoMove, { passive: true });
   window.addEventListener('resize', onTutoMove);
@@ -7706,41 +7896,53 @@ function endTuto() {
 function tutoGo(delta) {
   if (!TUTO) return;
   const n = TUTO.i + delta;
-  if (n >= TUTO_STEPS.length) { endTuto(); playSound('confirm'); return; }
+  if (n >= TUTO.steps.length) { endTuto(); playSound('confirm'); return; }
   TUTO.i = Math.max(0, n); TUTO.picked = false;
   playSound('tick');
   showTutoStep();
 }
 function showTutoStep() {
   if (!TUTO) return;
-  const step = TUTO_STEPS[TUTO.i], card = TUTO.el.querySelector('.tuto-card');
+  const steps = TUTO.steps, step = steps[TUTO.i], card = TUTO.el.querySelector('.tuto-card');
   const target = step.target ? tutoTarget(step.target) : null;
+  if (step.id === 'table' && target) { const r = target.closest('.mrow'); TUTO.mid = r ? r.dataset.mid : null; }
   const live = step.interactive && target;
+  const title = typeof step.title === 'function' ? step.title() : step.title;
   card.innerHTML = `${step.art ? tutoArt(step.art) : ''}
-    <div class="tuto-dots" role="img" aria-label="Étape ${TUTO.i + 1} sur ${TUTO_STEPS.length}">${TUTO_STEPS.map((_, k) => `<i class="${k === TUTO.i ? 'on' : k < TUTO.i ? 'past' : ''}"></i>`).join('')}</div>
-    <h2 id="tuto-title">${step.title}</h2>
-    <p>${step.text}</p>
-    ${live ? `<p class="tuto-hint"><i aria-hidden="true"></i><span>À toi : touche un score sur cette table. C'est un vrai prono, modifiable jusqu'au début du match.</span></p>` : ''}
+    <div class="tuto-top">${!step.art && step.pose ? guy(step.pose, { cls: 'tuto-guy' }) : ''}<div>
+      <div class="tuto-dots" role="img" aria-label="Étape ${TUTO.i + 1} sur ${steps.length}">${steps.map((_, k) => `<i class="${k === TUTO.i ? 'on' : k < TUTO.i ? 'past' : ''}"></i>`).join('')}</div>
+      <h2 id="tuto-title">${title}</h2></div></div>
+    <p>${typeof step.text === 'function' ? step.text() : step.text}</p>
+    ${step.sch ? `<div class="tuto-sch">${step.sch()}</div>` : ''}
+    ${live ? `<p class="tuto-hint"><i aria-hidden="true"></i><span>À toi : touche un score sur la table éclairée.</span></p>` : ''}
     <div class="tuto-foot">
-      <button type="button" class="tuto-skip">${TUTO.i === TUTO_STEPS.length - 1 ? '' : 'Passer le tuto'}</button>
+      <button type="button" class="tuto-skip">${TUTO.i === steps.length - 1 ? '' : 'Passer le tuto'}</button>
       <button type="button" class="btn small tuto-next">${step.next || (live ? 'Plus tard' : 'Suivant')}</button>
     </div>`;
   card.classList.remove('enter'); void card.offsetWidth; card.classList.add('enter');
   TUTO.el.classList.toggle('live', !!live);
-  if (target && step.target !== 'nav') {
-    const b = target.getBoundingClientRect();
-    if (b.top < 70 || b.bottom > window.innerHeight - 110) target.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
-  }
+  if (target && !/^nav/.test(step.target)) tutoScroll(target, card.offsetHeight);
   positionTuto();
   setTimeout(positionTuto, 450); // après le défilement
   const nextBtn = card.querySelector('.tuto-next');
   if (nextBtn) nextBtn.focus({ preventScroll: true });
 }
+// Fait défiler pour que l'élément éclairé ET la carte tiennent à l'écran
+// (l'élément en haut, la carte dessous, si les deux ne tiennent pas autrement).
+function tutoScroll(target, ch) {
+  const b = target.getBoundingClientRect(), H = window.innerHeight, pad = 22;
+  const bar = document.querySelector('.topbar'), top = Math.max(70, (bar ? bar.getBoundingClientRect().bottom : 0) + 20);
+  const visible = b.top >= top && b.bottom <= H - 110;
+  const fits = b.top - pad - ch >= top - 8 || b.bottom + pad + ch <= H - 12;
+  if (visible && fits) return;
+  const dy = top + b.height + pad + ch + 12 <= H ? b.top - top : b.top + b.height / 2 - H / 2;
+  window.scrollBy({ top: dy, behavior: reducedMotion() ? 'auto' : 'smooth' });
+}
 let tutoRaf = 0;
 function onTutoMove() { if (tutoRaf) return; tutoRaf = requestAnimationFrame(() => { tutoRaf = 0; positionTuto(); }); }
 function positionTuto() {
   if (!TUTO) return;
-  const step = TUTO_STEPS[TUTO.i], spot = TUTO.el.querySelector('.tuto-spot'), card = TUTO.el.querySelector('.tuto-card');
+  const step = TUTO.steps[TUTO.i], spot = TUTO.el.querySelector('.tuto-spot'), card = TUTO.el.querySelector('.tuto-card');
   const W = window.innerWidth, H = window.innerHeight, pad = 8, gap = 14;
   const target = step.target ? tutoTarget(step.target) : null;
   const cw = Math.min(380, W - 24), ch = card.offsetHeight;
@@ -7757,6 +7959,7 @@ function positionTuto() {
   if (r) {
     const below = H - (r.y + r.h) - gap, above = r.y - gap, right = W - (r.x + r.w) - gap;
     if (r.h > H * 0.6 && right >= cw + 8) { left = r.x + r.w + gap; top = Math.min(Math.max(12, r.y + r.h / 2 - ch / 2), H - ch - 12); }
+    else if (r.w < 140 && right >= cw + 8 && r.x < W / 3) { left = r.x + r.w + gap; top = Math.min(Math.max(12, r.y + r.h / 2 - ch / 2), H - ch - 12); }
     else {
       left = Math.min(Math.max(12, r.x + r.w / 2 - cw / 2), W - cw - 12);
       if (below >= ch + 4) top = r.y + r.h + gap;
@@ -7764,7 +7967,7 @@ function positionTuto() {
       else top = Math.max(12, H - ch - 12);
     }
   }
-  card.style.width = cw + 'px'; card.style.left = left + 'px'; card.style.top = top + 'px';
+  card.style.width = cw + 'px'; card.style.left = left + 'px'; card.style.top = Math.max(12, top) + 'px';
 }
 function onTutoClick(e) {
   if (!TUTO) return;
@@ -7772,7 +7975,7 @@ function onTutoClick(e) {
   if (e.target.closest('.tuto-skip')) { endTuto(); return; }
   if (e.target.closest('.tuto-card')) return;
   // Étape interactive : un tap sur la table éclairée passe à travers.
-  const step = TUTO_STEPS[TUTO.i];
+  const step = TUTO.steps[TUTO.i];
   if (!step.interactive) return;
   TUTO.el.style.pointerEvents = 'none';
   const under = document.elementFromPoint(e.clientX, e.clientY);
@@ -7782,13 +7985,13 @@ function onTutoClick(e) {
   if (btn && tgt && tgt.contains(btn) && !btn.disabled) btn.click();
 }
 function tutoOnPick() {
-  if (!TUTO || TUTO.picked || !TUTO_STEPS[TUTO.i].interactive) return;
+  if (!TUTO || TUTO.picked || !TUTO.steps[TUTO.i].interactive) return;
   TUTO.picked = true;
   const hint = TUTO.el.querySelector('.tuto-hint span'), next = TUTO.el.querySelector('.tuto-next');
-  if (hint) { hint.textContent = 'Bien joué, ton prono est posé.'; hint.parentElement.classList.add('ok'); }
+  if (hint) { hint.textContent = 'Bien joué ! Tu peux le changer jusqu’au début du match.'; hint.parentElement.classList.add('ok'); }
   if (next) next.textContent = 'Suivant';
   const at = TUTO.i;
-  setTimeout(() => { if (TUTO && TUTO.i === at) tutoGo(1); }, 1500);
+  setTimeout(() => { if (TUTO && TUTO.i === at) tutoGo(1); }, 1800);
 }
 document.addEventListener('keydown', e => {
   if (!TUTO) return;
@@ -8521,6 +8724,11 @@ $app.addEventListener('click', async e => {
   else if (act === 'closerecap') { stopRecapRun(); S.openRecap = null; keepRender(); }
   else if (act === 'skiprecap') finishRecap();
   else if (act === 'tuto') startTuto();
+  else if (act === 'bareme') {
+    S.tab = 'board'; S._tabAt = Date.now(); render();
+    if (!S.board) { await loadBoard(); render(); }
+    requestAnimationFrame(() => { const b = document.getElementById('bareme'), bar = document.querySelector('.topbar'); if (b) window.scrollBy({ top: b.getBoundingClientRect().top - (bar ? bar.getBoundingClientRect().bottom : 0) - 12, behavior: reducedMotion() ? 'auto' : 'smooth' }); });
+  }
   else if (act === 'replayrecap') { stopRecapRun(); S.recapAnimPlayed = false; keepRender(); }
   else if (act === 'tab') {
     if (el.dataset.tab !== S.tab) playSound('tick'); // tap discret, seulement quand on change vraiment d'onglet
