@@ -1819,6 +1819,62 @@ html.dark .spark rect[fill="var(--table)"],html.halloween .spark rect[fill="var(
 html.dark .sparklegend .dot[style*="var(--table)"],html.halloween .sparklegend .dot[style*="var(--table)"]{background:color-mix(in srgb,var(--chip) 62%,white)!important}
 html.dark .spark rect[fill="var(--ground-2)"],html.halloween .spark rect[fill="var(--ground-2)"]{fill:var(--line)}
 html.dark .sparklegend .dot[style*="var(--ground-2)"],html.halloween .sparklegend .dot[style*="var(--ground-2)"]{background:var(--line)!important}
+/* Ligues : la rangée Mondial / mes ligues, et la ligne du code. */
+.leaguerow{position:relative;margin:0 0 8px}
+.leaguerow .jchip{max-width:62vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jchip.addleague{color:var(--ink-2);font-weight:600}
+.leagueinfo{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 2px 14px;font:400 14px/1.3 var(--f-text);color:var(--ink-2)}
+.leagueinfo b{font:700 italic 16px/1 var(--f-head);color:var(--ink);letter-spacing:.04em}
+.leagueinfo .btn{margin:0}
+.leagueinfo .linkbtn{padding:8px 4px}
+.leagueinfo .btn .ico{width:16px;height:16px;margin-right:6px;vertical-align:-3px}
+.leagueinvite{display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:12px 14px}
+.leagueinvite .guy{width:70px;height:70px;margin:-6px 0 -8px -4px}
+.leagueinvite p{margin:0 0 10px;font:400 14.5px/1.4 var(--f-text);color:var(--ink-2)}
+.leagueinvite p b{color:var(--ink)}
+.leagueinvite .btn{margin:0}
+
+/* La fenêtre des ligues. */
+.leaguex .modalbody>.explain{margin:12px 0 4px}
+.lgform{margin:18px 0 0}
+.lgform h3{margin:0;font:700 19px/1.15 var(--f-head);color:var(--ink)}
+.lgform label{margin-top:10px}
+.lgrow{display:flex;gap:8px;align-items:center}
+.lgrow input{flex:1;min-width:0}
+.lgrow .btn{flex:none;margin:0}
+#lgcode{text-transform:uppercase;letter-spacing:.12em;font-weight:600}
+.lgcode{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:16px 0 10px}
+.lgcode>span:first-child{font:600 13px/1 var(--f-text);color:var(--ink-2)}
+.lgcode b{font:700 italic 32px/1 var(--f-head);letter-spacing:.08em;color:var(--ink)}
+.lgbtns{display:flex;gap:8px;flex-wrap:wrap}
+.lgbtns .btn{margin:0}
+.lgbtns .btn .ico{width:16px;height:16px;margin-right:6px;vertical-align:-3px}
+.lgh{margin:20px 0 6px;font:700 19px/1.15 var(--f-head);color:var(--ink)}
+.lgh small{font:500 14px/1 var(--f-text);color:var(--ink-2);margin-left:6px}
+.lgmembers{list-style:none;margin:0;padding:0}
+.lgmembers li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line-2);font:500 15px/1.2 var(--f-text);color:var(--ink)}
+.lgmembers li:first-child{border-top:0}
+.lgmembers .av{width:30px;height:30px;font-size:14px;flex:none}
+.lgmembers span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lgmembers small{color:var(--ink-2);font-size:13px}
+.lgmembers em{font-style:normal;font:600 12px/1 var(--f-text);color:var(--ink-2);background:var(--surface-2);border-radius:6px;padding:4px 7px}
+.lgleave{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:22px}
+.lgleave p{flex-basis:100%;margin:0 0 4px;font:500 14.5px/1.4 var(--f-text);color:var(--ink)}
+.lgleave .btn{margin:0}
+
+/* Petites fenêtres : compte, mot de passe. Confidentialité : un texte à lire. */
+.smallx .modalbody>.explain{margin:12px 0 0}
+.privacy h3{margin:20px 0 6px;font:700 18px/1.15 var(--f-head);color:var(--ink)}
+.privacy p,.privacy li{font:400 14.5px/1.5 var(--f-text);color:var(--ink-2);max-width:62ch}
+.privacy p{margin:0 0 8px}
+.privacy ul{margin:0;padding-left:18px}
+.privacy a{color:inherit;text-decoration:underline;text-decoration-color:var(--red);text-underline-offset:3px}
+
+/* Connexion. */
+.authnote{margin:4px 0 6px!important}
+.forgotlink{display:block;margin:8px 0 0 auto;font-size:14px}
+.authlegal{margin:12px 0 0!important;text-align:center}
+.authlegal .linkbtn{font-size:inherit;padding:0}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -2156,6 +2212,10 @@ html.dark .sparklegend .dot[style*="var(--ground-2)"],html.halloween .sparklegen
 const SUPABASE_URL = 'https://idkssxtsmeynjsivuehp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Qq28e3LyJwXxsxGw4ibHKg_tM8FDysY';
 const APP_NAME = 'SPIN';
+// Adresse de contact affichée dans « Confidentialité » (le Gmail de SPIN), entre les apostrophes.
+const CONTACT_EMAIL = '';
+// Rappels sur téléphone : clé publique (la clé privée, elle, va dans les secrets GitHub du robot).
+const VAPID_PUBLIC = 'BFw5AFeA2WfrKbm4gnxa-BspyRSE_vz9f_xU8msmjTdLGtuGGiwOwc-VK4gdbsdSCsiL4a8jxxaxatMP7nHtPyE';
 // Halloween : décidé par la date dans <head> (classe html.halloween).
 const HALLOWEEN = document.documentElement.classList.contains('halloween');
 
@@ -2444,7 +2504,12 @@ function toast(msg, isErr) {
 function friendlyError(e) {
   const msg = (e && e.message) || String(e);
   if (/Invalid login credentials/i.test(msg)) return 'Email ou mot de passe incorrect.';
-  if (/Database error saving new user|invitation/i.test(msg)) return "Inscription refusée : vérifie le code d'invitation, et choisis un pseudo de 2 à 20 caractères qui n'est pas déjà pris.";
+  if (/Database error saving new user/i.test(msg)) return "Inscription refusée : ce pseudo est peut-être déjà pris (2 à 20 caractères). Si ça continue, les inscriptions sont fermées pour le moment.";
+  if (/Email address not authorized/i.test(msg)) return "L'envoi des mails n'est pas encore réglé : préviens l'administrateur de SPIN.";
+  if (/rate limit|too many requests|after \d+ seconds/i.test(msg)) return 'Trop de demandes en peu de temps : réessaie dans quelques minutes.';
+  if (/different from the old|same password/i.test(msg)) return "Choisis un mot de passe différent de l'ancien.";
+  if (/Code de ligue|dans 10 ligues|ligue est complète|Nom de ligue|Inscriptions fermées/i.test(msg)) return msg;
+  if (/leagues|league_members|create_league|join_league|leave_league|delete_my_account|push_subscriptions/i.test(msg)) return "Cette fonction n'est pas encore activée : il faut lancer le script ajout-ligues-public.sql dans Supabase.";
   if (/already (been )?registered/i.test(msg)) return 'Cet email a déjà un compte. Connecte-toi.';
   if (/at least \d+ characters/i.test(msg)) return 'Le mot de passe doit faire au moins 6 caractères.';
   if (/Email not confirmed/i.test(msg)) return "Ton email n'est pas encore confirmé. Vérifie ta boîte mail.";
@@ -2862,7 +2927,8 @@ async function loadAll() {
   S.myPreds = {};
   (preds.data || []).forEach(x => { S.myPreds[x.match_id] = x; });
   S.isAdmin = adm.data === true;
-  loadBoard().then(render); // chargé à part : n'empêche pas la connexion s'il échoue
+  loadLeagues().then(loadBoard).then(render); // les ligues d'abord : elles filtrent le classement
+  loadPushState().then(() => { if (S.tab === 'account') render(); }).catch(() => {}); // chargé à part : n'empêche pas la connexion s'il échoue
   loadAvatars().then(render);
   loadWorldRankings().then(() => { if (S.tab === 'rankings') render(); });
   loadAccount().then(render); // idem : pour la pastille de série sur les cartes de match, sans bloquer la connexion
@@ -2930,7 +2996,7 @@ async function loadBoard() {
     : sb.from('leaderboard_by_circuit').select('*').eq('circuit', S.boardScope);
   const r = await q.order('total_points', { ascending: false }).order('exact_scores', { ascending: false });
   if (r.error) { toast(friendlyError(r.error), true); S.board = []; return; }
-  S.board = r.data || [];
+  S.boardAll = r.data || []; S.board = inLeague(S.boardAll);
 }
 // Historique complet des pronostics du compte (pas limité aux 90 derniers
 // jours comme S.matches), avec le match associé : sert à calculer les
@@ -2994,6 +3060,7 @@ async function loadAccount() {
 async function handleSession(session) {
   if (!session) {
     S.session = null; S.pseudo = ''; S.isAdmin = false; S.matches = []; S.myPreds = {}; S.board = null;
+    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false;
     render(); return;
   }
   if (S.session && S.session.user.id === session.user.id) { S.session = session; return; }
@@ -3080,7 +3147,7 @@ function render() {
         <main class="tab-${S.tab}${Date.now() - (S._tabAt || 0) < 1500 ? ' fresh' : ''}">${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
         <aside class="side" aria-label="En un coup d'œil">${sideView()}</aside>
       </div>
-    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}${S.openWin ? winnerModal(S.openWin) : ''}${S.openDuelNew ? duelNewModal(S.openDuelNew) : ''}${S.openDuel ? duelModal(S.openDuel) : ''}${S.openCeleb ? celebModal(S.openCeleb) : ''}`;
+    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}${S.openWin ? winnerModal(S.openWin) : ''}${S.openDuelNew ? duelNewModal(S.openDuelNew) : ''}${S.openDuel ? duelModal(S.openDuel) : ''}${S.openCeleb ? celebModal(S.openCeleb) : ''}${modals23()}`;
   document.documentElement.classList.toggle('noscroll', !!S.openRecap);
   if (sheets.length) document.querySelectorAll('.modal, .recapx').forEach(m => {
     const old = sheets.find(s => s[0] === sheetKey(m));
@@ -3102,6 +3169,12 @@ const SEG_PREV = {};
 let NAV_LAST = null;
 function reducedMotion() { try { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } }
 function afterRender() {
+  document.querySelectorAll('.leaguerow').forEach(r => {
+    const b = r.querySelector('[aria-pressed="true"]');
+    if (!b) return;
+    if (b.offsetLeft + b.offsetWidth > r.scrollLeft + r.clientWidth) r.scrollLeft = b.offsetLeft + b.offsetWidth - r.clientWidth + 8;
+    else if (b.offsetLeft < r.scrollLeft) r.scrollLeft = b.offsetLeft - 8;
+  });
   try {
     document.querySelectorAll('.pillrow.seg[data-i]').forEach(el => {
       const i = el.dataset.i;
@@ -3193,7 +3266,7 @@ function dropBall(id, a, b) {
 // règle CSS .me svg existante à réutiliser).
 function themeToggleBtn() { return ''; } // un seul thème pour l'instant
 // Points et rang, toujours visibles en haut (mobile) : touche pour voir le classement.
-const generalBoard = () => ((S.boardScope === 'ALL' || S.boardScope === 'MONTH') && S.board ? S.board : S.accountBoard) || null;
+const generalBoard = () => ((S.boardScope === 'ALL' || S.boardScope === 'MONTH') && S.board ? S.board : (S.accountBoard ? inLeague(S.accountBoard) : null)) || null;
 function myStatusChip() {
   const b = generalBoard();
   const mine = b && S.session && b.find(r => r.user_id === S.session.user.id);
@@ -3242,7 +3315,7 @@ function sideView() {
     if (meIdx >= 5) shown.push(ranked[meIdx]);
     const medal = r => r <= 3 ? `<span class="medal" style="--medal:${r === 1 ? 'var(--gold)' : r === 2 ? 'var(--silver)' : 'var(--bronze)'}">${r}</span>` : `<span class="rk">${r}</span>`;
     out.push(`<section class="sidecard">
-      <h3>Entre amis</h3>
+      <h3>${esc(leagueTitle())}</h3>
       <ol class="sidelist">${shown.map(r => `<li class="${r.user_id === uid ? 'me' : ''}">${medal(r.rank)}<span class="who">${esc(r.pseudo)}${r.user_id === uid ? ' <small>toi</small>' : ''}</span><b>${r.total_points}<small>pts</small></b></li>`).join('')}</ol>
       <button class="linkbtn" data-act="tab" data-tab="board">Tout le classement</button>
     </section>`);
@@ -3311,8 +3384,10 @@ function liveTicker() {
 }
 
 /* --- Connexion --- */
+// Connexion, inscription (ouverte à tous) et mot de passe oublié.
 function authView() {
-  const su = S.authMode === 'signup';
+  const mode = S.authMode === 'signup' ? 'signup' : S.authMode === 'forgot' ? 'forgot' : 'login', su = mode === 'signup';
+  const pending = pendingLeagueCode();
   return `
   <div class="authshell">
     <section class="authstage" aria-label="${esc(APP_NAME)}">${HALLOWEEN ? '<span class="moon" aria-hidden="true"></span>' : ''}${cobwebHtml()}${spiderHtml('auth')}
@@ -3329,32 +3404,44 @@ function authView() {
     <div class="authform-col">
       <div class="auth">
         <form id="authform" class="panel">
-          <div class="authguy">${guy('salut', { uid: null })}<h2 class="authhead">${su ? 'Créer ton compte' : 'Connexion'}</h2></div>
+          <div class="authguy">${guy(mode === 'forgot' ? 'pense' : 'salut', { uid: null })}<h2 class="authhead">${su ? 'Créer ton compte' : mode === 'forgot' ? 'Mot de passe oublié' : 'Connexion'}</h2></div>
+          ${pending && mode !== 'forgot' ? `<p class="hint explain authnote">Tu es invité dans une ligue (code <b>${esc(pending)}</b>). ${su ? 'Crée ton compte' : 'Connecte-toi'} : tu la rejoindras juste après.</p>` : ''}
+          ${mode === 'forgot' ? `<p class="hint explain authnote">Entre ton email : tu recevras un lien pour choisir un nouveau mot de passe.</p>` : ''}
           ${su ? `<label for="pseudo">Pseudo</label><input id="pseudo" required minlength="2" maxlength="20" autocomplete="nickname">` : ''}
           <label for="email">Email</label><input id="email" type="email" required autocomplete="email">
-          <label for="pw">Mot de passe</label><input id="pw" type="password" required minlength="6" autocomplete="${su ? 'new-password' : 'current-password'}">
-          ${su ? `<label for="code">Code d'invitation</label><input id="code" required autocomplete="off" autocapitalize="characters">` : ''}
-          <button class="btn" type="submit">${su ? 'Créer mon compte' : 'Me connecter'}</button>
+          ${mode !== 'forgot' ? `<label for="pw">Mot de passe</label><input id="pw" type="password" required minlength="6" autocomplete="${su ? 'new-password' : 'current-password'}">` : ''}
+          ${mode === 'login' ? `<button type="button" class="linkbtn forgotlink" data-act="forgot">Mot de passe oublié ?</button>` : ''}
+          <button class="btn" type="submit">${su ? 'Créer mon compte' : mode === 'forgot' ? 'Recevoir le lien' : 'Me connecter'}</button>
+          ${su ? `<p class="hint authlegal">En créant ton compte, tu acceptes la <button type="button" class="linkbtn" data-act="privacy">politique de confidentialité</button>.</p>` : ''}
           <div id="autherr" class="ferr" role="alert"></div>
         </form>
-        <p class="switch">${su ? 'Déjà un compte ?' : 'Pas encore de compte ?'} <button class="linkbtn" data-act="authmode">${su ? 'Me connecter' : 'Créer un compte'}</button></p>
+        <p class="switch">${mode === 'login' ? 'Pas encore de compte ?' : 'Déjà un compte ?'} <button class="linkbtn" data-act="authmode">${mode === 'login' ? 'Créer un compte' : 'Me connecter'}</button></p>
+        <p class="switch"><button class="linkbtn" data-act="privacy">Confidentialité et mentions légales</button></p>
       </div>
     </div>
-  </div>`;
+  </div>${S.openPrivacy ? privacyModal() : ''}`;
 }
 async function submitAuth(f) {
   const err = f.querySelector('#autherr'); err.className = 'ferr'; err.textContent = '';
   const btn = f.querySelector('button[type=submit]'); btn.disabled = true;
-  const email = f.querySelector('#email').value.trim(), password = f.querySelector('#pw').value;
+  const email = f.querySelector('#email').value.trim();
+  const back = location.origin + location.pathname;
   try {
-    if (S.authMode === 'signup') {
-      const pseudo = f.querySelector('#pseudo').value.trim();
-      const code = f.querySelector('#code').value.trim().toUpperCase();
-      const { data, error } = await sb.auth.signUp({ email, password, options: { data: { pseudo, invite_code: code } } });
+    if (S.authMode === 'forgot') {
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: back });
       if (error) throw error;
-      if (!data.session) { err.className = 'ferr fok'; err.textContent = 'Compte créé. Confirme ton email (regarde ta boîte mail) puis connecte-toi.'; }
+      err.className = 'ferr fok';
+      err.textContent = "C'est envoyé : si un compte existe avec cet email, un lien arrive dans quelques minutes. Regarde aussi dans les spams.";
+    } else if (S.authMode === 'signup') {
+      const password = f.querySelector('#pw').value, pseudo = f.querySelector('#pseudo').value.trim();
+      // Pseudo déjà pris ? (si la vérification n'existe pas encore dans la base, on passe)
+      const free = await sb.rpc('pseudo_libre', { p: pseudo });
+      if (!free.error && free.data === false) { err.textContent = 'Ce pseudo est déjà pris : choisis-en un autre.'; btn.disabled = false; return; }
+      const { data, error } = await sb.auth.signUp({ email, password, options: { data: { pseudo }, emailRedirectTo: back } });
+      if (error) throw error;
+      if (!data.session) { err.className = 'ferr fok'; err.textContent = 'Compte créé. Confirme ton email (regarde ta boîte mail, et les spams), puis connecte-toi.'; }
     } else {
-      const { error } = await sb.auth.signInWithPassword({ email, password });
+      const { error } = await sb.auth.signInWithPassword({ email, password: f.querySelector('#pw').value });
       if (error) throw error;
     }
   } catch (e) { err.textContent = friendlyError(e); }
@@ -3659,7 +3746,7 @@ function matchRow(m, fresh, i, streakInfo) {
     }
     let friends = '';
     if (S.openFriends[m.id]) {
-      const rows = (S.friends[m.id] || []).map(r => ({ ...r, pt: points(m, r, r.user_id === S.session.user.id ? (streakInfo.before.get(m.id) || 0) : streakBeforeFor(r.user_id, m.id)) }))
+      const rows = (S.friends[m.id] || []).filter(r => r.user_id === S.session.user.id || isFriend(r.user_id)).map(r => ({ ...r, pt: points(m, r, r.user_id === S.session.user.id ? (streakInfo.before.get(m.id) || 0) : streakBeforeFor(r.user_id, m.id)) }))
         .sort((x, y) => (y.pt ?? -1) - (x.pt ?? -1));
       friends = rows.length
         ? `<ul class="friends">${rows.map(r => `<li><span>${esc(r.profiles && r.profiles.pseudo)}${r.user_id === S.session.user.id ? ' (toi)' : ''}</span><span>${r.pred_a}–${r.pred_b}${r.pt !== null ? ` : ${r.pt} pt${r.pt > 1 ? 's' : ''}` : ''}</span></li>`).join('')}</ul>`
@@ -3753,7 +3840,7 @@ async function toggleFriends(id) {
 }
 
 /* --- Classement des amis : vraie table de standings, podium en évidence. --- */
-function boardView() {
+function boardViewInner() {
   const seg = segRow([['ALL', 'Général'], ['MONTH', 'Ce mois'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.boardScope, 'boardscope');
   const exportBtn = `<button class="btn small sec" data-act="exportboard">${ico('share-network')}Partager en image</button>`;
   if (S.board === null) return seg + '<div class="loading">Chargement…</div>';
@@ -6032,7 +6119,7 @@ const shirtOf = uid => (S.shirts && S.shirts[uid]) || null;
 const scenePlayer = (uid, pseudo, pts, extra) => Object.assign({ pseudo, pts, me: !!S.session && uid === S.session.user.id, photo: avatarUrl(uid), shirt: shirtOf(uid), outfit: (S.outfits && S.outfits[uid]) || [] }, extra);
 // Rang au classement général (ex aequo compris), et la ligne du joueur.
 function generalRank(uid) {
-  const b = S.accountBoard || (S.boardScope === 'ALL' && S.board) || [];
+  const b = inLeague(S.accountBoard || (S.boardScope === 'ALL' && S.board) || []);
   let prev = null, rk = 0;
   for (let i = 0; i < b.length; i++) {
     const k = b[i].total_points + '/' + b[i].exact_scores;
@@ -6177,7 +6264,7 @@ function playerModal(uid) {
       <div class="modalhead">
         <div class="pod3d" data-kind="player" data-uid="${esc(uid)}"></div>
         <div class="modalname">${avatarHtml(uid, r.pseudo)}${esc(r.pseudo)}</div>
-        <div class="modalsub">${g.rank}${g.rank === 1 ? 'er' : 'e'} du classement général, sur ${g.n}${(c => c.length ? `<span class="champline">${c.length > 1 ? `A gagné ${c.length} classements du mois` : 'A gagné le classement du mois'} : ${c.map(x => monthWord(x.k)).join(', ')}</span>` : '')(champCount(uid))}</div>
+        <div class="modalsub">${g.rank}${g.rank === 1 ? 'er' : 'e'} ${esc(rankScopeLabel())}, sur ${g.n}${(c => c.length ? `<span class="champline">${c.length > 1 ? `A gagné ${c.length} classements du mois` : 'A gagné le classement du mois'} : ${c.map(x => monthWord(x.k)).join(', ')}</span>` : '')(champCount(uid))}</div>
         <div class="modalstats">
           <div class="statbox"><b>${r.total_points}</b><span>points</span></div>
           <div class="statbox"><b>${r.exact_scores}</b><span>${r.exact_scores > 1 ? 'scores exacts' : 'score exact'}</span></div>
@@ -6724,7 +6811,7 @@ function monthBoard(k) {
     if (!w.points || monthKeyOf(w.final_at) !== k) continue;
     const r = row(w.user_id); r.total_points += w.points; r.winner_points += w.points;
   }
-  return Object.values(rows).sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || a.pseudo.localeCompare(b.pseudo));
+  return inLeague(Object.values(rows)).sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || a.pseudo.localeCompare(b.pseudo));
 }
 const boardRows = () => S.boardScope === 'MONTH' ? monthBoard(S.boardMonth || curMonthKey()) : S.board;
 function monthsAvailable() {
@@ -6734,10 +6821,10 @@ function monthsAvailable() {
   return [...set].sort().reverse();
 }
 // Les champions des mois terminés (plusieurs en cas d'égalité parfaite).
-let _champCache = { src: null, w: null, cur: null, list: [] };
+let _champCache = { src: null, w: null, cur: null, lg: null, list: [] };
 function monthChampions() {
   const cur = curMonthKey();
-  if (_champCache.src === S.allJudgedPreds && _champCache.w === S.winnerPoints && _champCache.cur === cur) return _champCache.list;
+  if (_champCache.src === S.allJudgedPreds && _champCache.w === S.winnerPoints && _champCache.cur === cur && _champCache.lg === S.league) return _champCache.list;
   const list = [];
   for (const k of monthsAvailable()) {
     if (k >= cur) continue;
@@ -6745,7 +6832,7 @@ function monthChampions() {
     if (!b.length || b[0].total_points <= 0) continue;
     list.push({ k, pts: b[0].total_points, rows: b.filter(r => r.total_points === b[0].total_points && r.exact_scores === b[0].exact_scores) });
   }
-  _champCache = { src: S.allJudgedPreds, w: S.winnerPoints, cur, list };
+  _champCache = { src: S.allJudgedPreds, w: S.winnerPoints, cur, lg: S.league, list };
   return list;
 }
 // La course du mois : les points cumulés jour après jour, toi en couleur.
@@ -6754,7 +6841,9 @@ function raceChart(rows, k) {
   const by = scoredByUser() || {}, uid = S.session.user.id;
   const cur = k === curMonthKey(), D = cur ? dayOf(Date.now()) : daysIn(k);
   if (D < 2) return '';
-  const lines = rows.slice(0, 12).map(r => {
+  const shown = rows.slice(0, 12), mine = rows.find(r => r.user_id === uid);
+  if (mine && !shown.includes(mine)) shown.push(mine);
+  const lines = shown.map(r => {
     const daily = new Array(D + 1).fill(0);
     for (const h of by[r.user_id] || []) if (monthKeyOf(h.matches.starts_at) === k) { const d = dayOf(h.matches.starts_at); if (d <= D) daily[d] += h.pt.total; }
     for (const w of S.winnerPoints || []) if (w.user_id === r.user_id && w.points && monthKeyOf(w.final_at) === k) { const d = dayOf(w.final_at); if (d <= D) daily[d] += w.points; }
@@ -6807,11 +6896,17 @@ function monthView() {
   return chips + line + boardPodium(rows) + standingsTable(rows) + raceChart(rows, k) + championsPanel() + rule;
 }
 // Le tableau du classement (général, par circuit ou du mois).
+// Au mondial, la liste s'arrête aux 50 premiers (et ta ligne, si tu es plus loin).
+const STANDINGS_MAX = 50;
 function standingsTable(board) {
   let prev = null, rank = 0;
+  const ranks = board.map((r, i) => { const key = r.total_points + '/' + r.exact_scores; if (key !== prev) { rank = i + 1; prev = key; } return rank; });
+  const meIdx = board.findIndex(r => r.user_id === S.session.user.id);
+  const keep = board.map((_, i) => i < STANDINGS_MAX || i === meIdx);
+  const cut = board.length > STANDINGS_MAX;
   const rows = board.map((r, i) => {
-    const key = r.total_points + '/' + r.exact_scores;
-    if (key !== prev) { rank = i + 1; prev = key; }
+    if (!keep[i]) return '';
+    rank = ranks[i];
     const me = r.user_id === S.session.user.id;
     const topClass = rank === 1 ? ' top1' : rank === 2 ? ' top2' : rank === 3 ? ' top3' : '';
     return `<tr class="${me ? 'me' : ''}">
@@ -6820,7 +6915,7 @@ function standingsTable(board) {
         <div class="lbsub">${r.good_winners}/${r.matches_played} bon${r.good_winners > 1 ? 's' : ''} vainqueur${r.good_winners > 1 ? 's' : ''} · ${r.exact_scores} exact${r.exact_scores > 1 ? 's' : ''}${r.winner_points ? ` · ${r.winner_points} pts de vainqueur` : ''}</div></td>
       <td class="ptscell">${r.total_points}<small>pts</small></td></tr>`;
   }).join('');
-  return `<table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>`;
+  return `<table class="standings"><thead><tr><th>Rang</th><th>Joueur</th><th class="num">Pts</th></tr></thead><tbody>${rows}</tbody></table>${cut ? `<p class="hint standcut">Les ${STANDINGS_MAX} premiers sur ${board.length} joueurs${meIdx >= STANDINGS_MAX ? ', et toi' : ''}.</p>` : ''}`;
 }
 
 // --- Statistiques en plus ---------------------------------------------------
@@ -7079,7 +7174,7 @@ function duelNewModal(mid) {
   if (!m) return '';
   const me = S.session.user.id;
   const taken = new Set(myDuels().filter(d => d.match_id === mid).map(d => duelOther(d, me)));
-  const friends = (S.accountBoard || S.board || []).filter(r => r.user_id !== me).slice().sort((a, b) => a.pseudo.localeCompare(b.pseudo));
+  const friends = (S.accountBoard || S.board || []).filter(r => r.user_id !== me && isFriend(r.user_id)).slice().sort((a, b) => a.pseudo.localeCompare(b.pseudo));
   return `
   <div class="modalbackdrop" data-act="closeduelnew">
     <div class="modal duelnewx" role="dialog" aria-modal="true" aria-label="Défier un ami" data-act="stop" style="${themeVarsCss(themeKeyFor(m))}">
@@ -7093,7 +7188,7 @@ function duelNewModal(mid) {
         ${friends.length ? `<ul class="wlist">${friends.map(r => taken.has(r.user_id)
           ? `<li class="wrow out">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span><span class="wpts">déjà défié</span></li>`
           : `<li><button class="wrow" data-act="duelsave" data-id="${mid}" data-uid="${esc(r.user_id)}">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span><span class="wpts">Défier</span></button></li>`).join('')}</ul>`
-          : emptyBox('pense', 'Personne à défier pour l’instant : invite d’abord tes amis.')}
+          : emptyBox('pense', S.leagues ? 'Personne à défier pour l’instant : invite tes amis dans une ligue (onglet Amis, « + Ligue »).' : 'Personne à défier pour l’instant : invite d’abord tes amis.')}
       </div>
     </div>
   </div>`;
@@ -7569,6 +7664,348 @@ function ptsSumHtml(det) {
   return parts.length > 1 ? `<span class="ptsum">${parts.join(' ')}</span>` : '';
 }
 
+/* =============================================================================
+   Ouverture au public : ligues privées, mot de passe oublié, suppression de
+   compte, confidentialité, rappels sur le téléphone.
+   Tout se cache tant que le script ajout-ligues-public.sql n'est pas lancé
+   (S.leagues reste null) : le site garde alors son fonctionnement d'avant.
+   ========================================================================== */
+
+// --- Ligues -----------------------------------------------------------------------
+const LG_KEY = 'spin_ligue', LG_CODE_KEY = 'spin_ligue_code';
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* stockage bloqué */ } };
+// Lien d'invitation (…?ligue=CODE) : le code est gardé le temps de s'inscrire
+// ou de se connecter, et retiré de l'adresse.
+(function () {
+  const m = /[?&]ligue=([A-Za-z0-9]{4,10})/.exec(location.search);
+  if (!m) return;
+  lsSet(LG_CODE_KEY, m[1].toUpperCase());
+  try { const u = new URL(location.href); u.searchParams.delete('ligue'); history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) { /* adresse inchangée */ }
+})();
+const pendingLeagueCode = () => lsGet(LG_CODE_KEY) || '';
+const leagueLink = l => `${location.origin}${location.pathname}?ligue=${l.code}`;
+
+async function loadLeagues() {
+  try {
+    const [l, m] = await Promise.all([
+      sb.from('leagues').select('id,name,code,owner,created_at').order('id'),
+      fetchAllRows(() => sb.from('league_members').select('league_id,user_id,joined_at').order('league_id').order('user_id')),
+    ]);
+    if (l.error || m.error) { S.leagues = null; applyLeague(); return; }
+    S.leagues = l.data || [];
+    S.leagueMembers = new Map(S.leagues.map(x => [x.id, []]));
+    for (const r of m.data || []) { if (!S.leagueMembers.has(r.league_id)) S.leagueMembers.set(r.league_id, []); S.leagueMembers.get(r.league_id).push(r); }
+    S.friendIds = new Set((m.data || []).map(r => r.user_id));
+    const saved = lsGet(LG_KEY), want = saved === 'world' ? 'world' : Number(saved);
+    S.league = want === 'world' || S.leagues.some(x => x.id === want) ? want : (S.leagues[0] ? S.leagues[0].id : 'world');
+  } catch (e) { S.leagues = null; }
+  applyLeague();
+  // Arrivé par un lien d'invitation : on propose de rejoindre la ligue.
+  const code = pendingLeagueCode();
+  if (code && S.leagues) {
+    if (S.leagues.some(x => x.code === code)) lsSet(LG_CODE_KEY, null);
+    else if (!S.openLeague) S.openLeague = 'new';
+  }
+}
+// La ligue choisie filtre les classements ; « Mondial » montre tout le monde.
+function applyLeague() { if (S.boardAll) S.board = inLeague(S.boardAll); }
+const curLeague = () => (S.leagues && S.league !== 'world' ? S.leagues.find(x => x.id === S.league) || null : null);
+function leagueIds(lid) { return new Set((S.leagueMembers && S.leagueMembers.get(lid) || []).map(r => r.user_id)); }
+function inLeague(rows) {
+  if (!rows || !curLeague()) return rows;
+  const ids = leagueIds(S.league);
+  return rows.filter(r => ids.has(r.user_id));
+}
+const inLeagueUid = uid => !curLeague() || leagueIds(S.league).has(uid);
+// Un « ami » : quelqu'un d'au moins une de mes ligues (défis, pronos des amis).
+const isFriend = uid => !S.leagues || (S.friendIds && S.friendIds.has(uid));
+const leagueTitle = () => (curLeague() ? curLeague().name : S.leagues ? 'Mondial' : 'Entre amis');
+const rankScopeLabel = () => (curLeague() ? `de la ligue ${curLeague().name}` : S.leagues ? 'du classement mondial' : 'du classement général');
+
+// En haut de l'onglet Amis : Mondial, mes ligues, et « + Ligue ».
+function leagueBar() {
+  if (!S.leagues) return '';
+  const cur = curLeague();
+  const chips = [['world', 'Mondial'], ...S.leagues.map(l => [l.id, l.name])];
+  const row = `<div class="journeerow leaguerow" role="group" aria-label="Ligue">${chips.map(([k, n]) => `<button class="jchip" data-act="league" data-v="${k}" aria-pressed="${S.league === k}">${esc(n)}</button>`).join('')}<button class="jchip addleague" data-act="leaguenew">+ Ligue</button></div>`;
+  if (cur) {
+    const n = (S.leagueMembers.get(cur.id) || []).length;
+    return row + `<div class="leagueinfo"><span>${n} joueur${n > 1 ? 's' : ''}, code <b>${esc(cur.code)}</b></span>
+      <button class="btn small sec" data-act="leagueshare" data-id="${cur.id}">${ico('share-network')}Inviter</button>
+      <button class="linkbtn" data-act="leagueopen" data-id="${cur.id}">Gérer</button></div>`;
+  }
+  if (!S.leagues.length) return row + `<div class="leagueinvite explain">${guy('pouce')}<div><p><b>Joue entre amis.</b> Crée ta ligue, ou rejoins celle de tes amis avec leur code.</p>
+    <button class="btn small" data-act="leaguenew">Créer ou rejoindre une ligue</button></div></div>`;
+  return row;
+}
+function boardView() { return leagueBar() + boardViewInner(); }
+
+// La fenêtre des ligues : créer / rejoindre, ou gérer la sienne.
+function leagueModal(which) {
+  const head = (sub, name) => `<button class="modalclose" data-act="closeleague" aria-label="Fermer">${ico('x')}</button>
+      <div class="modalhead">${sub ? `<div class="modalsub">${sub}</div>` : ''}<div class="modalname">${name}</div></div>`;
+  if (which === 'new') {
+    const pending = pendingLeagueCode();
+    return `<div class="modalbackdrop" data-act="closeleague"><div class="modal leaguex" role="dialog" aria-modal="true" aria-label="Jouer en ligue" data-act="stop">
+      ${head('', 'Jouer en ligue')}
+      <div class="modalbody">
+        <p class="hint explain">Une ligue, c'est votre classement rien qu'à vous, avec vos défis et votre champion du mois. Jusqu'à 100 joueurs.</p>
+        <form id="leaguejoin" class="lgform"><h3>Rejoindre une ligue</h3>
+          ${pending ? `<p class="hint">Tu as été invité : le code est déjà rempli.</p>` : ''}
+          <label for="lgcode">Code de la ligue</label>
+          <div class="lgrow"><input id="lgcode" required minlength="4" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Ex. : K7Q2MB" value="${esc(pending)}"><button class="btn small${pending ? '' : ' sec'}" type="submit">Rejoindre</button></div></form>
+        <form id="leaguecreate" class="lgform"><h3>Créer une ligue</h3>
+          <label for="lgname">Nom de la ligue</label>
+          <div class="lgrow"><input id="lgname" required minlength="2" maxlength="30" autocomplete="off" placeholder="Ex. : Les potes du club"><button class="btn small${pending ? ' sec' : ''}" type="submit">Créer</button></div></form>
+        <div id="lgerr" class="ferr" role="alert"></div>
+      </div></div></div>`;
+  }
+  const l = (S.leagues || []).find(x => x.id === which);
+  if (!l) return '';
+  const me = S.session.user.id, owner = l.owner === me, names = pseudoMap();
+  const members = (S.leagueMembers.get(l.id) || []).slice().sort((a, b) => (a.user_id === l.owner ? -1 : b.user_id === l.owner ? 1 : 0) || (names[a.user_id] || '').localeCompare(names[b.user_id] || ''));
+  const leaving = S._leaveConfirm === l.id;
+  return `<div class="modalbackdrop" data-act="closeleague"><div class="modal leaguex" role="dialog" aria-modal="true" aria-label="Ligue ${esc(l.name)}" data-act="stop">
+    ${head('Ligue', esc(l.name))}
+    <div class="modalbody">
+      <div class="lgcode"><span>Code</span><b>${esc(l.code)}</b>
+        <span class="lgbtns"><button class="btn small" data-act="leagueshare" data-id="${l.id}">${ico('share-network')}Inviter</button><button class="btn small sec" data-act="leaguecopy" data-id="${l.id}">Copier le lien</button></span></div>
+      <p class="hint explain">Envoie le lien à tes amis : il les inscrit et les fait entrer dans la ligue. Ils peuvent aussi taper le code dans « + Ligue ».</p>
+      <h3 class="lgh">Joueurs <small>${members.length}</small></h3>
+      <ul class="lgmembers">${members.map(r => `<li>${avatarHtml(r.user_id, names[r.user_id])}<span>${esc(names[r.user_id] || '?')}${r.user_id === me ? ' <small>toi</small>' : ''}</span>${r.user_id === l.owner ? '<em>responsable</em>' : ''}</li>`).join('')}</ul>
+      ${owner ? `<form id="leaguerename" class="lgform" data-id="${l.id}"><label for="lgrename">Nom de la ligue</label>
+        <div class="lgrow"><input id="lgrename" required minlength="2" maxlength="30" autocomplete="off" value="${esc(l.name)}"><button class="btn small sec" type="submit">Renommer</button></div></form>` : ''}
+      <div class="lgleave">${leaving
+        ? `<p>Quitter « ${esc(l.name)} » ? Tu pourras revenir avec le code.</p><button class="btn small" data-act="leagueleave" data-id="${l.id}">Oui, quitter</button><button class="btn small sec" data-act="leaguestay">Annuler</button>`
+        : `<button class="btn small sec" data-act="leagueask" data-id="${l.id}">Quitter la ligue</button>`}</div>
+      <div id="lgerr" class="ferr" role="alert"></div>
+    </div></div></div>`;
+}
+async function afterLeagueChange(selectId) {
+  await loadLeagues();
+  if (selectId !== undefined) { S.league = selectId; lsSet(LG_KEY, String(selectId)); applyLeague(); }
+  _champCache.src = null;
+  keepRender();
+}
+function leagueErr(e) { const el = document.getElementById('lgerr'); if (el) el.textContent = friendlyError(e); else toast(friendlyError(e), true); }
+async function shareLeague(id, copyOnly) {
+  const l = (S.leagues || []).find(x => x.id === id);
+  if (!l) return;
+  const text = `Rejoins ma ligue « ${l.name} » sur SPIN, les pronos de ping entre amis. Code : ${l.code}`;
+  if (!copyOnly && navigator.share) {
+    try { await navigator.share({ title: 'SPIN', text, url: leagueLink(l) }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(`${text}\n${leagueLink(l)}`); toast('Lien copié : colle-le dans ta conversation'); }
+  catch (e) { toast(`Le lien : ${leagueLink(l)}`); }
+}
+
+// --- Rappels sur le téléphone --------------------------------------------------------
+const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const b64uBytes = s => { const b = atob((s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+async function pushSub() {
+  if (!pushSupported()) return null;
+  const reg = await navigator.serviceWorker.getRegistration();
+  return reg ? reg.pushManager.getSubscription() : null;
+}
+async function loadPushState() {
+  const r = await sb.from('push_subscriptions').select('endpoint').limit(1);
+  S.pushOk = !r.error;
+  try { const sub = await pushSub(); S.pushOn = !!sub && Notification.permission === 'granted'; } catch (e) { S.pushOn = false; }
+}
+async function enablePush() {
+  if (isIOS() && !isStandalone()) { toast("Sur iPhone : ajoute d'abord SPIN à l'écran d'accueil (bouton Partager, puis « Sur l'écran d'accueil »), et ouvre-le depuis l'icône.", true); return; }
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') { toast('Rappels refusés : tu peux les autoriser dans les réglages du navigateur.', true); keepRender(); return; }
+  const reg = await navigator.serviceWorker.ready;
+  const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uBytes(VAPID_PUBLIC) });
+  const j = sub.toJSON();
+  const r = await sb.from('push_subscriptions').upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth }, { onConflict: 'endpoint' });
+  if (r.error) throw r.error;
+  S.pushOn = true; playSound('confirm'); toast('Rappels activés sur ce téléphone'); keepRender();
+}
+// Couper les rappels de cet appareil (aussi à la déconnexion et à la suppression du compte).
+async function disablePush(quiet) {
+  try {
+    const sub = await pushSub();
+    if (sub) { await sb.from('push_subscriptions').delete().eq('endpoint', sub.endpoint); await sub.unsubscribe(); }
+  } catch (e) { /* rien à couper */ }
+  S.pushOn = false;
+  if (!quiet) keepRender();
+}
+function pushRow() {
+  if (!S.pushOk) return '';
+  const ok = pushSupported(), ios = isIOS() && !isStandalone();
+  const hint = !ok && !ios ? 'Ce navigateur ne sait pas recevoir de rappels.'
+    : ios ? "Sur iPhone : ajoute d'abord SPIN à l'écran d'accueil, puis ouvre-le depuis l'icône."
+    : 'Un match commence sans ton prono, un défi arrive, un récap est prêt.';
+  return `<li><span class="k">Rappels sur ce téléphone<small>${hint}</small></span>
+    <button class="toggle" role="switch" aria-checked="${!!S.pushOn}" aria-label="Rappels sur ce téléphone" data-act="pushtoggle"${!ok && !ios ? ' disabled' : ''}></button></li>`;
+}
+
+// --- Mot de passe oublié, nouveau mot de passe ------------------------------------------
+function recoveryModal() {
+  return `<div class="modalbackdrop"><div class="modal smallx" role="dialog" aria-modal="true" aria-label="Nouveau mot de passe" data-act="stop">
+    <button class="modalclose" data-act="closerecovery" aria-label="Fermer">${ico('x')}</button>
+    <div class="modalhead"><div class="modalname">Nouveau mot de passe</div></div>
+    <div class="modalbody"><form id="recoverform" class="lgform">
+      <label for="newpw">Choisis ton nouveau mot de passe (6 caractères au moins)</label>
+      <div class="lgrow"><input id="newpw" type="password" required minlength="6" autocomplete="new-password"><button class="btn small" type="submit">Enregistrer</button></div>
+      <div id="recerr" class="ferr" role="alert"></div></form></div></div></div>`;
+}
+
+// --- Supprimer son compte ----------------------------------------------------------
+function deleteModal() {
+  return `<div class="modalbackdrop" data-act="closedelete"><div class="modal smallx" role="dialog" aria-modal="true" aria-label="Supprimer ton compte" data-act="stop">
+    <button class="modalclose" data-act="closedelete" aria-label="Fermer">${ico('x')}</button>
+    <div class="modalhead"><div class="modalname">Supprimer ton compte</div></div>
+    <div class="modalbody">
+      <div class="explain"><p class="hint">Seront effacés pour de bon : ton compte, ton pseudo, ta photo, tous tes pronos, tes choix de vainqueur, tes défis, tes emotes et ta place dans tes ligues. Rien ne pourra être récupéré.</p></div>
+      <form id="deleteform" class="lgform">
+        <label for="delpseudo">Pour confirmer, tape ton pseudo : <b>${esc(S.pseudo)}</b></label>
+        <div class="lgrow"><input id="delpseudo" required autocomplete="off" spellcheck="false"><button class="btn small" type="submit">Supprimer</button></div>
+        <div id="delerr" class="ferr" role="alert"></div></form>
+    </div></div></div>`;
+}
+async function deleteAccount() {
+  const uid = S.session.user.id;
+  await disablePush(true);
+  if (avatarUrl(uid)) { try { await sb.storage.from('avatars').remove([`${uid}.jpg`]); } catch (e) { /* la photo restera orpheline */ } }
+  const r = await sb.rpc('delete_my_account');
+  if (r.error) throw r.error;
+  S.openDelete = false;
+  lsSet(LG_KEY, null);
+  await sb.auth.signOut();
+  toast('Ton compte est supprimé. À bientôt peut-être !');
+}
+
+// --- Confidentialité et mentions légales -------------------------------------------------
+function privacyModal() {
+  const mail = CONTACT_EMAIL ? `<a href="mailto:${esc(CONTACT_EMAIL)}">${esc(CONTACT_EMAIL)}</a>` : "l'administrateur de SPIN";
+  return `<div class="modalbackdrop" data-act="closeprivacy"><div class="modal privacyx" role="dialog" aria-modal="true" aria-label="Confidentialité" data-act="stop">
+    <button class="modalclose" data-act="closeprivacy" aria-label="Fermer">${ico('x')}</button>
+    <div class="modalhead"><div class="modalsub">SPIN</div><div class="modalname">Confidentialité</div></div>
+    <div class="modalbody privacy">
+      <h3>Ce que SPIN enregistre</h3>
+      <ul><li>Ton email et ton mot de passe (chiffré), pour te connecter.</li>
+        <li>Ton pseudo, et si tu en mets : ta photo, la couleur de ton maillot, tes accessoires.</li>
+        <li>Ton jeu : pronos, balles, choix de vainqueur, défis, emotes, ligues.</li>
+        <li>Si tu actives les rappels : l'adresse technique de ton téléphone pour les recevoir.</li></ul>
+      <h3>Pourquoi</h3>
+      <p>Uniquement pour faire marcher le jeu : te connecter, compter tes points, afficher les classements. Pas de publicité, pas de revente, pas de statistiques de visite.</p>
+      <h3>Qui le voit</h3>
+      <p>Les autres joueurs voient ton pseudo, ta photo, tes points et tes pronos une fois le match commencé. Ton email n'est jamais montré.</p>
+      <h3>Où c'est stocké</h3>
+      <p>Les données du jeu sont chez Supabase (base de données en ligne). Le site est hébergé par GitHub Pages. Les polices viennent de Google Fonts et quelques outils de jsDelivr : ton navigateur les contacte en ouvrant le site. Les rappels passent par le service de ton navigateur (Google, Apple ou Mozilla).</p>
+      <p>Sur ton appareil, le site garde ta connexion et quelques préférences (son, tuto vu, ligue choisie). Aucun cookie publicitaire.</p>
+      <h3>Combien de temps</h3>
+      <p>Tant que ton compte existe. Si tu le supprimes (Mon compte, Réglages), tout est effacé tout de suite.</p>
+      <h3>Tes droits</h3>
+      <p>Tu peux consulter, corriger ou effacer tes données, et demander une copie : écris à ${mail}. Tu peux aussi saisir la CNIL (cnil.fr).</p>
+      <h3>Mentions légales</h3>
+      <p>SPIN est un site gratuit, édité par un particulier, à titre non professionnel. Hébergement : GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis.</p>
+    </div></div></div>`;
+}
+
+// --- Branchements -------------------------------------------------------------------------
+function modals23() {
+  return `${S.openLeague && S.session ? leagueModal(S.openLeague) : ''}${S.openDelete && S.session ? deleteModal() : ''}${S.openPrivacy ? privacyModal() : ''}${S.recovery && S.session ? recoveryModal() : ''}`;
+}
+async function onAct23(act, el, v) {
+  const id = el.dataset.id ? Number(el.dataset.id) : null;
+  if (act === 'league') { S.league = v === 'world' ? 'world' : Number(v); lsSet(LG_KEY, String(S.league)); applyLeague(); _champCache.src = null; S._freshMatches = true; navigate(render); return true; }
+  if (act === 'leaguenew') { S.openLeague = 'new'; keepRender(); return true; }
+  if (act === 'leagueopen') { S.openLeague = id; S._leaveConfirm = null; keepRender(); return true; }
+  if (act === 'closeleague') { S.openLeague = null; S._leaveConfirm = null; keepRender(); return true; }
+  if (act === 'leagueshare') { shareLeague(id); return true; }
+  if (act === 'leaguecopy') { shareLeague(id, true); return true; }
+  if (act === 'leagueask') { S._leaveConfirm = id; keepRender(); return true; }
+  if (act === 'leaguestay') { S._leaveConfirm = null; keepRender(); return true; }
+  if (act === 'leagueleave') {
+    const r = await sb.rpc('leave_league', { p_league: id });
+    if (r.error) { leagueErr(r.error); return true; }
+    const l = (S.leagues || []).find(x => x.id === id);
+    S.openLeague = null; S._leaveConfirm = null;
+    if (S.league === id) lsSet(LG_KEY, null); // on revient sur une autre de ses ligues, sinon le mondial
+    await afterLeagueChange();
+    toast(`Tu as quitté « ${l ? l.name : 'la ligue'} »`);
+    return true;
+  }
+  if (act === 'forgot') { S.authMode = 'forgot'; render(); return true; }
+  if (act === 'privacy') { S.openPrivacy = true; S.session ? keepRender() : render(); return true; }
+  if (act === 'closeprivacy') { S.openPrivacy = false; S.session ? keepRender() : render(); return true; }
+  if (act === 'deleteacc') { S.openDelete = true; keepRender(); return true; }
+  if (act === 'closedelete') { S.openDelete = false; keepRender(); return true; }
+  if (act === 'closerecovery') { S.recovery = false; keepRender(); return true; }
+  if (act === 'pushtoggle') {
+    try { if (S.pushOn) await disablePush(); else await enablePush(); }
+    catch (e) { toast(friendlyError(e), true); keepRender(); }
+    return true;
+  }
+  return false;
+}
+function onSubmit23(f) {
+  const val = sel => { const i = f.querySelector(sel); return i ? i.value.trim() : ''; };
+  const busy = on => { const b = f.querySelector('button[type=submit]'); if (b) b.disabled = on; };
+  const run = async fn => { busy(true); try { await fn(); } catch (e) { leagueErr(e); } busy(false); };
+  if (f.id === 'leaguecreate') {
+    run(async () => {
+      const r = await sb.rpc('create_league', { p_name: val('#lgname') });
+      if (r.error) throw r.error;
+      playSound('confirm'); toast(`Ligue « ${r.data.name} » créée : invite tes amis`);
+      S.openLeague = r.data.id;
+      await afterLeagueChange(r.data.id);
+    });
+    return true;
+  }
+  if (f.id === 'leaguejoin') {
+    run(async () => {
+      const r = await sb.rpc('join_league', { p_code: val('#lgcode') });
+      if (r.error) throw r.error;
+      lsSet(LG_CODE_KEY, null);
+      S.openLeague = null;
+      playSound('confirm'); toast(`Bienvenue dans « ${r.data.name} »`);
+      await afterLeagueChange(r.data.id);
+    });
+    return true;
+  }
+  if (f.id === 'leaguerename') {
+    run(async () => {
+      const lid = Number(f.dataset.id), r = await sb.from('leagues').update({ name: val('#lgrename') }).eq('id', lid);
+      if (r.error) throw r.error;
+      toast('Ligue renommée');
+      await afterLeagueChange();
+    });
+    return true;
+  }
+  if (f.id === 'recoverform') {
+    const err = f.querySelector('#recerr');
+    busy(true);
+    sb.auth.updateUser({ password: f.querySelector('#newpw').value }).then(({ error }) => {
+      busy(false);
+      if (error) { err.textContent = friendlyError(error); return; }
+      S.recovery = false; toast('Mot de passe changé'); keepRender();
+    });
+    return true;
+  }
+  if (f.id === 'deleteform') {
+    const err = f.querySelector('#delerr');
+    if (val('#delpseudo') !== S.pseudo) { err.textContent = 'Le pseudo ne correspond pas.'; return true; }
+    busy(true);
+    deleteAccount().catch(e => { err.textContent = friendlyError(e); busy(false); });
+    return true;
+  }
+  return false;
+}
+function onEscape23() {
+  if (S.recovery) { S.recovery = false; keepRender(); return; }
+  if (S.openDelete) { S.openDelete = false; keepRender(); return; }
+  if (S.openLeague) { S.openLeague = null; S._leaveConfirm = null; keepRender(); return; }
+  if (S.openPrivacy) { S.openPrivacy = false; S.session ? keepRender() : render(); }
+}
+
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
   // entièrement terminé (voir isTournamentFinished) : pas de bilan sur
@@ -7778,7 +8215,7 @@ function accountView() {
   <section class="acchero" style="${themeVarsCss('ALL')}">
     <div class="acchero-row">
       <div class="big"><span data-count="${total}">${total}</span><small>points</small></div>
-      ${myRank ? `<div class="rank"><span>au classement<br>général</span><span class="medalball" style="--medal:${myRank === 1 ? 'var(--gold)' : myRank === 2 ? 'var(--silver)' : myRank === 3 ? 'var(--bronze)' : '#F3F4F1'}">${myRank}</span></div>` : ''}
+      ${myRank ? `<div class="rank"><span>au classement<br>${S.leagues ? 'mondial' : 'général'}</span><span class="medalball" style="--medal:${myRank === 1 ? 'var(--gold)' : myRank === 2 ? 'var(--silver)' : myRank === 3 ? 'var(--bronze)' : '#F3F4F1'}">${myRank}</span></div>` : ''}
     </div>
     <p>${n} prono${n > 1 ? 's' : ''} jugé${n > 1 ? 's' : ''}, dont ${exactN} score${exactN > 1 ? 's' : ''} exact${exactN > 1 ? 's' : ''}.</p>
   </section>
@@ -7842,6 +8279,11 @@ function settingsPanel() {
       <li class="photorow"><span class="k">${avatarHtml(S.session.user.id, S.pseudo)}<span>Photo de profil<small>Elle remplace ton initiale, pour toi et pour tes amis.</small></span></span>
         <span class="photobtns"><button class="btn small sec" data-act="avatarpick">${avatarUrl(S.session.user.id) ? 'Changer' : 'Ajouter une photo'}</button>${avatarUrl(S.session.user.id) ? '<button class="btn small sec" data-act="avatarremove">Retirer</button>' : ''}
         <input type="file" id="avatarfile" accept="image/*" hidden></span></li>
+      ${pushRow()}
+      <li><span class="k">Confidentialité<small>Tes données et tes droits.</small></span>
+        <button class="btn small sec" data-act="privacy">Lire</button></li>
+      ${S.leagues ? `<li><span class="k">Supprimer mon compte<small>Efface ton compte et tous tes pronos.</small></span>
+        <button class="btn small sec" data-act="deleteacc">Supprimer</button></li>` : ''}
       <li><span class="k">Connecté en tant que <b>${esc(S.pseudo)}</b></span>
         <button class="btn small sec" data-act="logout">${ICONS.logout}Se déconnecter</button></li>
     </ul>
@@ -7878,6 +8320,7 @@ function computeRecapData(key, circuit) {
 
   const rows = [];
   for (const userId in byUser) {
+    if (!inLeagueUid(userId)) continue; // le récap entre les joueurs de la ligue choisie
     const sorted = byUser[userId].slice().sort((a, b) => new Date(a.matches.starts_at) - new Date(b.matches.starts_at) || a.match_id - b.match_id);
     const scored = computeStreakSeries(sorted).map(h => ({ ...h, pt: pointsDetail(h.matches, h, h.streakBefore) }));
     const inT = scored.filter(h => h.matches.circuit === circuit && tournamentGroupKey(h.matches) === key);
@@ -7963,7 +8406,7 @@ const TUTO_STEPS = [
   { id: 'emotes', art: 'emotes', need: () => S.duels !== null && S.emotes !== null, title: 'Encourage ou chambre',
     text: 'Pendant un défi, envoie des emotes à ton ami. C’est ton personnage qui les joue.' },
   { id: 'board', target: 'nav-board', pose: 'allez', title: 'Les classements',
-    text: 'Dans Amis : le général, le mois, le WTT et la Pro A. Le 1er à la fin du mois devient champion du mois.' },
+    text: () => S.leagues ? 'Dans Amis, joue dans une ligue avec tes amis (un code suffit) ou au classement mondial. Le 1er à la fin du mois devient champion du mois.' : 'Dans Amis : le général, le mois, le WTT et la Pro A. Le 1er à la fin du mois devient champion du mois.' },
   { id: 'perso', target: 'nav-account', pose: 'cadeau', next: "C'est parti", title: 'Ton personnage',
     text: () => S.outfitOk ? 'Chaque badge gagné lui débloque un accessoire. Habille-le dans Mon compte.' : 'Tes stats, tes badges et la couleur de ton maillot sont dans Mon compte.',
     sch: () => '<p class="tuto-note">Le barème complet est en bas de l’onglet Amis. Ce tuto reste dans Mon compte, Réglages.</p>' },
@@ -8743,7 +9186,7 @@ async function exportBoardImage() {
   const { canvas, ctx } = makeExportCanvas(w, h);
   const scopeLabel = S.boardScope === 'MONTH' ? `Classement ${deMonth(S.boardMonth || curMonthKey())}` : S.boardScope === 'ALL' ? 'Classement général' : (S.boardScope === 'WTT' ? 'Classement WTT' : 'Classement Pro A');
   const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-  const top = paintExportPoster(ctx, w, h, t, scopeLabel, `Au ${today}`);
+  const top = paintExportPoster(ctx, w, h, t, scopeLabel, curLeague() ? `${curLeague().name}, au ${today}` : `Au ${today}`);
   const uid = S.session && S.session.user.id;
 
   const lx = 20, lw = w - 40;
@@ -8826,8 +9269,9 @@ function esc0(s) { return String(s ?? ''); }
 $app.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (await onAct23(act, el, v)) return;
   if (act === 'authmode') { S.authMode = S.authMode === 'login' ? 'signup' : 'login'; render(); }
-  else if (act === 'logout') { await sb.auth.signOut(); }
+  else if (act === 'logout') { await disablePush(true); await sb.auth.signOut(); }
   else if (act === 'thememode') {
     S.themeMode = S.themeMode === 'light' ? 'dark' : (S.themeMode === 'dark' ? 'halloween' : 'light');
     try { localStorage.setItem('spin_theme_mode', S.themeMode); } catch (e) { /* ignore */ }
@@ -8868,7 +9312,7 @@ $app.addEventListener('click', async e => {
     S.tab = el.dataset.tab;
     S._tabAt = Date.now();
     if (S.tab === 'matches') { S._freshMatches = true; loadDuels().then(keepRender); }
-    if (S.tab === 'board') { S.board = null; navigate(render); await Promise.all([loadBoard(), loadWinners(), loadDuels()]); }
+    if (S.tab === 'board') { S.board = null; navigate(render); await Promise.all([loadLeagues().then(loadBoard), loadWinners(), loadDuels()]); }
     if (S.tab === 'account') { S.myHistory = null; navigate(render); await Promise.all([loadAccount(), loadWinners(), loadDuels()]); }
     navigate(render); window.scrollTo(0, 0);
   }
@@ -8917,6 +9361,7 @@ $app.addEventListener('click', async e => {
   else if (act === 'closeceleb') closeCeleb();
 });
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && (S.openLeague || S.openDelete || S.openPrivacy || S.recovery)) { onEscape23(); return; }
   if (e.key === 'Escape' && S.openCompetitor) { S.openCompetitor = null; keepRender(); }
   if (e.key === 'Escape' && S.openPlayer && !S.openDuel) { S.openPlayer = null; keepRender(); }
   if (e.key === 'Escape' && S.openWin) { S.openWin = null; keepRender(); }
@@ -8928,6 +9373,7 @@ document.addEventListener('keydown', e => {
 $app.addEventListener('submit', e => {
   e.preventDefault();
   if (e.target.id === 'authform') submitAuth(e.target);
+  else if (onSubmit23(e.target)) { /* ligues, compte */ }
   else if (e.target.id === 'addmatch') addMatch(e.target);
 });
 $app.addEventListener('pointerdown', e => {
@@ -8974,7 +9420,11 @@ async function boot() {
     return;
   }
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  sb.auth.onAuthStateChange((event, session) => { setTimeout(() => handleSession(session), 0); });
+  sb.auth.onAuthStateChange((event, session) => {
+    // Arrivé par le lien « mot de passe oublié » : on demande le nouveau.
+    if (event === 'PASSWORD_RECOVERY') { S.recovery = true; if (S.session) setTimeout(keepRender, 0); }
+    setTimeout(() => handleSession(session), 0);
+  });
   const { data } = await sb.auth.getSession();
   handleSession(data.session);
 }
