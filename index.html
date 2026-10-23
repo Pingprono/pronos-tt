@@ -2023,6 +2023,50 @@ html.dark .sparklegend .dot[style*="var(--ground-2)"],html.halloween .sparklegen
 .bellitem:focus-visible{outline:2px solid var(--focus,var(--table));outline-offset:-2px}
 html.dark .avis-bar i,html.halloween .avis-bar i{background:color-mix(in srgb,var(--chip) 72%,white)}
 html.dark .avis-bar,html.halloween .avis-bar{background:color-mix(in srgb,var(--chip) 22%,var(--surface))}
+/* L'arbre du WTT : sous l'en-tête du tournoi, puis une grande fenêtre tour par tour. */
+.treepicks{margin-top:-4px}
+.treebtn .ico{color:var(--table)}
+.treex .modalbody{padding-bottom:16px}
+.treeexplain p{margin:0}
+.treeexplain p + p{margin-top:6px}
+.treetools{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.treetools .btn{margin:0;padding:9px 14px;font-size:14.5px}
+@media (prefers-reduced-motion:no-preference){.toast{transition:margin-bottom .2s var(--ease-out)}}
+.treejump{position:sticky;top:-6px;z-index:2;margin:12px -4px 0;padding:8px 4px;background:var(--surface);overflow-x:auto;flex-wrap:nowrap}
+.treejump .pillbtn{text-decoration:none;flex:none}
+.treeround{scroll-margin-top:56px}
+.treeround h3{margin:20px 0 8px;font:700 19px/1.15 var(--f-head);color:var(--ink)}
+.treeround h3 small{font:500 13.5px/1 var(--f-text);color:var(--ink-2);margin-left:6px}
+.treelist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.tslot{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px;border-radius:10px;background:var(--surface-2)}
+.tside{display:flex;align-items:center;gap:7px;min-width:0;min-height:44px;padding:8px 10px;border:0;border-radius:8px;background:var(--surface);
+  font:500 14.5px/1.2 var(--f-text);color:var(--ink);text-align:left;box-shadow:inset 0 0 0 1px var(--line-2)}
+button.tside{cursor:pointer}
+.tside .tname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tside .tseed{flex:none;font:600 12px/1 var(--f-text);color:var(--ink-2)}
+.tside .flag{flex:none}
+.tside.on{background:var(--table);color:var(--on-table);box-shadow:none;font-weight:650}
+.tside.on .tseed{color:var(--on-table-2)}
+.tside.empty{justify-content:center;font-size:13px;color:var(--ink-3);background:transparent;box-shadow:none;border:1px dashed var(--line-2)}
+.tside.on.ok{background:color-mix(in srgb,var(--gold) 26%,var(--surface));color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--gold)}
+.tside.on.ko{background:var(--surface);color:var(--ink-2);text-decoration:line-through;text-decoration-thickness:1.5px;box-shadow:inset 0 0 0 1px var(--line-2)}
+.tside.on.ok .tseed,.tside.on.ko .tseed{color:var(--ink-2)}
+.tmark{flex:none;width:9px;height:9px;border-radius:50%;background:currentColor;opacity:.5}
+.tside.ok .tmark{background:var(--gold);opacity:1}
+.treefoot{position:sticky;bottom:0;display:flex;align-items:center;gap:12px;padding:12px 22px calc(12px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line-2)}
+.treefoot span{flex:1;min-width:0;font:500 13.5px/1.3 var(--f-text);color:var(--ink-2)}
+.treefoot .btn{flex:none;margin:0}
+@media (max-width:420px){.tslot{grid-template-columns:1fr}.treefoot{flex-direction:column;align-items:stretch}.treefoot .btn{width:100%}}
+
+/* Les fêtes : le podium de la ligue, et une phrase. */
+.fetex .feteflat .guy{width:150px;height:150px}
+.fetekicker{margin:2px 0 4px;font:600 13.5px/1.2 var(--f-text);color:var(--ink-2)}
+.fetetitle{margin:0 0 6px;font:700 30px/1.05 var(--f-head);color:var(--ink)}
+.fetetext{margin:8px 0 0;font:500 15px/1.45 var(--f-text);color:var(--ink)}
+
+/* Accessoires d'événement : une pastille dessinée, et le moment pour les gagner. */
+.acc.evt .accimg > svg{width:38px;height:38px}
+.acc.evt.locked .accimg > svg{opacity:.45;filter:grayscale(.6)}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -2642,7 +2686,10 @@ function toast(msg, isErr) {
   el.className = 'toast' + (isErr ? ' err' : '');
   el.setAttribute('role', 'status');
   el.textContent = msg;
+  const older = [...document.querySelectorAll('.toast:not(.leaving)')];
   document.body.appendChild(el);
+  const lift = el.offsetHeight + 8;
+  older.forEach(t => { t.style.marginBottom = ((parseFloat(t.style.marginBottom) || 0) + lift) + 'px'; });
   setTimeout(() => {
     el.classList.add('leaving');
     setTimeout(() => el.remove(), 200);
@@ -3083,8 +3130,9 @@ async function loadAll() {
   loadPushState().then(() => { if (S.tab === 'account') render(); }).catch(() => {}); // chargé à part : n'empêche pas la connexion s'il échoue
   loadAvatars().then(render);
   loadWorldRankings().then(() => { if (S.tab === 'rankings') render(); });
-  loadAccount().then(render); // idem : pour la pastille de série sur les cartes de match, sans bloquer la connexion
+  loadAccount().then(() => { render(); checkFetes(); checkEventAcc(); }); // idem : pour la pastille de série sur les cartes de match, sans bloquer la connexion
   loadWinners().then(render);
+  loadTrees().then(render).catch(() => {});
   loadModState().then(render).catch(() => {});
   loadPlus().then(render).catch(() => {});
   loadDuels().then(() => { render(); startLive(); });
@@ -3220,7 +3268,7 @@ async function loadAccount() {
 async function handleSession(session) {
   if (!session) {
     S.session = null; S.pseudo = ''; S.isAdmin = false; S.matches = []; S.myPreds = {}; S.board = null;
-    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive(); LITE.clear(); S.suspended = false; S.modReports = undefined; S.openReport = null; stopPlus(); S.notifs = undefined; S.gdefis = undefined; S.openBell = false; S.openGd = null; _bellCache.at = 0; S.duelPts = null; S.rival = null;
+    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive(); LITE.clear(); S.suspended = false; S.modReports = undefined; S.openReport = null; stopPlus(); S.notifs = undefined; S.gdefis = undefined; S.openBell = false; S.openGd = null; _bellCache.at = 0; S.trees = undefined; S.treePts = []; S.openTree = null; S.openFete = null; S.feteQueue = []; S._fetesDone = false; _feteTries = 0; S.duelPts = null; S.rival = null;
     render(); return;
   }
   if (S.session && S.session.user.id === session.user.id) { S.session = session; return; }
@@ -3670,7 +3718,7 @@ function matchesView() {
       const m0 = g.matches[0];
       const tierName = m0.circuit === 'PRO_A' ? 'Pro A' : (m0.tier || 'WTT');
       return `<section class="compgroup" style="${themeVarsCss(themeKeyFor(m0))}"><div class="complabel">
-        <div><h2 style="margin:0"><b>${esc(g.competition)}</b></h2><small><span class="tier"><i aria-hidden="true"></i>${esc(tierName)}</span><span>${n} match${n > 1 ? 's' : ''}</span></small></div>${groupBallesBudgetHtml(g.matches)}</div>${m0.circuit === 'WTT' && !seenWin.has(g.competition) ? (seenWin.add(g.competition), winnerStrip(g.competition)) : ''}
+        <div><h2 style="margin:0"><b>${esc(g.competition)}</b></h2><small><span class="tier"><i aria-hidden="true"></i>${esc(tierName)}</span><span>${n} match${n > 1 ? 's' : ''}</span></small></div>${groupBallesBudgetHtml(g.matches)}</div>${m0.circuit === 'WTT' && !seenWin.has(g.competition) ? (seenWin.add(g.competition), winnerStrip(g.competition) + treeStrip(g.competition)) : ''}
         <div class="complist">${rows}</div></section>`;
     }).join('');
   }
@@ -5126,13 +5174,33 @@ function buildPodium(data) {
     lanterne: () => {
       const g = new THREE.Group();
       g.add(mesh(new THREE.TorusGeometry(.03, .004, 6, 16, Math.PI), am('wire', { color: 0x2A2F36, metalness: .6, roughness: .4 }), 0, -.29, .02));
-      const p = mesh(pumpkinGeo(.07), am('lantern', { map: pumpkinSkin, roughness: .6, emissive: 0xffa040, emissiveMap: pumpkinFaceTex, emissiveIntensity: 1.5 }), 0, -.35, .02);
+      const p = mesh(pumpkinGeo(.07), am('lantern', { color: 0xD9A93A, metalness: .7, roughness: .32, emissive: 0xffc040, emissiveMap: pumpkinFaceTex, emissiveIntensity: 1.5 }), 0, -.35, .02);
       g.add(p);
       return [['armL', g]];
     },
+    bonnet: () => {
+      const g = new THREE.Group(), white = am('white', { color: 0xF2F2EE, roughness: .6 });
+      const brim = mesh(new THREE.TorusGeometry(.17, .036, 10, 40), am('fur', { color: 0xF4F2EC, roughness: .95 }), 0, .1, 0); brim.rotation.x = Math.PI / 2; g.add(brim);
+      const cone = mesh(new THREE.ConeGeometry(.165, .3, 28), am('noel', { color: 0xB8222E, roughness: .8 }), .03, .25, -.01); cone.rotation.z = -.35; g.add(cone);
+      g.add(mesh(new THREE.SphereGeometry(.04, 12, 10), white, .09, .38, -.01));
+      return [['head', g]];
+    },
+    chapeaufete: () => {
+      const g = new THREE.Group(), yellow = am('fete2', { color: 0xF2C14E, roughness: .5 });
+      g.add(mesh(new THREE.ConeGeometry(.1, .27, 28), am('fete', { color: 0x2B6CB0, roughness: .5 }), 0, .3, 0));
+      for (const [y, r] of [[.24, .078], [.31, .052]]) { const ring = mesh(new THREE.TorusGeometry(r, .011, 6, 28), yellow, 0, y, 0); ring.rotation.x = Math.PI / 2; g.add(ring); }
+      g.add(mesh(new THREE.SphereGeometry(.03, 12, 10), yellow, 0, .44, 0));
+      return [['head', g]];
+    },
+    medaille: () => {
+      const g = new THREE.Group(), ribbon = am('ruban', { color: 0x1B46B4, roughness: .8 });
+      for (const sx of [-1, 1]) { const r = mesh(new THREE.BoxGeometry(.03, .16, .01), ribbon, sx * .033, .54, .163); r.rotation.set(-.35, 0, sx * .42); g.add(r); }
+      const disc = mesh(new THREE.CylinderGeometry(.052, .052, .016, 28), goldMat(), 0, .465, .19); disc.rotation.x = Math.PI / 2 - .3; g.add(disc);
+      return [['body', g]];
+    },
     raquette: null, baskets: null, // changements de matière, voir wear()
   };
-  const LIFT = { couronne: .1, chapeau: .1, casquette: .04, visiere: .02, bandeau: .02 };
+  const LIFT = { couronne: .1, chapeau: .1, casquette: .04, visiere: .02, bandeau: .02, bonnet: .12, chapeaufete: .2 };
   const wear = ch => {
     const on = new Set(ch.p.outfit || []);
     for (const id in ACC) {
@@ -6314,6 +6382,12 @@ function podiumSlotState(slot) {
       duel: { phase: done ? 'done' : ['void', 'proposed', 'expired'].includes(i.state) ? 'idle' : 'play', winner: i.state === 'win' ? 0 : i.state === 'loss' ? 1 : i.state === 'draw' ? -1 : null },
       players: [scenePlayer(me, S.pseudo, 0, { halo: 0, sub: sub(i.myPred, i.myPts) }), scenePlayer(i.other, i.pseudo, 0, { halo: 0, sub: sub(i.otPred, i.otPts) })] };
   }
+  // Une fête : le podium du mois ou du tournoi, le champion en haut.
+  if (kind === 'fete') {
+    const f = S.openFete;
+    if (!f) return null;
+    return { key: 'fete:' + f.id, theme: THEME[f.theme] || THEME.ALL, delay: .4, players: f.top.map(r => scenePlayer(r.user_id, r.pseudo, r.pts)) };
+  }
   // Un nouveau score exact : tu sautes de joie, tes points au-dessus de la tête.
   if (kind === 'celeb') {
     const h = (myJudgedHistory() || []).find(x => String(x.match_id) === slot.dataset.mid);
@@ -7143,6 +7217,7 @@ function originPanel(hist, winPts) {
     ['Balles', sum(p => p.ballesBonus), '#D9761E', 'Le gain de tes mises'],
     ['Outsider', sum(p => p.bonus), 'var(--ink-3)', 'Le moins bien classé a gagné (WTT)'],
     ['Vainqueurs de tournoi', winPts || 0, 'var(--gold)', 'Tes vainqueurs trouvés'],
+    ['Arbres WTT', treePointsMine(), '#4F5D95', 'Tes tableaux du WTT, de 0 à 30 pts chacun'],
   ].filter(p => p[1] > 0);
   const total = parts.reduce((s, p) => s + p[1], 0);
   if (!total) return '';
@@ -7487,7 +7562,7 @@ function earnedBadges() {
   return set;
 }
 const myOutfit = () => (S.outfits && S.session && S.outfits[S.session.user.id]) || [];
-function accessoriesHtml() {
+function accessoriesHtmlOld() {
   const earned = earnedBadges(), on = new Set(myOutfit());
   const n = ACCESSORIES.filter(a => earned.has(a.badge)).length;
   return `<div class="accwrap">
@@ -7501,7 +7576,7 @@ function accessoriesHtml() {
     }).join('')}</div>
   </div>`;
 }
-async function toggleAccessory(id) {
+async function toggleAccessoryOld(id) {
   const a = ACCESSORIES.find(x => x.id === id);
   if (!a || !earnedBadges().has(a.badge)) return;
   const uid = S.session.user.id, prev = myOutfit();
@@ -7648,7 +7723,7 @@ function emoteSvg(kind, uid, title, o = {}) {
   const thumb = P.thumb ? `<rect x="${lx - 1.7}" y="${ly - 10}" width="3.6" height="8" rx="1.8" fill="#F4F3EE" stroke="rgba(18,26,38,.2)" stroke-width="1"/>` : '';
   const point = P.point ? `<rect x="${lx + 2.4}" y="${ly - 1.7}" width="7.5" height="3.4" rx="1.7" fill="#F4F3EE" stroke="rgba(18,26,38,.2)" stroke-width="1"/>` : '';
   const leftHandItem = P.front || P.hold || P.point ? '' : wear.has('cafe') ? `<rect x="${lx + 2.5}" y="${ly - 3}" width="6.5" height="8" rx="1.4" fill="#2D7F4E"/>`
-    : wear.has('lanterne') ? `<circle cx="${lx}" cy="${ly + 9}" r="4.8" fill="#E2782A"/><path d="M${lx - 2} ${ly + 8}h1.2M${lx + 1} ${ly + 8}h1.2" stroke="#1B1322" stroke-width="1.3"/>` : '';
+    : wear.has('lanterne') ? `<circle cx="${lx}" cy="${ly + 9}" r="4.8" fill="#E8B53A"/><path d="M${lx - 2} ${ly + 8}h1.2M${lx + 1} ${ly + 8}h1.2" stroke="#1B1322" stroke-width="1.3"/>` : '';
   const arms = `${armPath(SH[0], P.arms[0])}${armPath(SH[1], P.arms[1])}${pad}${hand(end(0))}${hand(end(1))}${thumb}${point}${leftHandItem}`;
   const faceIn = guest
     ? `<ellipse cx="44.5" cy="29.5" rx="1.7" ry="2.3" fill="#1B2230"/><ellipse cx="55.5" cy="29.5" rx="1.7" ry="2.3" fill="#1B2230"/><path d="M44 35.5q6 5 12 0" stroke="#1B2230" stroke-width="1.8" fill="none" stroke-linecap="round"/>`
@@ -7662,6 +7737,8 @@ function emoteSvg(kind, uid, title, o = {}) {
     wear.has('visiere') ? '<rect x="34" y="19.5" width="32" height="3.6" rx="1.8" fill="#F2F2EE" stroke="rgba(18,26,38,.15)" stroke-width=".8"/><ellipse cx="50" cy="23.5" rx="13" ry="2.8" fill="#2D7F4E"/>' : '',
     wear.has('chapeau') ? '<ellipse cx="50" cy="18" rx="24" ry="4" fill="#B59A66"/><path d="M39 18V9q0-3 3-3h16q3 0 3 3v9Z" fill="#B59A66"/><rect x="39" y="13.5" width="22" height="3" fill="#4A3B26"/>' : '',
     wear.has('couronne') ? '<path d="M38.5 17V7.5l5 5 6.5-8 6.5 8 5-5V17Z" fill="#D9A93A" stroke="#B8860B" stroke-width="1"/><circle cx="50" cy="13" r="1.8" fill="#B0122A"/>' : '',
+    wear.has('bonnet') ? '<path d="M35 21Q40 3 61 6 57 12 64 21Z" fill="#B8222E"/><rect x="33" y="18" width="34" height="6" rx="3" fill="#F6F5F0" stroke="rgba(18,26,38,.15)" stroke-width=".8"/><circle cx="62" cy="6.5" r="3.6" fill="#F6F5F0" stroke="rgba(18,26,38,.15)" stroke-width=".8"/>' : '',
+    wear.has('chapeaufete') ? '<path d="M41 17 50 -2 59 17Z" fill="#2B6CB0"/><path d="M44 11h12M47 4.5h6" stroke="#F2C14E" stroke-width="2.2" stroke-linecap="round"/><circle cx="50" cy="-1.5" r="2.6" fill="#F2C14E"/>' : '',
     wear.has('lunettes') ? '<rect x="39.5" y="27.5" width="9" height="6.5" rx="2.6" fill="#101317"/><rect x="51.5" y="27.5" width="9" height="6.5" rx="2.6" fill="#101317"/><path d="M48.5 29.5h3" stroke="#101317" stroke-width="1.5"/>' : '',
   ].join('');
   const tears = P.tears ? `<path d="M36 33q-3 4 0 6 3-2 0-6Z" fill="${TEAR}"/><path d="M64 33q-3 4 0 6 3-2 0-6Z" fill="${TEAR}"/>` : '';
@@ -7673,7 +7750,8 @@ function emoteSvg(kind, uid, title, o = {}) {
     <path d="M41 50Q50 47 59 50L63 60Q66 72 63 79Q50 83 37 79Q34 72 37 60Z" fill="${shirt}"/>
     <ellipse cx="50" cy="49.5" rx="6" ry="1.9" fill="#F2F2EE"/>
     ${wear.has('echarpe') ? '<rect x="40.5" y="47" width="19" height="5" rx="2.5" fill="#1B46B4"/><rect x="52.5" y="50" width="5" height="13" rx="2" fill="#1B46B4" transform="rotate(-8 55 50)"/>' : ''}
-    ${wear.has('serviette') ? '<path d="M56 50 64 52 63 66 57.5 65Z" fill="#9CC9E8"/>' : ''}`;
+    ${wear.has('serviette') ? '<path d="M56 50 64 52 63 66 57.5 65Z" fill="#9CC9E8"/>' : ''}
+    ${wear.has('medaille') ? '<path d="M45.5 49.5 50 59M54.5 49.5 50 59" stroke="#1B46B4" stroke-width="2.6" stroke-linecap="round"/><circle cx="50" cy="61.5" r="4.4" fill="#D9A93A" stroke="#B8860B" stroke-width="1"/>' : ''}`;
   const fig = `<g transform="rotate(${P.tilt || 0} 50 90)">${body}${P.front ? head + arms : arms + head}${P.hold || ''}</g>`;
   return `<svg class="emo${o.cls ? ' ' + o.cls : ''}" viewBox="0 0 100 100" ${o.deco ? 'aria-hidden="true"' : `role="img" aria-label="${esc(title || '')}"`}>
     ${P.back || ''}<ellipse cx="50" cy="94" rx="19" ry="3" fill="rgba(18,26,38,.14)"/>
@@ -8075,7 +8153,7 @@ function privacyModal() {
 
 // --- Branchements -------------------------------------------------------------------------
 function modals23() {
-  return `${S.openLeague && S.session ? leagueModal(S.openLeague) : ''}${S.openDelete && S.session ? deleteModal() : ''}${S.openPrivacy ? privacyModal() : ''}${S.recovery && S.session ? recoveryModal() : ''}${modals27()}${modals28()}`;
+  return `${S.openLeague && S.session ? leagueModal(S.openLeague) : ''}${S.openDelete && S.session ? deleteModal() : ''}${S.openPrivacy ? privacyModal() : ''}${S.recovery && S.session ? recoveryModal() : ''}${modals27()}${modals28()}${modals29()}`;
 }
 async function onAct23(act, el, v) {
   const id = el.dataset.id ? Number(el.dataset.id) : null;
@@ -9077,7 +9155,7 @@ function bellItems() {
   if (!S.session) return [];
   if (Date.now() - _bellCache.at < 400) return _bellCache.items;
   let derived = [];
-  try { derived = derivedItems(); } catch (e) { derived = []; }
+  try { derived = derivedItems().concat(bellExtra()); } catch (e) { derived = []; }
   // Premier passage sur cet appareil : ce qui existe déjà ne compte pas comme nouveau.
   let seen = bellSeen();
   const ready = S.myHistory !== null && S.duels !== undefined && S.gdefis !== undefined;
@@ -9131,6 +9209,8 @@ async function bellGo(key) {
   if (g.gdefi && gdMine().some(d => d.id === g.gdefi)) { S.openGd = g.gdefi; keepRender(); return; }
   if (g.league && (S.leagues || []).some(l => l.id === g.league)) { S.openLeague = g.league; keepRender(); return; }
   if (g.badge) { S.openBadge = g.badge; keepRender(); return; }
+  if (g.tree) { S.openTree = g.tree; keepRender(); return; }
+  if (g.account) { runAct('tab', { tab: 'account' }); return; }
   if (g.recap) { runAct('recap', { key: g.recap.key, circuit: g.recap.circuit }); return; }
   if (g.admin) { runAct('tab', { tab: 'admin' }); return; }
   if (g.match) { if (S.tab !== 'matches') { S.tab = 'matches'; render(); } runAct('gotomatch', { id: g.match }); return; }
@@ -9219,6 +9299,404 @@ document.addEventListener('keydown', e => {
   if (S.openGd) { S.openGd = null; keepRender(); e.stopImmediatePropagation(); }
 });
 
+/* =============================================================================
+   L'arbre du WTT, les fêtes (champion du mois, vainqueur d'un tournoi) et les
+   accessoires d'événement (script ajout-arbres-evenements.sql pour l'arbre et
+   les nouveaux accessoires ; les fêtes n'ont besoin que de allegement.sql).
+   ========================================================================== */
+PH.tree = '<path d="M160,112h48a16,16,0,0,0,16-16V48a16,16,0,0,0-16-16H160a16,16,0,0,0-16,16V64H128a24,24,0,0,0-24,24v32H72v-8A16,16,0,0,0,56,96H24A16,16,0,0,0,8,112v32a16,16,0,0,0,16,16H56a16,16,0,0,0,16-16v-8h32v32a24,24,0,0,0,24,24h16v16a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V160a16,16,0,0,0-16-16H160a16,16,0,0,0-16,16v16H128a8,8,0,0,1-8-8V88a8,8,0,0,1,8-8h16V96A16,16,0,0,0,160,112ZM56,144H24V112H56v32Zm104,16h48v48H160Zm0-112h48V96H160Z"/>';
+
+// --- 1. L'arbre du WTT --------------------------------------------------------------
+const TREE_TOURS = ['32e de finale', '16e de finale', '8e de finale', 'quart de finale', 'demi-finale', 'finale'];
+const TREE_NB = [32, 16, 8, 4, 2, 1];
+const TREE_TITLE = ['32es de finale', '16es de finale', '8es de finale', 'Quarts de finale', 'Demi-finales', 'Finale'];
+const TREE_SHORT = ['32es', '16es', '8es', 'Quarts', 'Demies', 'Finale'];
+const TREE_PTS = 30;
+const tourOf = round => String(round || '').split(', ')[1] || '';
+const treeKey = (comp, draw) => comp + '|' + draw;
+// Le tableau d'un tournoi : son premier tour complet, s'il est encore ouvert, et ce qui s'est passé depuis.
+function treeInfo(comp, draw) {
+  const ms = (S.matches || []).filter(m => m.circuit === 'WTT' && m.competition === comp && drawOf(m.round) === draw && m.status !== 'cancelled');
+  if (!ms.length) return null;
+  const p0 = TREE_TOURS.findIndex((t, i) => ms.filter(m => tourOf(m.round) === t).length === TREE_NB[i]);
+  if (p0 < 0) return null;
+  const first = ms.filter(m => tourOf(m.round) === TREE_TOURS[p0])
+    .sort((a, b) => String(a.external_id || '').localeCompare(String(b.external_id || '')) || a.id - b.id);
+  const rounds = TREE_TOURS.slice(p0);
+  const players = new Map();
+  for (const m of first) {
+    players.set(m.side_a, { name: m.side_a, seed: m.seed_a, cid: m.competitor_a_id });
+    players.set(m.side_b, { name: m.side_b, seed: m.seed_b, cid: m.competitor_b_id });
+  }
+  // Vainqueurs réels de chaque tour (gagnants, ou présents au tour suivant), et éliminés.
+  const won = rounds.map((t, i) => {
+    const set = new Set();
+    for (const m of ms) {
+      if (tourOf(m.round) === t && m.status === 'finished') set.add(m.score_a > m.score_b ? m.side_a : m.side_b);
+      if (i + 1 < rounds.length && tourOf(m.round) === rounds[i + 1]) { set.add(m.side_a); set.add(m.side_b); }
+    }
+    return set;
+  });
+  const lost = new Set();
+  for (const m of ms) if (m.status === 'finished' && rounds.includes(tourOf(m.round))) lost.add(m.score_a > m.score_b ? m.side_b : m.side_a);
+  const fin = ms.find(m => tourOf(m.round) === 'finale' && m.status === 'finished');
+  return {
+    comp, draw, key: treeKey(comp, draw), p0, rounds, first, players, won, lost,
+    open: first.every(m => m.status === 'scheduled' && new Date(m.starts_at).getTime() > Date.now()),
+    closesAt: Math.min(...first.map(m => new Date(m.starts_at).getTime())),
+    done: !!fin, total: 2 * first.length - 1,
+  };
+}
+async function loadTrees() {
+  if (!S.session) return;
+  const me = S.session.user.id;
+  const [t, p] = await Promise.all([
+    sb.from('tableaux_pronos').select('competition,draw,depart,choix,updated_at').eq('user_id', me),
+    sb.from('tableau_points').select('competition,draw,bons,total,pct,points,final_at').eq('user_id', me),
+  ]);
+  if (t.error) { S.trees = null; return; }
+  S.trees = new Map((t.data || []).map(r => [treeKey(r.competition, r.draw), r]));
+  S.treePts = p.error ? [] : (p.data || []);
+}
+const treePointsMine = () => (S.treePts || []).reduce((s, r) => s + (r.points || 0), 0);
+const TREE_DRAFT = k => 'spin_arbre_' + k;
+// Mes choix : le brouillon en cours, sinon l'arbre enregistré, sinon vide.
+function treePicks(info) {
+  if (S.treeDraft && S.treeDraft[info.key]) return S.treeDraft[info.key];
+  const saved = S.trees && S.trees.get(info.key);
+  const shape = info.rounds.map((_, i) => new Array(info.first.length / 2 ** i).fill(null));
+  if (saved && saved.depart === info.rounds[0] && Array.isArray(saved.choix)) return shape.map((r, i) => r.map((_, j) => (saved.choix[i] || [])[j] ?? null));
+  try { const d = JSON.parse(localStorage.getItem(TREE_DRAFT(info.key))); if (Array.isArray(d) && d.length === shape.length) return shape.map((r, i) => r.map((_, j) => (d[i] || [])[j] ?? null)); } catch (e) { /* pas de brouillon */ }
+  return shape;
+}
+// Les deux joueurs possibles d'une case : ceux du match (1er tour), ou les vainqueurs choisis avant.
+const treeCands = (info, picks, i, j) => (i === 0 ? [info.first[j].side_a, info.first[j].side_b] : [picks[i - 1][2 * j], picks[i - 1][2 * j + 1]]);
+function treeSet(info, i, j, name) {
+  const picks = treePicks(info).map(r => r.slice());
+  picks[i][j] = picks[i][j] === name ? null : name;
+  // Un joueur retiré plus bas disparaît des tours suivants.
+  for (let k = 1; k < picks.length; k++) picks[k] = picks[k].map((p, s) => (p && treeCands(info, picks, k, s).includes(p) ? p : null));
+  (S.treeDraft = S.treeDraft || {})[info.key] = picks;
+  try { localStorage.setItem(TREE_DRAFT(info.key), JSON.stringify(picks)); } catch (e) { /* tant pis */ }
+}
+// « Remplir avec les favoris » : à chaque match, la meilleure tête de série.
+function treeFavorites(info) {
+  const seed = n => { const p = info.players.get(n); return p && p.seed ? p.seed : 999; };
+  const picks = info.rounds.map((_, i) => new Array(info.first.length / 2 ** i).fill(null));
+  for (let i = 0; i < picks.length; i++) picks[i] = picks[i].map((_, j) => { const [a, b] = treeCands(info, picks, i, j); return seed(b) < seed(a) ? b : a; });
+  (S.treeDraft = S.treeDraft || {})[info.key] = picks;
+  try { localStorage.setItem(TREE_DRAFT(info.key), JSON.stringify(picks)); } catch (e) { /* tant pis */ }
+}
+// Où en est chaque choix : 'ok' (passé), 'ko' (éliminé), '' (pas encore joué).
+const treeStatus = (info, i, name) => (!name ? 'ko' : info.won[i].has(name) ? 'ok' : info.lost.has(name) ? 'ko' : '');
+function treeScore(info, picks) {
+  let ok = 0, ko = 0, n = 0;
+  picks.forEach((r, i) => r.forEach(p => { if (p) n++; const s = treeStatus(info, i, p); if (s === 'ok') ok++; else if (s === 'ko' && (p || !info.open)) ko++; }));
+  return { ok, ko, n, rest: info.total - ok - ko };
+}
+const treePtsOf = (bons, total) => Math.round(TREE_PTS * bons / total);
+function treeStrip(comp) {
+  if (!S.trees || !S.session) return '';
+  const items = WIN_DRAWS.map(d => treeInfo(comp, d)).filter(Boolean).map(info => {
+    const saved = S.trees.get(info.key), picks = treePicks(info), sc = treeScore(info, picks), official = (S.treePts || []).find(r => r.competition === comp && r.draw === info.draw);
+    let name, sub, cls = '';
+    if (info.open) {
+      name = saved ? `Ton arbre : ${sc.n === info.total ? 'complet' : `${sc.n} sur ${info.total}`}` : 'Fais ton arbre';
+      sub = saved ? `Modifiable jusqu'à ${fmtClose(info.closesAt)}` : `Jusqu'à ${TREE_PTS} pts, ouvert jusqu'à ${fmtClose(info.closesAt)}`;
+      if (!saved) cls = ' todo';
+    } else if (!saved) return '';
+    else if (info.done) { const pct = official ? official.pct : Math.round(100 * sc.ok / info.total); name = `Ton arbre : ${pct} %`; sub = `+${official ? official.points : treePtsOf(sc.ok, info.total)} pts au classement`; cls = ' won'; }
+    else { name = `Ton arbre : ${sc.ok} bon${sc.ok > 1 ? 's' : ''}`; sub = `${sc.ko} raté${sc.ko > 1 ? 's' : ''}, ${sc.rest} à venir`; }
+    return `<button class="wpick treebtn${cls}" data-act="tree" data-comp="${esc(comp)}" data-draw="${esc(info.draw)}">
+      ${ico('tree')}<span class="wpick-t"><small>Arbre du ${esc(info.draw.toLowerCase())}</small><b>${esc(name)}</b><span>${esc(sub)}</span></span></button>`;
+  }).filter(Boolean);
+  return items.length ? `<div class="wpicks treepicks">${items.join('')}</div>` : '';
+}
+function treeModal(o) {
+  const info = treeInfo(o.comp, o.draw);
+  if (!info) return '';
+  const picks = treePicks(info), sc = treeScore(info, picks), saved = S.trees && S.trees.get(info.key);
+  const official = (S.treePts || []).find(r => r.competition === o.comp && r.draw === o.draw);
+  const dirty = !!(S.treeDraft && S.treeDraft[info.key]) && JSON.stringify(picks) !== JSON.stringify(saved ? saved.choix : null);
+  const player = (n, i, j, cands) => {
+    if (!n) return `<span class="tside empty">${i ? 'Vainqueur à choisir avant' : '?'}</span>`;
+    const p = info.players.get(n) || { name: n }, c = p.cid && S.competitors[p.cid], on = picks[i][j] === n;
+    const st = !info.open && on ? treeStatus(info, i, n) : '';
+    const inner = `${c ? flagHtml(c) : ''}<span class="tname">${esc(n)}</span>${p.seed ? `<small class="tseed">${p.seed}</small>` : ''}`;
+    return info.open
+      ? `<button class="tside${on ? ' on' : ''}" data-act="treepick" data-comp="${esc(o.comp)}" data-draw="${esc(o.draw)}" data-i="${i}" data-j="${j}" data-name="${esc(n)}" aria-pressed="${on}">${inner}</button>`
+      : `<span class="tside${on ? ' on' : ''}${st ? ' ' + st : ''}">${inner}${on ? `<i class="tmark" aria-label="${st === 'ok' ? 'trouvé' : st === 'ko' ? 'raté' : 'ton choix'}"></i>` : ''}</span>`;
+  };
+  const rounds = info.rounds.map((t, i) => {
+    const done = picks[i].filter(Boolean).length;
+    return `<section class="treeround" id="tr-${i}"><h3>${TREE_TITLE[info.p0 + i]} <small>${info.open ? `${done} sur ${picks[i].length}` : ''}</small></h3>
+      <ol class="treelist">${picks[i].map((_, j) => { const cands = treeCands(info, picks, i, j); return `<li class="tslot">${player(cands[0], i, j, cands)}${player(cands[1], i, j, cands)}</li>`; }).join('')}</ol></section>`;
+  }).join('');
+  const jump = `<div class="pillrow treejump">${info.rounds.map((t, i) => `<a class="pillbtn" href="#tr-${i}" data-act="treejump" data-i="${i}">${TREE_SHORT[info.p0 + i]}</a>`).join('')}</div>`;
+  const status = info.open
+    ? `<p>Choisis le vainqueur de chaque match, jusqu'à la finale. À la fin du tournoi : ta part de vainqueurs trouvés, de 0 à ${TREE_PTS} pts.</p><p class="hint">Modifiable jusqu'au premier match, ${esc(fmtClose(info.closesAt))}.</p>`
+    : info.done ? `<p><b>${official ? official.pct : Math.round(100 * sc.ok / info.total)} %</b> de vainqueurs trouvés (${sc.ok} sur ${info.total}) : <b>+${official ? official.points : treePtsOf(sc.ok, info.total)} pts</b>.</p>`
+    : `<p>L'arbre est fermé depuis le premier match. Pour l'instant : <b>${sc.ok}</b> bon${sc.ok > 1 ? 's' : ''}, ${sc.ko} raté${sc.ko > 1 ? 's' : ''}, ${sc.rest} à venir.</p>`;
+  const tools = info.open ? `<div class="treetools"><button class="btn small sec" data-act="treefav" data-comp="${esc(o.comp)}" data-draw="${esc(o.draw)}">Remplir avec les favoris</button>
+      <button class="btn small sec" data-act="treeclear" data-comp="${esc(o.comp)}" data-draw="${esc(o.draw)}">Tout effacer</button></div>` : '';
+  const foot = info.open ? `<div class="treefoot"><span>${sc.n} sur ${info.total} choisis${dirty ? ', pas encore enregistré' : saved ? ', enregistré' : ''}</span>
+      <button class="btn" data-act="treesave" data-comp="${esc(o.comp)}" data-draw="${esc(o.draw)}"${sc.n ? '' : ' disabled'}>Enregistrer mon arbre</button></div>` : '';
+  return `<div class="modalbackdrop" data-act="closetree"><div class="modal treex" role="dialog" aria-modal="true" aria-label="Arbre du ${esc(o.draw.toLowerCase())}" data-act="stop" style="${themeVarsCss(themeKeyFor(info.first[0]))}">
+    <button class="modalclose" data-act="closetree" aria-label="Fermer">${ico('x')}</button>
+    <div class="modalhead"><div class="modalsub">${esc(o.comp)}</div><div class="modalname">Arbre du ${esc(o.draw.toLowerCase())}</div></div>
+    <div class="modalbody"><div class="explain treeexplain">${status}</div>${tools}${info.rounds.length > 2 ? jump : ''}${rounds}</div>${foot}
+  </div></div>`;
+}
+async function saveTree(comp, draw) {
+  const info = treeInfo(comp, draw);
+  if (!info || !info.open) { toast("Trop tard : l'arbre est fermé depuis le premier match.", true); return; }
+  const picks = treePicks(info), n = picks.flat().filter(Boolean).length;
+  const r = await sb.from('tableaux_pronos').upsert({ user_id: S.session.user.id, competition: comp, draw, depart: info.rounds[0], choix: picks }, { onConflict: 'user_id,competition,draw' }).select().single();
+  if (r.error) { toast(friendlyError(r.error), true); return; }
+  S.trees.set(info.key, r.data);
+  if (S.treeDraft) delete S.treeDraft[info.key];
+  try { localStorage.removeItem(TREE_DRAFT(info.key)); } catch (e) { /* ignore */ }
+  playSound('confirm');
+  toast(n === info.total ? 'Arbre enregistré' : `Arbre enregistré : il reste ${info.total - n} choix, chaque case vide compte comme ratée`);
+  keepRender();
+}
+
+// --- 2. Les fêtes ------------------------------------------------------------------
+// Le champion du mois de chacune de mes ligues (les 7 premiers jours du mois),
+// et le vainqueur de la ligue sur un tournoi ou une journée qui vient de finir.
+const FETE_KEY = 'spin_fetes_vues';
+const fetesVues = () => { try { const v = JSON.parse(localStorage.getItem(FETE_KEY)); return new Set(Array.isArray(v) ? v : []); } catch (e) { return new Set(); } };
+const prevMonthKey = () => { const [y, m] = curMonthKey().split('-').map(Number); return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`; };
+function feteCandidates() {
+  if (!S.lite || !S.session || !S.accountBoard || S.myHistory === null || S.leagues === undefined) return null;
+  const out = [], names = pseudoMap(), k = prevMonthKey();
+  if (dayOf(Date.now()) <= 7) {
+    const v = liteGet('mois:' + k, () => liteRows(() => sb.from('points_par_mois')
+      .select('user_id,total_points,exact_scores,good_winners,matches_played,winner_points').eq('month', k).order('user_id')));
+    if (v === undefined) return null; // pas encore arrivé
+    const leagues = S.leagues && S.leagues.length ? S.leagues.slice(0, 4) : [null];
+    for (const l of leagues) {
+      const ids = l ? leagueIds(l.id) : null;
+      const rows = (v || []).filter(r => !ids || ids.has(r.user_id)).map(r => ({ user_id: r.user_id, pseudo: names[r.user_id] || '?', pts: r.total_points, exact: r.exact_scores }))
+        .sort((a, b) => b.pts - a.pts || b.exact - a.exact || a.pseudo.localeCompare(b.pseudo));
+      if (rows.length < 2 || rows[0].pts <= 0) continue;
+      out.push({ id: `mois:${k}:${l ? l.id : 'monde'}`, type: 'mois', k, league: l, top: rows.slice(0, 3), champs: rows.filter(r => r.pts === rows[0].pts && r.exact === rows[0].exact), theme: 'ALL' });
+    }
+  }
+  const since = Date.now() - 3 * 864e5, groups = new Map();
+  for (const h of myJudgedHistory() || []) {
+    const m = h.matches, key = tournamentGroupKey(m), id = m.circuit + '|' + key;
+    const g = groups.get(id) || { circuit: m.circuit, key, last: m.starts_at };
+    if (m.starts_at > g.last) g.last = m.starts_at;
+    groups.set(id, g);
+  }
+  for (const [gid, g] of groups) {
+    if (new Date(g.last).getTime() < since || !isTournamentFinished(g.circuit, g.key)) continue;
+    const d = computeRecapData(g.key, g.circuit);
+    if (!d) return null; // récap pas encore arrivé
+    if (d.rows.length < 2 || d.rows[0].pts <= 0) continue;
+    const lg = curLeague();
+    out.push({ id: `tournoi:${gid}:${lg ? lg.id : 'monde'}`, type: 'tournoi', key: g.key, circuit: g.circuit, league: lg,
+      top: d.podium.map(r => ({ user_id: r.userId, pseudo: r.pseudo, pts: r.pts })), champs: d.rows.filter(r => r.rank === 1).map(r => ({ user_id: r.userId, pseudo: r.pseudo, pts: r.pts })),
+      theme: Object.keys(THEME).find(t => THEME[t] === d.theme) || 'ALL' });
+  }
+  return out;
+}
+let _feteTries = 0;
+function checkFetes() {
+  if (S._fetesDone || !S.session) return;
+  const c = feteCandidates();
+  if (c === null) { if (++_feteTries < 40) setTimeout(checkFetes, 1500); return; }
+  S._fetesDone = true;
+  const seen = fetesVues();
+  S.feteQueue = seen.has('*') ? [] : c.filter(f => !seen.has(f.id));
+  if (S.feteQueue.length) afterSplash(() => setTimeout(tryOpenFete, 1600));
+}
+function tryOpenFete(tries = 0) {
+  if (!S.feteQueue || !S.feteQueue.length || S.openFete) return;
+  if (S.openCeleb || S.openBadge || S.openRecap || S.openCompetitor || S.openPlayer || S.openWin || S.openDuel || S.openDuelNew || S.openLeague || S.openBell || S.openTree || TUTO) {
+    if (tries < 90) setTimeout(() => tryOpenFete(tries + 1), 1000);
+    return;
+  }
+  const f = S.feteQueue.shift();
+  S.openFete = f;
+  try { const s = fetesVues(); s.add(f.id); localStorage.setItem(FETE_KEY, JSON.stringify([...s].slice(-80))); } catch (e) { /* ignore */ }
+  playSound('milestone'); keepRender();
+}
+function closeFete() {
+  S.openFete = null; keepRender();
+  if (S.feteQueue && S.feteQueue.length) setTimeout(tryOpenFete, 400);
+}
+const deMois = k => { const w = monthWord(k); return (/^[aeiou]/i.test(w) ? "d'" : 'de ') + w; };
+function feteModal(f) {
+  const me = S.session.user.id, mine = f.champs.some(r => r.user_id === me), more = (S.feteQueue || []).length;
+  const who = f.champs.map(r => (r.user_id === me ? 'toi' : r.pseudo));
+  const list = who.length > 1 ? who.slice(0, -1).join(', ') + ' et ' + who[who.length - 1] : who[0];
+  const where = f.league ? `dans « ${esc(f.league.name)} »` : 'au classement mondial';
+  const title = f.type === 'mois'
+    ? (mine && f.champs.length === 1 ? `${monthLabel(f.k).replace(/ \d+$/, '')} est à toi !` : `${monthLabel(f.k).replace(/ \d+$/, '')} est à ${esc(list)}`)
+    : (mine && f.champs.length === 1 ? `Tu remportes ${f.circuit === 'PRO_A' ? 'la ' : ''}${esc(f.key)} !` : `${esc(list.charAt(0).toUpperCase() + list.slice(1))} remporte${f.champs.length > 1 ? 'nt' : ''} ${f.circuit === 'PRO_A' ? 'la ' : ''}${esc(f.key)}`);
+  const rest = f.top.filter(r => !f.champs.some(c => c.user_id === r.user_id)).map(r => `${r.user_id === me ? 'toi' : esc(r.pseudo)} (${r.pts})`);
+  const text = `${f.type === 'mois' ? `En tête en ${esc(monthWord(f.k))} ${where}` : `En tête ${where}`}, avec ${f.champs[0].pts} point${f.champs[0].pts > 1 ? 's' : ''}${f.champs.length > 1 ? ' chacun' : ''}${rest.length ? `, devant ${rest.join(' et ')}` : ''}.`;
+  const go = f.type === 'tournoi' ? `<button class="btn small" data-act="feterecap">Voir le récap</button>` : `<button class="btn small" data-act="fetemois">Voir le classement du mois</button>`;
+  return `<div class="modalbackdrop" data-act="closefete"><div class="modal celebx fetex" role="dialog" aria-modal="true" aria-label="${esc(title.replace(/<[^>]+>/g, ''))}" data-act="stop" style="${themeVarsCss(f.theme)}">
+    <button class="modalclose" data-act="closefete" aria-label="Fermer">${ico('x')}</button>
+    <div class="celebstage fetestage"><div class="pod3d" data-kind="fete"></div><div class="celebflat feteflat" aria-hidden="true">${guy('trophee', { uid: f.champs[0].user_id })}</div></div>
+    <div class="modalbody">
+      <p class="fetekicker">${f.type === 'mois' ? `Champion${f.champs.length > 1 ? 's' : ''} ${esc(deMois(f.k))}` : esc(f.circuit === 'WTT' ? 'Fin du tournoi' : 'Fin de la journée')}</p>
+      <h2 class="fetetitle">${title}</h2>
+      <p class="fetetext">${text}</p>
+      <div class="celebbtns">${go}<button class="btn small sec" data-act="closefete">${more ? `Suivant (${more})` : 'Continuer'}</button></div>
+    </div></div></div>`;
+}
+
+// --- 3. Les accessoires d'événement ---------------------------------------------------
+// Gagnés pendant l'événement, gardés pour toujours. La Citrouille d'or (avant :
+// un badge) devient celui d'Halloween.
+const EVENTS = [
+  { id: 'halloween', name: 'Halloween', acc: 'lanterne', when: 'du 15 octobre au 1er novembre', goal: 5, what: 'bons pronos',
+    inWin: d => (d.m === 10 && d.d >= 15) || (d.m === 11 && d.d <= 1) },
+  { id: 'noel', name: 'Noël', acc: 'bonnet', when: 'en décembre', goal: 5, what: 'bons pronos', inWin: d => d.m === 12 },
+  { id: 'nouvelan', name: 'Nouvel an', acc: 'chapeaufete', when: 'du 1er au 7 janvier', goal: 1, what: 'prono posé', posed: true, inWin: d => d.m === 1 && d.d <= 7 },
+  { id: 'wttfinals', name: 'WTT Finals', acc: 'medaille', when: 'en fin de saison', goal: 3, what: 'bons pronos sur les WTT Finals', finals: true },
+];
+const parisDate = t => { const s = parisYMD(t); return { y: +s.slice(0, 4), m: +s.slice(5, 7), d: +s.slice(8, 10) }; };
+const BADGE_GONE = BADGE_DEFS.findIndex(b => b.id === 'citrouille');
+if (BADGE_GONE >= 0) BADGE_DEFS.splice(BADGE_GONE, 1);
+(function () {
+  const a = ACCESSORIES.find(x => x.id === 'lanterne');
+  if (a) { a.name = "Citrouille d'or"; delete a.badge; a.event = 'halloween'; }
+  ACCESSORIES.push(
+    { id: 'bonnet', name: 'Bonnet de Noël', slot: 'tete', event: 'noel' },
+    { id: 'chapeaufete', name: 'Chapeau de fête', slot: 'tete', event: 'nouvelan' },
+    { id: 'medaille', name: 'Médaille des Finals', slot: 'cou', event: 'wttfinals' },
+  );
+})();
+// Mes progrès pour un événement : sur toute mon histoire (chaque année compte).
+function eventProgress(ev) {
+  const hist = myJudgedHistory() || [];
+  if (ev.posed) {
+    const all = (S.myHistory || []).concat(Object.values(S.myPreds || {}));
+    return all.some(p => p.created_at && ev.inWin(parisDate(p.created_at))) ? 1 : 0;
+  }
+  const best = {};
+  for (const h of hist) {
+    if (!h.pt || h.pt.base < 1) continue;
+    const m = h.matches, ok = ev.finals ? m.tier === 'WTT Finals' : ev.inWin(parisDate(m.starts_at));
+    if (!ok) continue;
+    const y = parisDate(m.starts_at).y; // chaque édition se compte à part
+    best[y] = (best[y] || 0) + 1;
+  }
+  return Math.max(0, ...Object.values(best));
+}
+function eventActive(ev) {
+  if (ev.finals) return (S.matches || []).some(m => m.tier === 'WTT Finals' && Math.abs(new Date(m.starts_at).getTime() - Date.now()) < 2 * 864e5);
+  return ev.inWin(parisDate(Date.now()));
+}
+function accEarned(a) {
+  if (a.badge) return earnedBadges().has(a.badge);
+  const ev = EVENTS.find(e => e.id === a.event);
+  if (!ev) return false;
+  if (myOutfit().includes(a.id)) return true; // déjà porté : gardé
+  if (a.id === 'lanterne') { try { if ((JSON.parse(localStorage.getItem('spin_badges_seen') || '[]') || []).includes('citrouille')) return true; } catch (e) { /* ignore */ } }
+  return eventProgress(ev) >= ev.goal;
+}
+const ACC_ICONS = {
+  bonnet: '<svg viewBox="0 0 60 60" aria-hidden="true"><path d="M14 40Q20 10 46 12 41 20 48 40Z" fill="#B8222E"/><rect x="11" y="37" width="40" height="9" rx="4.5" fill="#F6F5F0" stroke="rgba(18,26,38,.18)"/><circle cx="47" cy="12" r="5" fill="#F6F5F0" stroke="rgba(18,26,38,.18)"/></svg>',
+  chapeaufete: '<svg viewBox="0 0 60 60" aria-hidden="true"><path d="M17 46 30 8 43 46Z" fill="#2B6CB0"/><path d="M21.5 33h17M25.5 22h9" stroke="#F2C14E" stroke-width="3.2" stroke-linecap="round"/><circle cx="30" cy="8" r="4.5" fill="#F2C14E"/><path d="M15 46h30" stroke="#1F4F85" stroke-width="3" stroke-linecap="round"/></svg>',
+  medaille: '<svg viewBox="0 0 60 60" aria-hidden="true"><path d="M20 6l10 20M40 6 30 26" stroke="#1B46B4" stroke-width="6" stroke-linecap="round"/><circle cx="30" cy="38" r="13" fill="#D9A93A" stroke="#B8860B" stroke-width="2"/><path d="M30 31l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7Z" fill="#F6E3A6"/></svg>',
+};
+const accIcon = a => (a.badge ? badgeIcon(a.badge, '') : a.id === 'lanterne' ? badgeIcon('citrouille', '') : ACC_ICONS[a.id] || '');
+function accessoriesHtml() {
+  const on = new Set(myOutfit()), badgeAcc = ACCESSORIES.filter(a => a.badge), evAcc = ACCESSORIES.filter(a => a.event);
+  const n = ACCESSORIES.filter(accEarned).length;
+  const cell = a => {
+    const ev = a.event && EVENTS.find(e => e.id === a.event), locked = !accEarned(a), worn = on.has(a.id), def = a.badge && BADGE_DEFS.find(b => b.id === a.badge);
+    const how = ev ? (eventActive(ev) ? `${ev.name} : ${Math.min(eventProgress(ev), ev.goal)} sur ${ev.goal}` : `${ev.name}, ${ev.when}`) : `Badge « ${esc(def ? def.name : a.badge)} »`;
+    return `<button class="acc${worn ? ' on' : ''}${locked ? ' locked' : ''}${ev ? ' evt' : ''}" data-act="${locked ? (ev ? 'evtinfo' : 'badge') : 'acc'}" data-acc="${a.id}" data-badge="${a.badge || ''}" ${locked ? '' : `aria-pressed="${worn}"`}>
+      <span class="accimg">${accIcon(a)}${locked ? `<i class="acclock">${BADGE_LOCK_SVG}</i>` : ''}</span>
+      <span class="acct"><b>${esc(a.name)}</b><small>${locked ? how : worn ? 'Porté' : SLOT_WORD[a.slot]}</small></span></button>`;
+  };
+  return `<div class="accwrap">
+    <h4 class="subh">Accessoires <small>${n} sur ${ACCESSORIES.length}</small></h4>
+    <p class="hint explain">1 badge gagné = 1 accessoire. Un seul par endroit : tête, main, pieds…</p>
+    <div class="accgrid">${badgeAcc.map(cell).join('')}</div>
+    <h4 class="subh">Accessoires d'événement</h4>
+    <p class="hint explain">À gagner pendant l'événement, à garder pour toujours.</p>
+    <div class="accgrid">${evAcc.map(cell).join('')}</div>
+  </div>`;
+}
+async function toggleAccessory(id) {
+  const a = ACCESSORIES.find(x => x.id === id);
+  if (!a || !accEarned(a)) return;
+  const uid = S.session.user.id, prev = myOutfit();
+  const next = prev.includes(id) ? prev.filter(x => x !== id) : prev.filter(x => (ACCESSORIES.find(y => y.id === x) || {}).slot !== a.slot).concat([id]);
+  const preview = list => { const p = SCENE3D.podium; if (p && p.api && p.cur && p.cur.startsWith('me:')) p.api.podium.setOutfit(0, list); };
+  (S.outfits = S.outfits || {})[uid] = next; preview(next); playSound('tick'); keepRender();
+  const r = await sb.from('profiles').update({ outfit: next.length ? next : null }).eq('id', uid);
+  if (r.error) { S.outfits[uid] = prev; preview(prev); toast(/outfit/i.test(r.error.message || '') && a.event ? "Cet accessoire n'est pas encore activé : il faut lancer le script ajout-arbres-evenements.sql dans Supabase." : friendlyError(r.error), true); keepRender(); }
+}
+// Un accessoire d'événement tout juste gagné : un petit mot (une fois par appareil).
+function checkEventAcc() {
+  if (S.myHistory === null) return;
+  let seen = null;
+  try { seen = JSON.parse(localStorage.getItem('spin_evt_vus')); } catch (e) { /* ignore */ }
+  const got = ACCESSORIES.filter(a => a.event && accEarned(a)).map(a => a.id);
+  try { localStorage.setItem('spin_evt_vus', JSON.stringify(got)); } catch (e) { /* ignore */ }
+  if (!Array.isArray(seen)) return; // premier passage : rien à fêter
+  got.filter(id => !seen.includes(id)).forEach((id, k) => {
+    const a = ACCESSORIES.find(x => x.id === id);
+    afterSplash(() => setTimeout(() => toast(`Accessoire d'événement gagné : ${a.name}. Il t'attend dans Mon compte.`), 1500 + k * 1800));
+    try { const at = JSON.parse(localStorage.getItem('spin_evt_at') || '{}') || {}; at[id] = Date.now(); localStorage.setItem('spin_evt_at', JSON.stringify(at)); } catch (e) { /* ignore */ }
+  });
+}
+// La cloche : l'arbre terminé, l'accessoire gagné.
+function bellExtra() {
+  const out = [];
+  for (const r of S.treePts || []) {
+    if (Date.now() - new Date(r.final_at).getTime() > 14 * 864e5) continue;
+    out.push({ key: 'a' + r.competition + '|' + r.draw, t: r.final_at, kind: 'badge', go: { tree: { comp: r.competition, draw: r.draw } },
+      html: `Ton arbre de ${esc(r.competition)} (${esc(r.draw.toLowerCase())}) : ${r.pct} %, <b>+${r.points} pts</b>` });
+  }
+  let at = {};
+  try { at = JSON.parse(localStorage.getItem('spin_evt_at') || '{}') || {}; } catch (e) { /* ignore */ }
+  for (const [id, t] of Object.entries(at)) {
+    const a = ACCESSORIES.find(x => x.id === id);
+    if (a && Date.now() - t < 30 * 864e5) out.push({ key: 'e' + id, t: new Date(t).toISOString(), kind: 'badge', go: { account: 1 }, html: `Nouvel accessoire : <b>${esc(a.name)}</b>` });
+  }
+  return out;
+}
+
+// --- Branchements -------------------------------------------------------------------------
+function modals29() {
+  if (!S.session) return '';
+  return `${S.openTree ? treeModal(S.openTree) : ''}${S.openFete ? feteModal(S.openFete) : ''}`;
+}
+async function onAct29(act, el) {
+  const comp = el.dataset.comp, draw = el.dataset.draw;
+  if (act === 'tree') { S.openTree = { comp, draw }; keepRender(); return true; }
+  if (act === 'closetree') { S.openTree = null; keepRender(); return true; }
+  if (act === 'treepick') { const info = treeInfo(comp, draw); if (info && info.open) { treeSet(info, Number(el.dataset.i), Number(el.dataset.j), el.dataset.name); playSound('tick'); keepRender(); } return true; }
+  if (act === 'treefav') { const info = treeInfo(comp, draw); if (info && info.open) { treeFavorites(info); keepRender(); toast('Arbre rempli avec les favoris : à toi de changer ce que tu veux'); } return true; }
+  if (act === 'treeclear') { const info = treeInfo(comp, draw); if (info && info.open) { (S.treeDraft = S.treeDraft || {})[info.key] = info.rounds.map((_, i) => new Array(info.first.length / 2 ** i).fill(null)); keepRender(); } return true; }
+  if (act === 'treesave') { el.disabled = true; await saveTree(comp, draw); return true; }
+  if (act === 'treejump') { const s = document.getElementById('tr-' + el.dataset.i); if (s) s.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' }); return true; }
+  if (act === 'closefete') { closeFete(); return true; }
+  if (act === 'feterecap') { const f = S.openFete; S.openFete = null; S.feteQueue = []; runAct('recap', { key: f.key, circuit: f.circuit }); return true; }
+  if (act === 'fetemois') {
+    const f = S.openFete; S.openFete = null; S.feteQueue = [];
+    if (f.league) { S.league = f.league.id; lsSet(LG_KEY, String(f.league.id)); applyLeague(); }
+    S.boardScope = 'MONTH'; S.boardMonth = f.k; runAct('tab', { tab: 'board' }); return true;
+  }
+  if (act === 'evtinfo') { const a = ACCESSORIES.find(x => x.id === el.dataset.acc), ev = a && EVENTS.find(e => e.id === a.event); if (ev) toast(`${a.name} : ${ev.goal} ${ev.what} ${ev.when}.`); return true; }
+  return false;
+}
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (S.openTree) { S.openTree = null; keepRender(); e.stopImmediatePropagation(); return; }
+  if (S.openFete) { closeFete(); e.stopImmediatePropagation(); }
+});
+
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
   // entièrement terminé (voir isTournamentFinished) : pas de bilan sur
@@ -9271,7 +9749,7 @@ function accountView() {
   const n = finished.length;
   const myWins = (S.winnerPoints || []).filter(w => w.user_id === S.session.user.id);
   const winPts = myWins.reduce((s, w) => s + w.points, 0);
-  const total = finished.reduce((s, h) => s + h.pt.total, 0) + winPts;
+  const total = finished.reduce((s, h) => s + h.pt.total, 0) + winPts + treePointsMine();
   const exactN = finished.filter(h => h.pt.exact).length;
   const goodN = finished.filter(h => h.pt.total > 0).length;
   const pctExact = Math.round(exactN / n * 100);
@@ -10463,6 +10941,7 @@ function esc0(s) { return String(s ?? ''); }
 $app.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (await onAct29(act, el)) return;
   if (await onAct28(act, el)) return;
   if (await onAct27(act, el)) return;
   if (await onAct24(act)) return;
@@ -10509,8 +10988,8 @@ $app.addEventListener('click', async e => {
     S.tab = el.dataset.tab;
     S._tabAt = Date.now();
     if (S.tab === 'matches') { S._freshMatches = true; loadDuels().then(keepRender); }
-    if (S.tab === 'board') { S.board = null; navigate(render); await Promise.all([loadLeagues().then(loadBoard), loadWinners(), loadDuels()]); }
-    if (S.tab === 'account') { S.myHistory = null; navigate(render); await Promise.all([loadAccount(), loadWinners(), loadDuels()]); }
+    if (S.tab === 'board') { S.board = null; navigate(render); await Promise.all([loadLeagues().then(loadBoard), loadWinners(), loadDuels(), loadTrees().catch(() => {})]); }
+    if (S.tab === 'account') { S.myHistory = null; navigate(render); await Promise.all([loadAccount(), loadWinners(), loadDuels(), loadTrees().catch(() => {})]); }
     navigate(render); window.scrollTo(0, 0);
   }
   else if (act === 'view') { S.view = v; S._freshMatches = true; S.proJournee = null; navigate(render); }
