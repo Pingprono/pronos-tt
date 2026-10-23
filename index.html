@@ -2990,11 +2990,15 @@ const avatarUrl = uid => S.avatars && S.avatars[uid] ? `${SUPABASE_URL}/storage/
 const avatarImg = uid => avatarUrl(uid) ? `<img src="${avatarUrl(uid)}" alt="" loading="lazy" onerror="this.remove()">` : '';
 const avatarHtml = (uid, pseudo) => `<span class="av" aria-hidden="true">${esc((pseudo || '?').slice(0, 1).toUpperCase())}${avatarImg(uid)}</span>`;
 async function loadAvatars() {
-  const r = await sb.from('profiles').select('*');
+  // Seulement les profils qui ont une photo, un maillot ou des accessoires ;
+  // s'il manque une de ces colonnes dans la base, on lit tout, comme avant.
+  let r = await fetchAllRows(() => sb.from('profiles').select('id,avatar_v,shirt_color,outfit').or('avatar_v.not.is.null,shirt_color.not.is.null,outfit.not.is.null').order('id'));
+  const slim = !r.error;
+  if (!slim) r = await sb.from('profiles').select('*');
   // Colonnes absentes (scripts SQL pas encore lancés) : ni photo ni maillot, rien d'autre ne change.
   S.avatars = {}; S.shirts = {}; S.outfits = {};
   // Accessoires : seulement si la colonne existe (script ajout-defis-accessoires.sql lancé).
-  S.outfitOk = !r.error && !!(r.data || []).length && 'outfit' in r.data[0];
+  S.outfitOk = slim || (!r.error && !!(r.data || []).length && 'outfit' in r.data[0]);
   if (!r.error) (r.data || []).forEach(p => { if (p.avatar_v) S.avatars[p.id] = p.avatar_v; if (p.shirt_color) S.shirts[p.id] = p.shirt_color; if (p.outfit && p.outfit.length) S.outfits[p.id] = p.outfit; });
 }
 // La photo choisie est recadrée en carré de 256 px et réenregistrée en JPEG
@@ -3026,12 +3030,13 @@ async function removeAvatar() {
   toast('Photo retirée'); keepRender();
 }
 async function loadBoard() {
-  // « Ce mois » se calcule dans l'appli à partir des pronos jugés de tout le monde.
-  if (S.boardScope === 'MONTH' && !S.allJudgedPreds) await loadAccount();
-  const q = S.boardScope === 'ALL' || S.boardScope === 'MONTH'
+  // « Ce mois » : calculé par la base (allegement.sql), sinon ici à partir des pronos jugés de tout le monde.
+  if (S.boardScope === 'MONTH' && !(await probeLite()) && !S.allJudgedPreds) await loadAccount();
+  const sc = S.boardScope;
+  const q = () => (sc === 'ALL' || sc === 'MONTH'
     ? sb.from('leaderboard').select('*')
-    : sb.from('leaderboard_by_circuit').select('*').eq('circuit', S.boardScope);
-  const r = await q.order('total_points', { ascending: false }).order('exact_scores', { ascending: false });
+    : sb.from('leaderboard_by_circuit').select('*').eq('circuit', sc));
+  const r = await fetchAllRows(() => q().order('total_points', { ascending: false }).order('exact_scores', { ascending: false }).order('user_id'));
   if (r.error) { toast(friendlyError(r.error), true); S.board = []; return; }
   S.boardAll = r.data || []; S.board = inLeague(S.boardAll);
 }
@@ -3049,18 +3054,19 @@ async function loadAccount() {
     // "voir pronostics" autorise déjà la lecture des pronostics d'autrui une
     // fois le match terminé, et leaderboard_by_circuit est déjà une vue
     // publique existante (utilisée par l'onglet Classements).
+    const lite = await probeLite();
     const [h, b, cb, ap] = await Promise.all([
       fetchAllRows(() => sb.from('predictions')
         .select('pred_a,pred_b,match_id,created_at,balles_staked,matches(circuit,status,score_a,score_b,seed_a,seed_b,starts_at,competition,round,side_a,side_b,wins_needed)')
         .eq('user_id', uid).order('id')),
-      sb.from('leaderboard').select('*').order('total_points', { ascending: false }).order('exact_scores', { ascending: false }),
-      sb.from('leaderboard_by_circuit').select('*'),
+      fetchAllRows(() => sb.from('leaderboard').select('*').order('total_points', { ascending: false }).order('exact_scores', { ascending: false }).order('user_id')),
+      fetchAllRows(() => sb.from('leaderboard_by_circuit').select('*').order('user_id').order('circuit')),
       // competition/round/tier ajoutés à ce select existant (et uniquement
       // à celui-ci) pour pouvoir regrouper ces pronostics de tout le monde
       // par tournoi WTT / journée Pro A dans le bilan animé — sans requête
       // supplémentaire, juste trois colonnes de plus sur une jointure déjà
       // là pour les badges.
-      fetchAllRows(() => sb.from('predictions')
+      lite ? liteAccount() : fetchAllRows(() => sb.from('predictions')
         .select('user_id,match_id,pred_a,pred_b,balles_staked,matches(circuit,status,score_a,score_b,seed_a,seed_b,starts_at,competition,round,tier)')
         .order('id')),
     ]);
@@ -3071,7 +3077,7 @@ async function loadAccount() {
     S.circuitBoard = cb.error ? [] : (cb.data || []);
     // Seuls les pronostics (de tout le monde) déjà jugés arrivent ici de
     // toute façon via la policy RLS ; le filtre n'est qu'une double sécurité.
-    S.allJudgedPreds = (ap.error ? [] : (ap.data || [])).filter(r => r.matches && r.matches.status === 'finished');
+    S.allJudgedPreds = lite ? null : (ap.error ? [] : (ap.data || [])).filter(r => r.matches && r.matches.status === 'finished');
     checkStreakMilestone();
     // "Trône de courte durée" (voir computeBadges) : le classement général
     // est calculé en direct, jamais stocké dans le temps — on se contente
@@ -3089,7 +3095,7 @@ async function loadAccount() {
     S.myHistory = S.myHistory || [];
     S.accountBoard = S.accountBoard || [];
     S.circuitBoard = S.circuitBoard || [];
-    S.allJudgedPreds = S.allJudgedPreds || [];
+    S.allJudgedPreds = S.lite ? null : S.allJudgedPreds || [];
   }
 }
 
@@ -3097,7 +3103,7 @@ async function loadAccount() {
 async function handleSession(session) {
   if (!session) {
     S.session = null; S.pseudo = ''; S.isAdmin = false; S.matches = []; S.myPreds = {}; S.board = null;
-    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive();
+    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive(); LITE.clear(); S.duelPts = null; S.rival = null;
     render(); return;
   }
   if (S.session && S.session.user.id === session.user.id) { S.session = session; return; }
@@ -3578,7 +3584,7 @@ function markRecapSeen(circuit, key) {
 }
 function pendingRecap() {
   const finished = myJudgedHistory();
-  if (!finished || !finished.length || !S.allJudgedPreds || !S.accountBoard) return null;
+  if (!finished || !finished.length || (!S.allJudgedPreds && !S.lite) || !S.accountBoard) return null;
   const seen = new Set(recapSeenList());
   const groups = new Map();
   for (const h of finished) {
@@ -3783,7 +3789,7 @@ function matchRow(m, fresh, i, streakInfo) {
     }
     let friends = '';
     if (S.openFriends[m.id]) {
-      const rows = (S.friends[m.id] || []).filter(r => r.user_id === S.session.user.id || isFriend(r.user_id)).map(r => ({ ...r, pt: points(m, r, r.user_id === S.session.user.id ? (streakInfo.before.get(m.id) || 0) : streakBeforeFor(r.user_id, m.id)) }))
+      const rows = (S.friends[m.id] || []).filter(r => r.user_id === S.session.user.id || isFriend(r.user_id)).map(r => ({ ...r, pt: r.points_srv != null ? r.points_srv : points(m, r, r.user_id === S.session.user.id ? (streakInfo.before.get(m.id) || 0) : streakBeforeFor(r.user_id, m.id)) }))
         .sort((x, y) => (y.pt ?? -1) - (x.pt ?? -1));
       friends = rows.length
         ? `<ul class="friends">${rows.map(r => `<li><span>${esc(r.profiles && r.profiles.pseudo)}${r.user_id === S.session.user.id ? ' (toi)' : ''}</span><span>${r.pred_a}–${r.pred_b}${r.pt !== null ? ` : ${r.pt} pt${r.pt > 1 ? 's' : ''}` : ''}</span></li>`).join('')}</ul>`
@@ -3868,12 +3874,6 @@ async function setBalles(id, newVal) {
   playSound('tick');
   toast(v > 0 ? `${v} balle${v > 1 ? 's' : ''} misée${v > 1 ? 's' : ''} sur ce match.` : 'Mise de balles retirée.');
   keepRender();
-}
-async function toggleFriends(id) {
-  if (S.openFriends[id]) { S.openFriends[id] = false; keepRender(); return; }
-  const { data, error } = await sb.from('predictions').select('user_id,pred_a,pred_b,balles_staked,profiles(pseudo)').eq('match_id', id);
-  if (error) { toast(friendlyError(error), true); return; }
-  S.friends[id] = data || []; S.openFriends[id] = true; keepRender();
 }
 
 /* --- Classement des amis : vraie table de standings, podium en évidence. --- */
@@ -4144,6 +4144,7 @@ const BADGE_DEFS = [
     id: 'rival', name: 'Le Rival', colorA: '#F2C6C6', colorB: '#8E1F2B',
     desc: 'Devant un ami sur 10 matchs en commun ou plus.',
     test: ctx => {
+      if (S.lite) return S.rival === true;
       const all = allUsersPointsByMatch();
       const mine = all[ctx.uid];
       if (!mine || !mine.size) return false;
@@ -6680,9 +6681,12 @@ const drawOf = round => String(round || '').split(', ')[0];
 const winnerPtsForSeed = seed => seed >= 1 && seed <= 2 ? 5 : seed >= 3 && seed <= 8 ? 10 : 15;
 async function loadWinners() {
   try {
+    // Allégé : mes choix et ceux de mes amis sur les tournois en cours, et mes points seulement.
+    const lite = await probeLite(), me = S.session.user.id;
     const [p, w] = await Promise.all([
-      fetchAllRows(() => sb.from('winner_picks').select('user_id,competition,draw,pick').order('id')),
-      fetchAllRows(() => sb.from('winner_pick_points').select('user_id,competition,draw,pick,winner,points,final_at').order('final_at').order('user_id')),
+      lite ? fetchAllRows(() => sb.rpc('choix_des_amis', { p_comps: wttComps() }).order('id'))
+        : fetchAllRows(() => sb.from('winner_picks').select('user_id,competition,draw,pick').order('id')),
+      fetchAllRows(() => { const q = sb.from('winner_pick_points').select('user_id,competition,draw,pick,winner,points,final_at'); return (lite ? q.eq('user_id', me) : q).order('final_at').order('user_id'); }),
     ]);
     // Script SQL pas encore lancé : la fonction reste cachée, rien d'autre ne change.
     S.winnerPicks = p.error ? null : (p.data || []);
@@ -6758,7 +6762,7 @@ function winnerModal(o) {
   const uid = S.session.user.id, mine = pickOf(uid, o.comp, o.draw), fem = o.draw === 'Simple dames';
   const m0 = S.matches.find(m => m.circuit === 'WTT' && m.competition === o.comp);
   const pseudoOf = pseudoMap(), byPick = {};
-  for (const w of S.winnerPicks) if (w.competition === o.comp && w.draw === o.draw) (byPick[w.pick] || (byPick[w.pick] = [])).push(w.user_id === uid ? 'toi' : (pseudoOf[w.user_id] || '?'));
+  for (const w of S.winnerPicks) if (w.competition === o.comp && w.draw === o.draw && (w.user_id === uid || isFriend(w.user_id))) (byPick[w.pick] || (byPick[w.pick] = [])).push(w.user_id === uid ? 'toi' : (pseudoOf[w.user_id] || '?'));
   const row = p => {
     const on = !!mine && mine.pick === p.name, c = p.cid && S.competitors[p.cid], who = byPick[p.name];
     const status = info.final && info.final.winner === p.name ? (fem ? 'Gagnante' : 'Gagnant') : p.out ? (fem ? 'Éliminée' : 'Éliminé') : '';
@@ -6832,7 +6836,7 @@ const daysIn = k => { const [y, m] = k.split('-').map(Number); return new Date(D
 const monthWord = k => { const [y, m] = k.split('-').map(Number); return new Date(Date.UTC(y, m - 1, 15)).toLocaleDateString('fr-FR', { month: 'long', timeZone: 'UTC' }); };
 const monthLabel = k => { const w = monthWord(k); return w.charAt(0).toUpperCase() + w.slice(1) + ' ' + k.slice(0, 4); };
 const deMonth = k => { const w = monthWord(k) + ' ' + k.slice(0, 4); return (/^[aeiou]/i.test(w) ? "d'" : 'de ') + w; };
-function monthBoard(k) {
+function monthBoardOld(k) {
   const by = scoredByUser();
   if (!by) return null;
   const pseudoOf = pseudoMap(), rows = {};
@@ -6851,7 +6855,7 @@ function monthBoard(k) {
   return inLeague(Object.values(rows)).sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || a.pseudo.localeCompare(b.pseudo));
 }
 const boardRows = () => S.boardScope === 'MONTH' ? monthBoard(S.boardMonth || curMonthKey()) : S.board;
-function monthsAvailable() {
+function monthsAvailableOld() {
   const set = new Set([curMonthKey()]), by = scoredByUser() || {};
   for (const uid in by) for (const h of by[uid]) set.add(monthKeyOf(h.matches.starts_at));
   for (const w of S.winnerPoints || []) set.add(monthKeyOf(w.final_at));
@@ -6859,7 +6863,7 @@ function monthsAvailable() {
 }
 // Les champions des mois terminés (plusieurs en cas d'égalité parfaite).
 let _champCache = { src: null, w: null, cur: null, lg: null, list: [] };
-function monthChampions() {
+function monthChampionsOld() {
   const cur = curMonthKey();
   if (_champCache.src === S.allJudgedPreds && _champCache.w === S.winnerPoints && _champCache.cur === cur && _champCache.lg === S.league) return _champCache.list;
   const list = [];
@@ -6875,15 +6879,15 @@ function monthChampions() {
 // La course du mois : les points cumulés jour après jour, toi en couleur.
 function raceChart(rows, k) {
   if (rows.length < 2) return '';
-  const by = scoredByUser() || {}, uid = S.session.user.id;
+  const uid = S.session.user.id;
   const cur = k === curMonthKey(), D = cur ? dayOf(Date.now()) : daysIn(k);
   if (D < 2) return '';
   const shown = rows.slice(0, 12), mine = rows.find(r => r.user_id === uid);
   if (mine && !shown.includes(mine)) shown.push(mine);
+  const dailyOf = raceDailyFn(k, D, shown.map(r => r.user_id));
+  if (!dailyOf) return '';
   const lines = shown.map(r => {
-    const daily = new Array(D + 1).fill(0);
-    for (const h of by[r.user_id] || []) if (monthKeyOf(h.matches.starts_at) === k) { const d = dayOf(h.matches.starts_at); if (d <= D) daily[d] += h.pt.total; }
-    for (const w of S.winnerPoints || []) if (w.user_id === r.user_id && w.points && monthKeyOf(w.final_at) === k) { const d = dayOf(w.final_at); if (d <= D) daily[d] += w.points; }
+    const daily = dailyOf(r.user_id);
     let c = 0;
     return { r, cum: daily.map(v => (c += v)) };
   });
@@ -7080,9 +7084,8 @@ function winnerHistoryPanel() {
 function faceToFace(uid) {
   const me = S.session.user.id;
   if (uid === me) return '';
-  const by = scoredByUser();
-  if (!by || !(by[me] || []).length || !(by[uid] || []).length) return '';
-  const A = by[me], B = by[uid];
+  const A = histOf(me), B = histOf(uid);
+  if (!A || !B || !A.length || !B.length) return '';
   const st = l => ({ n: l.length, good: l.filter(h => h.pt.base > 0).length, exact: l.filter(h => h.pt.exact).length, best: l.reduce((m, h) => Math.max(m, h.streakAfter), 0) });
   const a = st(A), b = st(B), ga = generalRank(me), gb = generalRank(uid);
   const pseudo = gb ? gb.row.pseudo : '?';
@@ -7116,10 +7119,11 @@ function faceToFace(uid) {
 // change au classement. Les pronos de l'autre restent cachés jusqu'au match.
 async function loadDuels() {
   try {
-    const r = await fetchAllRows(() => sb.from('duels').select('*').order('id'));
+    const me = S.session.user.id; // seulement mes défis
+    const r = await fetchAllRows(() => sb.from('duels').select('*').or(`challenger.eq.${me},opponent.eq.${me}`).order('id'));
     S.duels = r.error ? null : (r.data || []); // table absente (script SQL pas lancé) : les défis restent cachés
   } catch (e) { S.duels = null; }
-  if (S.duels) { await loadEmotes(); checkNewEmotes(); notifyAccepted(); }
+  if (S.duels) { await Promise.all([loadEmotes(), loadDuelPoints().catch(() => {})]); checkNewEmotes(); notifyAccepted(); }
 }
 // Un défi compte une fois accepté (sans la colonne accepted_at, script pas encore lancé : comme avant).
 const duelAccepted = d => !('accepted_at' in d) || !!d.accepted_at;
@@ -7140,8 +7144,7 @@ const matchOf = id => S.matches.find(x => x.id === id) || ((S.myHistory || []).f
 // Où en est un de mes défis : à venir, en cours, gagné, perdu, égalité, ou annulé.
 function duelInfo(d) {
   const me = S.session.user.id, other = duelOther(d, me), m = matchOf(d.match_id);
-  const by = scoredByUser() || {};
-  const hMe = (by[me] || []).find(h => h.match_id === d.match_id), hOt = (by[other] || []).find(h => h.match_id === d.match_id);
+  const hMe = judgedOf(me, d.match_id), hOt = judgedOf(other, d.match_id);
   const pseudo = pseudoMap()[other] || '?';
   const fmt = p => p ? `${p.pred_a}–${p.pred_b}` : null;
   const base = { d, m, other, pseudo };
@@ -7268,7 +7271,7 @@ function duelModal(id) {
   // Match commencé : on va chercher les pronos (visibles de tous à partir de là).
   if (m && i.state === 'live' && !S.friends[d.match_id] && !S._duelFetch) {
     S._duelFetch = true;
-    sb.from('predictions').select('user_id,pred_a,pred_b,balles_staked,profiles(pseudo)').eq('match_id', d.match_id)
+    sb.from('predictions').select('user_id,pred_a,pred_b,balles_staked,profiles(pseudo)').eq('match_id', d.match_id).in('user_id', [me, i.other])
       .then(r => { S._duelFetch = false; if (!r.error) { S.friends[d.match_id] = r.data || []; keepRender(); } });
   }
   const side = (who, pseudo, pred, pts, win) => `<div class="duelside${win ? ' win' : ''}">
@@ -8221,6 +8224,180 @@ document.addEventListener('visibilitychange', () => {
   loadDuels().then(() => { liveRender(); startLive(); });
 });
 
+/* =============================================================================
+   Allègement. Le classement du mois, les champions, la course du mois, les
+   récaps de tournoi et le badge « Le Rival » sont calculés par Supabase
+   (script allegement.sql) : le téléphone reçoit les résultats, plus les pronos
+   de tout le monde. Les défis, la fiche d'un ami et « les pronos des amis » ne
+   chargent que ce qu'ils montrent. Sans le script, l'ancien calcul reprend.
+   ========================================================================== */
+
+// S.lite : true = la base calcule ; false = script pas lancé ; undefined = pas encore su.
+let LITE_PROBE = null;
+const missingInDb = e => !!e && (['PGRST205', 'PGRST202', '42P01', '42883'].includes(e.code) || /schema cache|does not exist/i.test(e.message || ''));
+function probeLite() {
+  if (S.lite !== undefined) return Promise.resolve(S.lite);
+  if (!LITE_PROBE) LITE_PROBE = sb.from('mois_joues').select('month').then(r => {
+    S.lite = !missingInDb(r.error);
+    if (!r.error) S.liteMonths = (r.data || []).map(x => x.month);
+    return S.lite;
+  }, () => S.lite).finally(() => { LITE_PROBE = null; });
+  return LITE_PROBE;
+}
+// Ce que « Mon compte » rafraîchit : les mois joués, et le badge Le Rival
+// (un calcul plus lourd pour la base : au plus toutes les 10 minutes).
+async function liteAccount() {
+  const rivalDue = S.rival == null || Date.now() - (S._rivalAt || 0) > 10 * 60e3;
+  const [m, rv] = await Promise.all([sb.from('mois_joues').select('month'), rivalDue ? sb.rpc('rival_battu') : null]);
+  if (!m.error) S.liteMonths = (m.data || []).map(x => x.month);
+  if (rv) { S.rival = rv.error ? null : rv.data === true; S._rivalAt = Date.now(); }
+  return { data: null, error: null };
+}
+
+// Petites réponses de la base gardées une minute, puis rafraîchies en fond
+// (on affiche l'ancienne en attendant). undefined = pas encore arrivée.
+const LITE = new Map(), LITE_TTL = 60e3;
+let _liteErrAt = 0;
+function liteEntry(key, load) {
+  let e = LITE.get(key);
+  if (!e || (!e.busy && 'v' in e && Date.now() - e.at > LITE_TTL)) {
+    const ent = e || {};
+    ent.busy = true;
+    ent.p = load().then(v => { ent.v = v; }, err => {
+      if (!('v' in ent)) ent.v = null;
+      if (Date.now() - _liteErrAt > 10e3) { _liteErrAt = Date.now(); toast(friendlyError(err), true); }
+    }).then(() => { ent.at = Date.now(); ent.busy = false; if (LITE.get(key) === ent) liveRender(); });
+    LITE.set(key, ent); e = ent;
+  }
+  return e;
+}
+const liteGet = (key, load) => { const e = liteEntry(key, load); return 'v' in e ? e.v : undefined; };
+const liteRows = async build => { const r = await fetchAllRows(build); if (r.error) throw r.error; return r.data || []; };
+
+// --- Classement du mois, mois joués, champions -------------------------------
+function monthBoard(k) {
+  if (!S.lite) return monthBoardOld(k);
+  const v = liteGet('mois:' + k, () => liteRows(() => sb.from('points_par_mois')
+    .select('user_id,total_points,exact_scores,good_winners,matches_played,winner_points').eq('month', k).order('user_id')));
+  if (v === undefined) return null;
+  const pseudoOf = pseudoMap();
+  return inLeague((v || []).map(r => ({ ...r, pseudo: pseudoOf[r.user_id] || '?' })))
+    .sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || a.pseudo.localeCompare(b.pseudo));
+}
+function monthsAvailable() {
+  if (!S.lite) return monthsAvailableOld();
+  return [...new Set([curMonthKey(), ...(S.liteMonths || [])])].sort().reverse();
+}
+function monthChampions() {
+  if (!S.lite) return monthChampionsOld();
+  const lg = curLeague() ? curLeague().id : null, cur = curMonthKey();
+  const v = liteGet('champ:' + lg + ':' + cur, async () => {
+    const r = await sb.rpc('champions_du_mois', { p_league: lg });
+    if (r.error) throw r.error;
+    return r.data || [];
+  });
+  const pseudoOf = pseudoMap(), by = new Map();
+  for (const x of v || []) {
+    if (x.month >= cur) continue;
+    const c = by.get(x.month) || { k: x.month, pts: x.total_points, rows: [] };
+    c.rows.push({ ...x, pseudo: pseudoOf[x.user_id] || '?' });
+    by.set(x.month, c);
+  }
+  for (const c of by.values()) c.rows.sort((a, b) => a.pseudo.localeCompare(b.pseudo));
+  return [...by.values()].sort((a, b) => b.k.localeCompare(a.k));
+}
+// La course du mois : de quoi tracer la ligne de chacun, jour par jour.
+// Renvoie null tant que les points ne sont pas arrivés.
+function raceDailyFn(k, D, ids) {
+  if (!S.lite) {
+    const by = scoredByUser() || {};
+    return uid => {
+      const daily = new Array(D + 1).fill(0);
+      for (const h of by[uid] || []) if (monthKeyOf(h.matches.starts_at) === k) { const d = dayOf(h.matches.starts_at); if (d <= D) daily[d] += h.pt.total; }
+      for (const w of S.winnerPoints || []) if (w.user_id === uid && w.points && monthKeyOf(w.final_at) === k) { const d = dayOf(w.final_at); if (d <= D) daily[d] += w.points; }
+      return daily;
+    };
+  }
+  const v = liteGet('course:' + k + ':' + ids.slice().sort().join(','), () => liteRows(() => sb.from('points_par_jour').select('user_id,day,points')
+    .in('user_id', ids).gte('day', k + '-01').lte('day', k + '-' + String(daysIn(k)).padStart(2, '0')).order('user_id').order('day')));
+  if (!v) return null;
+  return uid => {
+    const daily = new Array(D + 1).fill(0);
+    for (const r of v) if (r.user_id === uid) { const d = Number(String(r.day).slice(8, 10)); if (d <= D) daily[d] += r.points; }
+    return daily;
+  };
+}
+
+// --- Récap d'un tournoi / d'une journée ---------------------------------------
+const recapLoad = (circuit, key) => ['recap:' + circuit + '|' + key, () => liteRows(() => sb.from('points_par_tournoi')
+  .select('user_id,pts,exact,n,best_streak').eq('circuit', circuit).eq('group_key', key).order('user_id'))];
+function recapLite(key, circuit) {
+  if (!S.accountBoard) return null;
+  const v = liteGet(...recapLoad(circuit, key));
+  if (!v) return null;
+  const pseudoOf = pseudoMap();
+  const rows = v.filter(r => inLeagueUid(r.user_id)).map(r => ({ userId: r.user_id, pseudo: pseudoOf[r.user_id] || '—', pts: r.pts, exact: r.exact, n: r.n, bestStreak: r.best_streak }))
+    .sort((a, b) => a.pseudo.localeCompare(b.pseudo));
+  return recapFinish(key, circuit, rows);
+}
+// Avant d'ouvrir un récap : ses chiffres d'abord, pour que l'animation parte entière.
+const recapReady = (circuit, key) => (S.lite ? liteEntry(...recapLoad(circuit, key)).p : Promise.resolve());
+
+// --- Défis et fiche d'un ami -------------------------------------------------------
+// Mes pronos jugés, par match (même calcul que « Mon compte »).
+let _myJudged = { src: undefined, map: new Map() };
+function myJudgedMap() {
+  if (_myJudged.src !== S.myHistory) _myJudged = { src: S.myHistory, map: new Map((myJudgedHistory() || []).map(h => [h.match_id, h])) };
+  return _myJudged.map;
+}
+// Le prono jugé de quelqu'un sur un match : { pred_a, pred_b, pt: { total } }, ou rien.
+function judgedOf(uid, mid) {
+  if (!S.lite) return ((scoredByUser() || {})[uid] || []).find(h => h.match_id === mid);
+  if (S.session && uid === S.session.user.id) return myJudgedMap().get(mid);
+  return S.duelPts && S.duelPts.get(uid + ':' + mid);
+}
+// Les points de mes adversaires sur les matchs de mes défis (et rien d'autre).
+async function loadDuelPoints() {
+  if (!(await probeLite()) || !S.duels || !S.session) return;
+  const me = S.session.user.id;
+  const todo = myDuels().filter(d => { const m = matchOf(d.match_id); return duelAccepted(d) && (!m || m.status === 'finished'); });
+  if (!todo.length) { S.duelPts = new Map(); return; }
+  const mids = [...new Set(todo.map(d => d.match_id))], others = [...new Set(todo.map(d => duelOther(d, me)))];
+  const r = await fetchAllRows(() => sb.from('pronos_juges').select('user_id,match_id,pred_a,pred_b,points')
+    .in('match_id', mids).in('user_id', others).order('match_id').order('user_id'));
+  if (r.error) return;
+  S.duelPts = new Map((r.data || []).map(x => [x.user_id + ':' + x.match_id, { match_id: x.match_id, pred_a: x.pred_a, pred_b: x.pred_b, pt: { total: x.points } }]));
+}
+// L'historique jugé d'un joueur (fiche d'un ami : le face-à-face).
+function histOf(uid) {
+  if (!S.lite) return (scoredByUser() || {})[uid];
+  if (S.session && uid === S.session.user.id) return myJudgedHistory();
+  const v = liteGet('hist:' + uid, () => liteRows(() => sb.from('pronos_juges').select('match_id,points,base_points,streak_after')
+    .eq('user_id', uid).order('starts_at').order('match_id')));
+  return v && v.map(x => ({ match_id: x.match_id, streakAfter: x.streak_after, pt: { total: x.points, base: x.base_points, exact: x.base_points === 3 } }));
+}
+
+// --- Les pronos des amis sous un match ------------------------------------------------
+// Seulement mes amis (et mes adversaires de défi sur ce match) quand la liste
+// reste courte ; les points viennent de la base, comme au classement.
+async function toggleFriends(id) {
+  if (S.openFriends[id]) { S.openFriends[id] = false; keepRender(); return; }
+  const me = S.session.user.id;
+  const ids = S.friendIds ? [...new Set([me, ...S.friendIds, ...myDuels().filter(d => d.match_id === id).map(d => duelOther(d, me))])] : null;
+  const only = q => (ids && ids.length <= 150 ? q.in('user_id', ids) : q);
+  const [p, pts] = await Promise.all([
+    fetchAllRows(() => only(sb.from('predictions').select('user_id,pred_a,pred_b,balles_staked,profiles(pseudo)').eq('match_id', id)).order('user_id')),
+    fetchAllRows(() => only(sb.from('prediction_points').select('user_id,points').eq('match_id', id)).order('user_id')),
+  ]);
+  if (p.error) { toast(friendlyError(p.error), true); return; }
+  const srv = new Map((pts.error ? [] : pts.data || []).map(x => [x.user_id, x.points]));
+  S.friends[id] = (p.data || []).map(r => (srv.has(r.user_id) ? { ...r, points_srv: srv.get(r.user_id) } : r));
+  S.openFriends[id] = true; keepRender();
+}
+
+// --- Vainqueurs de tournoi : seulement les tournois en cours, entre amis -----------
+const wttComps = () => [...new Set((S.matches || []).filter(m => m.circuit === 'WTT' && m.competition).map(m => m.competition))];
+
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
   // entièrement terminé (voir isTournamentFinished) : pas de bilan sur
@@ -8496,6 +8673,7 @@ function accountView() {
 // classement), seuls les totaux affichés sont ensuite limités à ce
 // tournoi/journée. Ne touche ni ne dépend d'aucune nouvelle requête réseau.
 function computeRecapData(key, circuit) {
+  if (S.lite) return recapLite(key, circuit);
   if (!S.allJudgedPreds || !S.accountBoard) return null;
   const uid = S.session && S.session.user.id;
   const pseudoOf = {};
@@ -8524,11 +8702,16 @@ function computeRecapData(key, circuit) {
     });
   }
   if (circuit === 'WTT') for (const w of S.winnerPoints || []) {
-    if (w.competition !== key || !w.points) continue;
+    if (w.competition !== key || !w.points || !inLeagueUid(w.user_id)) continue;
     const r = rows.find(x => x.userId === w.user_id);
     if (r) r.pts += w.points;
     else rows.push({ userId: w.user_id, pseudo: pseudoOf[w.user_id] || '?', pts: w.points, exact: 0, n: 0, bestStreak: 0 });
   }
+  return recapFinish(key, circuit, rows);
+}
+// Rangs (ex aequo au même rang), ma ligne, le podium et les couleurs du tournoi.
+function recapFinish(key, circuit, rows) {
+  const uid = S.session && S.session.user.id;
   rows.sort((a, b) => b.pts - a.pts || b.exact - a.exact);
   let prevKey = null, rk = 0;
   rows.forEach((r, i) => {
@@ -9409,6 +9592,7 @@ async function exportBoardImage() {
 
 // Bilan de tournoi en image.
 async function exportRecapImage(key, circuit) {
+  await recapReady(circuit, key);
   const data = computeRecapData(key, circuit);
   if (!data || !data.me) { toast('Rien à exporter pour ce tournoi.', true); return; }
   await exportFontsReady();
@@ -9485,7 +9669,7 @@ $app.addEventListener('click', async e => {
   else if (act === 'exportmatch') exportMatchImage(id);
   else if (act === 'exportboard') exportBoardImage();
   else if (act === 'exportrecap') exportRecapImage(el.dataset.key, el.dataset.circuit);
-  else if (act === 'recap') { markRecapSeen(el.dataset.circuit, el.dataset.key); S.openRecap = { key: el.dataset.key, circuit: el.dataset.circuit }; S.recapAnimPlayed = false; navigate(render); }
+  else if (act === 'recap') { await recapReady(el.dataset.circuit, el.dataset.key); markRecapSeen(el.dataset.circuit, el.dataset.key); S.openRecap = { key: el.dataset.key, circuit: el.dataset.circuit }; S.recapAnimPlayed = false; navigate(render); }
   else if (act === 'hwdismiss') { try { localStorage.setItem(HW_KEY, '1'); } catch (e) { /* ignore */ } keepRender(); }
   else if (act === 'recapdismiss') { markRecapSeen(el.dataset.circuit, el.dataset.key); keepRender(); }
   else if (act === 'closerecap') { stopRecapRun(); S.openRecap = null; keepRender(); }
