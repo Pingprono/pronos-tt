@@ -2,7 +2,7 @@
 // Rôle : (1) rendre le site "installable" sur mobile, (2) garder une version
 // de la page en cache pour qu'elle s'ouvre même sans réseau (juste la page :
 // les données des matchs, elles, ont toujours besoin d'internet pour se
-// charger depuis Supabase).
+// charger depuis Supabase), (3) afficher les rappels envoyés par le robot.
 const CACHE = 'spin-v1';
 
 self.addEventListener('install', (event) => {
@@ -33,5 +33,29 @@ self.addEventListener('fetch', (event) => {
         return res;
       })
       .catch(() => caches.match(req).then((res) => res || caches.match('./')))
+  );
+});
+
+// Rappels : le robot envoie { title, body, tag, url } ; on l'affiche tel quel.
+self.addEventListener('push', (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : '' }; }
+  event.waitUntil(self.registration.showNotification(d.title || 'SPIN', {
+    body: d.body || '',
+    icon: 'icon-192.png',
+    tag: d.tag || 'spin',
+    data: { url: d.url || './' },
+  }));
+});
+
+// Toucher le rappel : on revient sur SPIN (l'onglet déjà ouvert, sinon un nouveau).
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = new URL((event.notification.data && event.notification.data.url) || './', self.registration.scope).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      const open = list.find((c) => c.url.startsWith(self.registration.scope));
+      return open ? open.focus() : self.clients.openWindow(url);
+    })
   );
 });
