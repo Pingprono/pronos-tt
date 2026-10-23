@@ -1910,6 +1910,54 @@ html.dark .sparklegend .dot[style*="var(--ground-2)"],html.halloween .sparklegen
   .profilex .prof-id{grid-column:2;grid-row:1}
   .profilex .skintoggle,.profilex .prof-skin{grid-column:1 / -1}
 }
+/* Ligue, côté responsable : un joueur se déplie pour montrer ce qu'on peut faire. */
+.lghint{margin:0 0 6px}
+.lgmembers li.lgm{display:block;padding:0}
+.lgmbtn{display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:8px 0;background:none;border:0;border-radius:0;font:500 15px/1.2 var(--f-text);color:var(--ink);text-align:left;cursor:pointer}
+.lgmbtn i{flex:none;width:9px;height:9px;margin:0 6px 0 4px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);transform:rotate(45deg) translate(-2px,-2px);transition:transform .15s}
+.lgm.open .lgmbtn i{transform:rotate(-135deg) translate(-2px,-2px)}
+.lgmbtn:focus-visible{outline:2px solid var(--focus,var(--table));outline-offset:2px}
+.lgacts{display:flex;flex-wrap:wrap;gap:8px;padding:0 0 12px 40px}
+.lgacts .btn,.lgconfirm .btn{margin:0}
+.lgconfirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:2px 0 14px 40px}
+.lgconfirm p{flex-basis:100%;margin:0 0 2px;font:500 14.5px/1.4 var(--f-text);color:var(--ink)}
+.lgmembers li .linkbtn{flex:none;font-size:14px}
+.lgform-tight{margin-top:4px}
+.lgform-tight label{margin-top:0}
+.lgline{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line-2)}
+.lgline>span{flex:1;min-width:0}
+.lgline b{display:block;font:600 15px/1.25 var(--f-text);color:var(--ink)}
+.lgline small{display:block;margin-top:3px;font:400 13.5px/1.4 var(--f-text);color:var(--ink-2)}
+.lgline .btn{flex:none;margin:0}
+.lgline + .lgconfirm{padding-left:0;padding-top:10px}
+
+/* Signaler un joueur : un lien discret en bas de sa fiche, puis une petite fenêtre. */
+.modfoot{display:flex;justify-content:flex-end;padding:0 22px 16px}
+.modfoot .linkbtn{color:var(--ink-2);font-size:14px;font-weight:500}
+.rpmotifs{border:0;margin:14px 0 0;padding:0;min-width:0}
+.rpmotifs legend{padding:0;margin:0 0 4px;font:600 14px/1.2 var(--f-text);color:var(--ink)}
+.rpopt{display:flex;align-items:center;gap:12px;margin:0;padding:12px 0;border-top:1px solid var(--line-2);font:500 15px/1.2 var(--f-text);color:var(--ink);cursor:pointer}
+.rpopt:first-of-type{border-top:0}
+.rpopt input{flex:none;width:20px;height:20px;margin:0;padding:0;border-radius:50%;background:none;box-shadow:none;-webkit-appearance:radio;appearance:auto;accent-color:var(--ink)}
+.rpopt input:focus-visible{box-shadow:none;outline:2px solid var(--focus,var(--table));outline-offset:2px}
+.reportx label small{font-weight:400;color:var(--ink-2)}
+.reportx .hint{margin:10px 0 14px}
+
+/* Onglet Admin : les signalements. */
+.modpanel h2 small{font:500 15px/1 var(--f-text);color:var(--ink-2);margin-left:6px}
+.modwho{display:flex;align-items:center;gap:12px}
+.modwho>div{flex:1;min-width:0}
+.modwho .btn{flex:none;margin:0}
+.modthumb{position:relative;flex:none;display:grid;place-items:center;width:52px;height:52px;border-radius:10px;overflow:hidden;background:var(--surface-2);font:700 20px/1 var(--f-head);color:var(--ink-2)}
+.modthumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.modtag{display:inline-block;vertical-align:2px;margin-left:6px;padding:3px 7px;border-radius:6px;background:var(--surface-2);font:600 12px/1 var(--f-text);color:var(--ink-2)}
+.modnotes{list-style:none;margin:10px 0 0 64px;padding:0}
+.modnotes li{margin:4px 0;font:400 14px/1.4 var(--f-text);color:var(--ink)}
+.modnotes small{color:var(--ink-2);margin-left:4px}
+.moditem .lgconfirm{padding-left:64px;padding-top:10px}
+.modh{margin:22px 0 2px;font:700 18px/1.15 var(--f-head);color:var(--ink)}
+.suspnotice .recapnotice-sub a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+@media (max-width:520px){.lgacts,.lgconfirm{padding-left:0}.modnotes{margin-left:0}.moditem .lgconfirm{padding-left:0}}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -2538,8 +2586,10 @@ function toast(msg, isErr) {
 
 function friendlyError(e) {
   const msg = (e && e.message) || String(e);
+  // Messages de la base déjà écrits pour les joueurs (modération, gestion de ligue).
+  if (/n'est pas autorisé|Compte suspendu|t'en a exclu|Seul le responsable|t'exclure toi-même|beaucoup de signalements|Réservé aux administrateurs|n'est pas dans la ligue|Pas sur ton propre compte/i.test(msg)) return /[.!?]$/.test(msg) ? msg : msg + '.';
   if (/Invalid login credentials/i.test(msg)) return 'Email ou mot de passe incorrect.';
-  if (/Database error saving new user/i.test(msg)) return "Inscription refusée : ce pseudo est peut-être déjà pris (2 à 20 caractères). Si ça continue, les inscriptions sont fermées pour le moment.";
+  if (/Database error saving new user/i.test(msg)) return "Inscription refusée : ce pseudo est peut-être déjà pris ou pas autorisé (2 à 20 caractères). Si ça continue, les inscriptions sont fermées pour le moment.";
   if (/Email address not authorized/i.test(msg)) return "L'envoi des mails n'est pas encore réglé : préviens l'administrateur de SPIN.";
   if (/rate limit|too many requests|after \d+ seconds/i.test(msg)) return 'Trop de demandes en peu de temps : réessaie dans quelques minutes.';
   if (/different from the old|same password/i.test(msg)) return "Choisis un mot de passe différent de l'ancien.";
@@ -2970,6 +3020,7 @@ async function loadAll() {
   loadWorldRankings().then(() => { if (S.tab === 'rankings') render(); });
   loadAccount().then(render); // idem : pour la pastille de série sur les cartes de match, sans bloquer la connexion
   loadWinners().then(render);
+  loadModState().then(render).catch(() => {});
   loadDuels().then(() => { render(); startLive(); });
 }
 // Vrai classement mondial WTT (top 100 de chaque tableau), enregistré par le
@@ -3103,7 +3154,7 @@ async function loadAccount() {
 async function handleSession(session) {
   if (!session) {
     S.session = null; S.pseudo = ''; S.isAdmin = false; S.matches = []; S.myPreds = {}; S.board = null;
-    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive(); LITE.clear(); S.duelPts = null; S.rival = null;
+    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive(); LITE.clear(); S.suspended = false; S.modReports = undefined; S.openReport = null; S.duelPts = null; S.rival = null;
     render(); return;
   }
   if (S.session && S.session.user.id === session.user.id) { S.session = session; return; }
@@ -3478,8 +3529,8 @@ async function submitAuth(f) {
     } else if (S.authMode === 'signup') {
       const password = f.querySelector('#pw').value, pseudo = f.querySelector('#pseudo').value.trim();
       // Pseudo déjà pris ? (si la vérification n'existe pas encore dans la base, on passe)
-      const free = await sb.rpc('pseudo_libre', { p: pseudo });
-      if (!free.error && free.data === false) { err.textContent = 'Ce pseudo est déjà pris : choisis-en un autre.'; btn.disabled = false; return; }
+      const refus = await pseudoRefus(pseudo);
+      if (refus) { err.textContent = refus; btn.disabled = false; return; }
       const { data, error } = await sb.auth.signUp({ email, password, options: { data: { pseudo }, emailRedirectTo: back } });
       if (error) throw error;
       if (!data.session) { err.className = 'ferr fok'; err.textContent = 'Compte créé. Confirme ton email (regarde ta boîte mail, et les spams), puis connecte-toi.'; }
@@ -3558,7 +3609,7 @@ function matchesView() {
     }).join('');
   }
   const cnt = n => `<span class="cnt">${n}</span>`;
-  return heroCard(up) + halloweenNotice() + recapNotice() + duelNotice() + `<div class="filters">`
+  return heroCard(up) + suspendNotice() + halloweenNotice() + recapNotice() + duelNotice() + `<div class="filters">`
     + segRow([['upcoming', `À venir ${cnt(up.length)}`], ['done', `Terminés ${cnt(doneAll.length)}`]], S.view, 'view')
     + segRow([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit')
     + `</div>` + journeeRow + body;
@@ -6313,6 +6364,7 @@ function playerModal(uid) {
         <h3><span class="secdot" aria-hidden="true"></span>Par circuit</h3>
         <ul class="cmlist">${rows.map(([l, x]) => `<li class="cmrow"><div class="cmopp">${l}</div><div class="cmmeta"><span class="cmdate">${plural(x.total_points, 'point')} · ${x.exact_scores} ${x.exact_scores > 1 ? 'scores exacts' : 'score exact'}</span></div></li>`).join('')}</ul>
       </section>` : ''}</div>` : ''}
+      ${reportLink(uid)}
     </div>
   </div>`;
 }
@@ -7741,6 +7793,7 @@ async function loadLeagues() {
     const saved = lsGet(LG_KEY), want = saved === 'world' ? 'world' : Number(saved);
     S.league = want === 'world' || S.leagues.some(x => x.id === want) ? want : (S.leagues[0] ? S.leagues[0].id : 'world');
   } catch (e) { S.leagues = null; }
+  if (S.leagues) await loadBans();
   applyLeague();
   // Arrivé par un lien d'invitation : on propose de rejoindre la ligue.
   const code = pendingLeagueCode();
@@ -7783,7 +7836,7 @@ function leagueBar() {
 function boardView() { return leagueBar() + boardViewInner(); }
 
 // La fenêtre des ligues : créer / rejoindre, ou gérer la sienne.
-function leagueModal(which) {
+function leagueModalOld(which) {
   const head = (sub, name) => `<button class="modalclose" data-act="closeleague" aria-label="Fermer">${ico('x')}</button>
       <div class="modalhead">${sub ? `<div class="modalsub">${sub}</div>` : ''}<div class="modalname">${name}</div></div>`;
   if (which === 'new') {
@@ -7952,7 +8005,7 @@ function privacyModal() {
 
 // --- Branchements -------------------------------------------------------------------------
 function modals23() {
-  return `${S.openLeague && S.session ? leagueModal(S.openLeague) : ''}${S.openDelete && S.session ? deleteModal() : ''}${S.openPrivacy ? privacyModal() : ''}${S.recovery && S.session ? recoveryModal() : ''}`;
+  return `${S.openLeague && S.session ? leagueModal(S.openLeague) : ''}${S.openDelete && S.session ? deleteModal() : ''}${S.openPrivacy ? privacyModal() : ''}${S.recovery && S.session ? recoveryModal() : ''}${modals27()}`;
 }
 async function onAct23(act, el, v) {
   const id = el.dataset.id ? Number(el.dataset.id) : null;
@@ -8121,8 +8174,8 @@ async function savePseudo(f) {
   try {
     // Pris par quelqu'un d'autre ? (changer seulement les majuscules du sien reste permis)
     if (v.toLowerCase() !== S.pseudo.toLowerCase()) {
-      const free = await sb.rpc('pseudo_libre', { p: v });
-      if (!free.error && free.data === false) { err.textContent = 'Ce pseudo est déjà pris : choisis-en un autre.'; btn.disabled = false; return; }
+      const refus = await pseudoRefus(v);
+      if (refus) { err.textContent = refus; btn.disabled = false; return; }
     }
     const r = await sb.from('profiles').update({ pseudo: v }).eq('id', uid);
     if (r.error) throw r.error;
@@ -8397,6 +8450,260 @@ async function toggleFriends(id) {
 
 // --- Vainqueurs de tournoi : seulement les tournois en cours, entre amis -----------
 const wttComps = () => [...new Set((S.matches || []).filter(m => m.circuit === 'WTT' && m.competition).map(m => m.competition))];
+
+/* =============================================================================
+   Gérer sa ligue et modération minimum (script ajout-moderation.sql).
+   Le responsable d'une ligue exclut, réautorise, passe la main, change le code
+   ou supprime la ligue. Chacun peut signaler un joueur ; l'administrateur
+   traite les signalements dans l'onglet Admin. Sans le script, rien de tout
+   ça n'apparaît (S.modOk reste faux).
+   ========================================================================== */
+
+// --- Chargement --------------------------------------------------------------------
+// Les exclus de MES ligues (la base ne montre que celles dont je suis responsable).
+async function loadBans() {
+  try {
+    const r = await fetchAllRows(() => sb.from('league_bans').select('league_id,user_id,banned_at').order('league_id').order('user_id'));
+    S.modOk = !r.error;
+    S.leagueBans = new Map();
+    for (const b of r.data || []) { if (!S.leagueBans.has(b.league_id)) S.leagueBans.set(b.league_id, []); S.leagueBans.get(b.league_id).push(b); }
+  } catch (e) { S.modOk = false; S.leagueBans = new Map(); }
+}
+// Mon compte est-il suspendu ? Et, pour un administrateur, y a-t-il des signalements ?
+let _modToastDone = false;
+async function loadModState() {
+  const r = await sb.rpc('compte_suspendu');
+  S.suspended = !r.error && r.data === true;
+  if (!S.isAdmin || r.error || _modToastDone) return;
+  const c = await sb.from('signalements').select('id', { count: 'exact', head: true }).is('traite_le', null);
+  if (!c.error && c.count) {
+    _modToastDone = true;
+    afterSplash(() => setTimeout(() => toast(`${c.count} signalement${c.count > 1 ? 's' : ''} à regarder dans l'onglet Admin`), 1200));
+  }
+}
+// Ce qui coince dans un pseudo (vide si tout va bien).
+async function pseudoRefus(p) {
+  const r = await sb.rpc('pseudo_refus', { p });
+  if (!r.error) return r.data === 'pris' ? 'Ce pseudo est déjà pris : choisis-en un autre.'
+    : r.data === 'interdit' ? "Ce pseudo n'est pas autorisé : choisis-en un autre."
+    : r.data === 'longueur' ? 'Pseudo : entre 2 et 20 caractères.' : '';
+  const free = await sb.rpc('pseudo_libre', { p }); // script de modération pas encore lancé
+  return !free.error && free.data === false ? 'Ce pseudo est déjà pris : choisis-en un autre.' : '';
+}
+
+// --- La fenêtre d'une ligue, côté responsable ------------------------------------------------
+function leagueModal(which) {
+  if (which === 'new' || !S.modOk) return leagueModalOld(which);
+  const l = (S.leagues || []).find(x => x.id === which);
+  if (!l) return '';
+  const me = S.session.user.id, owner = l.owner === me, names = pseudoMap(), nm = uid => esc(names[uid] || '?');
+  const members = (S.leagueMembers.get(l.id) || []).slice().sort((a, b) => (a.user_id === l.owner ? -1 : b.user_id === l.owner ? 1 : 0) || (names[a.user_id] || '').localeCompare(names[b.user_id] || ''));
+  const bans = owner ? (S.leagueBans.get(l.id) || []) : [];
+  const ask = S._lgAsk, sel = S._lgSel;
+  const confirm = (text, act, yes, uid) => `<div class="lgconfirm"><p>${text}</p>
+    <button class="btn small" data-act="${act}" data-id="${l.id}"${uid ? ` data-uid="${esc(uid)}"` : ''}>${yes}</button><button class="btn small sec" data-act="lgcancel">Annuler</button></div>`;
+  const tag = r => (r.user_id === l.owner ? '<em>responsable</em>' : '');
+  const row = r => {
+    const uid = r.user_id;
+    if (!owner || uid === me) return `<li>${avatarHtml(uid, names[uid])}<span>${nm(uid)}${uid === me ? ' <small>toi</small>' : ''}</span>${tag(r)}</li>`;
+    const open = sel === uid;
+    return `<li class="lgm${open ? ' open' : ''}"><button class="lgmbtn" data-act="lgmember" data-uid="${esc(uid)}" aria-expanded="${open}">${avatarHtml(uid, names[uid])}<span>${nm(uid)}</span><i aria-hidden="true"></i></button>
+      ${!open ? '' : ask === 'kick' ? confirm(`Exclure ${nm(uid)} ? Le code ne lui permettra plus de revenir, sauf si tu l'autorises à nouveau.`, 'lgkick', 'Oui, exclure', uid)
+        : ask === 'give' ? confirm(`Confier la ligue à ${nm(uid)} ? Tu restes joueur ; c'est ${nm(uid)} qui la gérera.`, 'lggive', 'Oui, confier', uid)
+        : `<div class="lgacts"><button class="btn small sec" data-act="lgaskgive" data-uid="${esc(uid)}">Lui confier la ligue</button><button class="btn small sec" data-act="lgaskkick" data-uid="${esc(uid)}">Exclure de la ligue</button></div>`}</li>`;
+  };
+  const leaving = S._leaveConfirm === l.id;
+  return `<div class="modalbackdrop" data-act="closeleague"><div class="modal leaguex" role="dialog" aria-modal="true" aria-label="Ligue ${esc(l.name)}" data-act="stop">
+    <button class="modalclose" data-act="closeleague" aria-label="Fermer">${ico('x')}</button>
+    <div class="modalhead"><div class="modalsub">Ligue</div><div class="modalname">${esc(l.name)}</div></div>
+    <div class="modalbody">
+      <div class="lgcode"><span>Code</span><b>${esc(l.code)}</b>
+        <span class="lgbtns"><button class="btn small" data-act="leagueshare" data-id="${l.id}">${ico('share-network')}Inviter</button><button class="btn small sec" data-act="leaguecopy" data-id="${l.id}">Copier le lien</button></span></div>
+      <p class="hint explain">Envoie le lien à tes amis : il les inscrit et les fait entrer dans la ligue. Ils peuvent aussi taper le code dans « + Ligue ».</p>
+      <h3 class="lgh">Joueurs <small>${members.length}</small></h3>
+      ${owner && members.length > 1 ? '<p class="hint lghint">Touche un joueur pour lui confier la ligue ou l\'exclure.</p>' : ''}
+      <ul class="lgmembers">${members.map(row).join('')}</ul>
+      ${bans.length ? `<h3 class="lgh">Exclus <small>${bans.length}</small></h3>
+        <ul class="lgmembers">${bans.map(b => `<li>${avatarHtml(b.user_id, names[b.user_id])}<span>${nm(b.user_id)}</span><button class="linkbtn" data-act="lgunban" data-id="${l.id}" data-uid="${esc(b.user_id)}">Réautoriser</button></li>`).join('')}</ul>` : ''}
+      ${owner ? `<h3 class="lgh">Gérer la ligue</h3>
+        <form id="leaguerename" class="lgform lgform-tight" data-id="${l.id}"><label for="lgrename">Nom de la ligue</label>
+          <div class="lgrow"><input id="lgrename" required minlength="2" maxlength="30" autocomplete="off" value="${esc(l.name)}"><button class="btn small sec" type="submit">Renommer</button></div></form>
+        <div class="lgline"><span><b>Code d'invitation</b><small>Si le code a trop circulé : l'ancien code et l'ancien lien ne marcheront plus. Les joueurs déjà là restent.</small></span>
+          ${ask === 'code' ? '' : '<button class="btn small sec" data-act="lgaskcode">Changer</button>'}</div>
+        ${ask === 'code' ? confirm('Changer le code maintenant ? Pense à renvoyer le nouveau lien à ceux qui doivent encore venir.', 'lgcode', 'Oui, changer') : ''}
+        <div class="lgline"><span><b>Supprimer la ligue</b><small>Pour tout le monde. Les points de chacun ne bougent pas : seule la ligue disparaît.</small></span>
+          ${ask === 'delete' ? '' : '<button class="btn small sec" data-act="lgaskdel">Supprimer</button>'}</div>
+        ${ask === 'delete' ? confirm(`Supprimer « ${esc(l.name)} » pour ${members.length > 1 ? `ses ${members.length} joueurs` : 'de bon'} ?`, 'lgdelete', 'Oui, supprimer') : ''}` : ''}
+      <div class="lgleave">${leaving
+        ? `<p>Quitter « ${esc(l.name)} » ?${owner && members.length > 1 ? ' La ligue passera au joueur le plus ancien.' : ''} Tu pourras revenir avec le code.</p><button class="btn small" data-act="leagueleave" data-id="${l.id}">Oui, quitter</button><button class="btn small sec" data-act="leaguestay">Annuler</button>`
+        : `<button class="btn small sec" data-act="leagueask" data-id="${l.id}">Quitter la ligue</button>`}</div>
+      <div id="lgerr" class="ferr" role="alert"></div>
+    </div></div></div>`;
+}
+async function leagueRpc(fn, args, done) {
+  const r = await sb.rpc(fn, args);
+  if (r.error) { leagueErr(r.error); return null; }
+  S._lgAsk = null; S._lgSel = null;
+  await afterLeagueChange();
+  if (done) toast(done(r.data));
+  return r;
+}
+
+// --- Signaler un joueur ------------------------------------------------------------------
+const reportLink = uid => (S.modOk && S.session && uid !== S.session.user.id
+  ? `<div class="modfoot"><button class="linkbtn" data-act="report" data-uid="${esc(uid)}">Signaler ce joueur</button></div>` : '');
+function reportModal(uid) {
+  const name = esc(pseudoMap()[uid] || 'ce joueur'), photo = !!avatarUrl(uid);
+  return `<div class="modalbackdrop" data-act="closereport"><div class="modal smallx reportx" role="dialog" aria-modal="true" aria-label="Signaler ${name}" data-act="stop">
+    <button class="modalclose" data-act="closereport" aria-label="Fermer">${ico('x')}</button>
+    <div class="modalhead"><div class="modalsub">Signaler</div><div class="modalname">${name}</div></div>
+    <div class="modalbody"><form id="reportform" class="lgform" data-uid="${esc(uid)}">
+      <fieldset class="rpmotifs"><legend>Qu'est-ce qui ne va pas ?</legend>
+        <label class="rpopt"><input type="radio" name="motif" value="pseudo">Son pseudo</label>
+        ${photo ? '<label class="rpopt"><input type="radio" name="motif" value="photo">Sa photo</label>' : ''}
+        <label class="rpopt"><input type="radio" name="motif" value="autre">Autre chose</label></fieldset>
+      <label for="rpdetail">En deux mots <small>(facultatif)</small></label>
+      <textarea id="rpdetail" maxlength="200" rows="2"></textarea>
+      <p class="hint">Seul l'administrateur de SPIN lit ton signalement : ${name} ne saura pas que c'est toi.</p>
+      <button class="btn" type="submit">Envoyer</button>
+      <div id="rperr" class="ferr" role="alert"></div></form></div></div></div>`;
+}
+async function sendReport(f) {
+  const uid = f.dataset.uid, m = f.querySelector('input[name=motif]:checked'), err = f.querySelector('#rperr'), btn = f.querySelector('button[type=submit]');
+  if (!m) { err.textContent = 'Choisis ce qui ne va pas.'; return; }
+  btn.disabled = true;
+  const detail = f.querySelector('#rpdetail').value.trim().slice(0, 200) || null;
+  const r = await sb.from('signalements').insert({ cible: uid, motif: m.value, detail });
+  if (r.error && r.error.code !== '23505') { err.textContent = friendlyError(r.error); btn.disabled = false; return; }
+  S.openReport = null; playSound('confirm');
+  toast(r.error ? "Tu l'avais déjà signalé : c'est bien noté." : "Merci, c'est transmis à l'administrateur.");
+  keepRender();
+}
+
+// --- Compte suspendu : un bandeau en haut des matchs ---------------------------------------------
+function suspendNotice() {
+  if (!S.suspended) return '';
+  const who = CONTACT_EMAIL ? `<a href="mailto:${esc(CONTACT_EMAIL)}">${esc(CONTACT_EMAIL)}</a>` : "l'administrateur de SPIN";
+  return `<section class="recapnotice suspnotice" aria-label="Compte suspendu">
+    <span class="rn-ico guyico" aria-hidden="true">${guy('pense')}</span>
+    <h2 class="recapnotice-title">Ton compte est suspendu</h2>
+    <p class="recapnotice-sub">Tu peux regarder les matchs et les classements, mais plus pronostiquer ni modifier ton profil. Une erreur ? Écris à ${who}.</p>
+  </section>`;
+}
+
+// --- Onglet Admin : les signalements ------------------------------------------------------------
+async function loadModeration() {
+  S._modLoading = true;
+  try {
+    const [r, s] = await Promise.all([
+      fetchAllRows(() => sb.from('signalements').select('id,auteur,cible,motif,detail,created_at').is('traite_le', null).order('created_at').order('id')),
+      fetchAllRows(() => sb.from('suspensions').select('user_id,depuis').order('depuis').order('user_id')),
+    ]);
+    if (r.error || s.error) { S.modReports = null; return; }
+    S.modReports = r.data || []; S.modSuspended = s.data || []; S._modStamp = Date.now();
+    const ids = [...new Set([...S.modReports.flatMap(x => [x.cible, x.auteur]), ...S.modSuspended.map(x => x.user_id)])];
+    S.modProfiles = {};
+    if (ids.length) { const p = await sb.from('profiles').select('id,pseudo,avatar_v').in('id', ids); for (const x of p.data || []) S.modProfiles[x.id] = x; }
+  } catch (e) { S.modReports = null; }
+  finally { S._modLoading = false; }
+}
+const MOTIF = { pseudo: 'Pseudo', photo: 'Photo', autre: 'Autre' };
+function moderationPanel() {
+  if (!S.isAdmin || !S.modOk) return '';
+  if (S.modReports === undefined) {
+    if (!S._modLoading) loadModeration().then(keepRender);
+    return '<section class="panel modpanel"><h2>Signalements</h2><p class="hint">Chargement…</p></section>';
+  }
+  if (S.modReports === null) return '';
+  const P = S.modProfiles || {}, who = uid => esc((P[uid] && P[uid].pseudo) || 'Compte supprimé');
+  // Même si la photo a déjà été retirée du profil, le fichier reste visible ici pour juger.
+  const thumb = uid => `<span class="modthumb">${esc(((P[uid] && P[uid].pseudo) || '?').slice(0, 1).toUpperCase())}<img src="${SUPABASE_URL}/storage/v1/object/public/avatars/${uid}.jpg?v=${S._modStamp}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+  const groups = new Map();
+  for (const x of S.modReports) {
+    const g = groups.get(x.cible) || { uid: x.cible, n: 0, motifs: {}, notes: [], last: x.created_at };
+    g.n++; g.motifs[x.motif] = (g.motifs[x.motif] || 0) + 1; g.last = x.created_at;
+    if (x.detail) g.notes.push(x);
+    groups.set(x.cible, g);
+  }
+  const list = [...groups.values()].sort((a, b) => b.n - a.n || (b.last > a.last ? 1 : -1));
+  const susp = new Set((S.modSuspended || []).map(x => x.user_id));
+  const item = g => {
+    const asking = S._modAsk === g.uid;
+    return `<div class="adm-item moditem">
+      <div class="modwho">${thumb(g.uid)}<div><div class="adm-title">${who(g.uid)}${susp.has(g.uid) ? ' <span class="modtag">suspendu</span>' : ''}</div>
+        <div class="hint">${Object.entries(g.motifs).map(([m, n]) => `${MOTIF[m] || m} (${n})`).join(', ')}, ${esc(timeAgo(g.last))}</div></div></div>
+      ${g.notes.length ? `<ul class="modnotes">${g.notes.map(x => `<li>« ${esc(x.detail)} » <small>${who(x.auteur)}</small></li>`).join('')}</ul>` : ''}
+      ${asking ? `<div class="lgconfirm"><p>Suspendre le compte de ${who(g.uid)} ? Ce compte ne pourra plus jouer et disparaîtra des classements, jusqu'à ce que tu le rétablisses.</p>
+          <button class="btn small" data-act="mod" data-uid="${esc(g.uid)}" data-v="suspendre">Oui, suspendre</button><button class="btn small sec" data-act="modcancel">Annuler</button></div>`
+        : `<div class="adm-actions">
+          <button class="btn small sec" data-act="mod" data-uid="${esc(g.uid)}" data-v="pseudo">Renommer</button>
+          ${g.motifs.photo || (P[g.uid] && P[g.uid].avatar_v) ? `<button class="btn small sec" data-act="mod" data-uid="${esc(g.uid)}" data-v="photo">Retirer la photo</button>` : ''}
+          ${susp.has(g.uid) ? '' : `<button class="btn small sec" data-act="modask" data-uid="${esc(g.uid)}">Suspendre</button>`}
+          <button class="linkbtn" data-act="mod" data-uid="${esc(g.uid)}" data-v="classer">Classer sans suite</button></div>`}
+    </div>`;
+  };
+  return `<section class="panel modpanel">
+    <h2>Signalements${S.modReports.length ? ` <small>${S.modReports.length}</small>` : ''}</h2>
+    <p class="hint">Renommer donne un pseudo du type « Joueur1234 ». Une photo signalée par 3 joueurs est déjà retirée du profil&nbsp;: tu décides si elle doit disparaître pour de bon.</p>
+    ${list.length ? list.map(item).join('') : '<p class="hint">Aucun signalement en attente.</p>'}
+    ${susp.size ? `<h3 class="modh">Comptes suspendus</h3>${(S.modSuspended || []).map(x => `<div class="adm-item moditem"><div class="modwho">${thumb(x.user_id)}<div><div class="adm-title">${who(x.user_id)}</div><div class="hint">Suspendu ${esc(timeAgo(x.depuis))}</div></div>
+      <button class="btn small sec" data-act="mod" data-uid="${esc(x.user_id)}" data-v="retablir">Rétablir</button></div></div>`).join('')}` : ''}
+  </section>`;
+}
+async function moderate(uid, action) {
+  const r = await sb.rpc('moderer', { p_cible: uid, p_action: action });
+  if (r.error) { toast(friendlyError(r.error), true); return; }
+  const P = S.modProfiles || {}, name = (P[uid] && P[uid].pseudo) || 'Le joueur';
+  if (action === 'photo') {
+    try { await sb.storage.from('avatars').remove([`${uid}.jpg`]); } catch (e) { /* le fichier restera, mais plus affiché */ }
+    if (S.avatars) delete S.avatars[uid];
+  }
+  if (action === 'pseudo' && r.data) for (const b of [S.accountBoard, S.boardAll, S.board]) (b || []).forEach(x => { if (x.user_id === uid) x.pseudo = r.data; });
+  S._modAsk = null;
+  toast({ pseudo: `${name} s'appelle maintenant ${r.data}`, photo: 'Photo retirée', suspendre: `Compte de ${name} suspendu`, retablir: `${name} peut rejouer`, classer: 'Signalement classé' }[action] || 'Fait');
+  await loadModeration();
+  if (action === 'suspendre' || action === 'retablir') { S.board = null; loadBoard().then(keepRender); }
+  keepRender();
+}
+
+// --- Branchements -------------------------------------------------------------------------
+function modals27() { return S.openReport && S.session ? reportModal(S.openReport) : ''; }
+async function onAct27(act, el) {
+  const uid = el.dataset.uid, id = el.dataset.id ? Number(el.dataset.id) : null;
+  if (act === 'leagueopen' || act === 'closeleague') { S._lgAsk = null; S._lgSel = null; return false; }
+  if (act === 'lgmember') { S._lgSel = S._lgSel === uid ? null : uid; S._lgAsk = null; keepRender(); return true; }
+  if (act === 'lgaskkick' || act === 'lgaskgive') { S._lgSel = uid; S._lgAsk = act === 'lgaskkick' ? 'kick' : 'give'; keepRender(); return true; }
+  if (act === 'lgaskcode' || act === 'lgaskdel') { S._lgSel = null; S._lgAsk = act === 'lgaskcode' ? 'code' : 'delete'; keepRender(); return true; }
+  if (act === 'lgcancel') { S._lgAsk = null; keepRender(); return true; }
+  const name = esc0(pseudoMap()[uid] || 'Ce joueur');
+  if (act === 'lgkick') { await leagueRpc('exclure_de_ligue', { p_league: id, p_user: uid }, () => `${name} ne fait plus partie de la ligue`); return true; }
+  if (act === 'lggive') { await leagueRpc('passer_la_main', { p_league: id, p_user: uid }, () => `C'est ${name} qui gère la ligue maintenant`); return true; }
+  if (act === 'lgunban') { await leagueRpc('reautoriser_dans_ligue', { p_league: id, p_user: uid }, () => `${name} peut revenir avec le code`); return true; }
+  if (act === 'lgcode') { await leagueRpc('nouveau_code_ligue', { p_league: id }, c => `Nouveau code : ${c}`); return true; }
+  if (act === 'lgdelete') {
+    const l = (S.leagues || []).find(x => x.id === id), r = await sb.rpc('supprimer_ligue', { p_league: id });
+    if (r.error) { leagueErr(r.error); return true; }
+    S.openLeague = null; S._lgAsk = null;
+    if (S.league === id) lsSet(LG_KEY, null);
+    await afterLeagueChange();
+    toast(`La ligue « ${l ? l.name : ''} » est supprimée`);
+    return true;
+  }
+  if (act === 'report') { S.openReport = uid; keepRender(); const f = document.querySelector('#reportform input'); if (f) f.focus(); return true; }
+  if (act === 'closereport') { S.openReport = null; keepRender(); return true; }
+  if (act === 'modask') { S._modAsk = uid; keepRender(); return true; }
+  if (act === 'modcancel') { S._modAsk = null; keepRender(); return true; }
+  if (act === 'mod') { el.disabled = true; await moderate(uid, el.dataset.v); return true; }
+  return false;
+}
+function onSubmit27(f) {
+  if (f.id === 'reportform') { sendReport(f); return true; }
+  return false;
+}
+// Échap ferme d'abord le signalement (la fiche du joueur reste ouverte dessous).
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && S.openReport) { S.openReport = null; keepRender(); e.stopImmediatePropagation(); }
+});
 
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
@@ -9236,7 +9543,7 @@ function adminView() {
       </div>
     </div>`;
 
-  return `
+  return moderationPanel() + `
   <section class="panel">
     <h2>Ajouter un match</h2>
     <form id="addmatch">
@@ -9642,6 +9949,7 @@ function esc0(s) { return String(s ?? ''); }
 $app.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (await onAct27(act, el)) return;
   if (await onAct24(act)) return;
   if (await onAct23(act, el, v)) return;
   if (act === 'authmode') { S.authMode = S.authMode === 'login' ? 'signup' : 'login'; render(); }
@@ -9751,6 +10059,7 @@ $app.addEventListener('submit', e => {
   if (e.target.id === 'authform') submitAuth(e.target);
   else if (onSubmit23(e.target)) { /* ligues, compte */ }
   else if (onSubmit24(e.target)) { /* pseudo */ }
+  else if (onSubmit27(e.target)) { /* signalement */ }
   else if (e.target.id === 'addmatch') addMatch(e.target);
 });
 $app.addEventListener('pointerdown', e => {
