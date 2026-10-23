@@ -2970,7 +2970,7 @@ async function loadAll() {
   loadWorldRankings().then(() => { if (S.tab === 'rankings') render(); });
   loadAccount().then(render); // idem : pour la pastille de série sur les cartes de match, sans bloquer la connexion
   loadWinners().then(render);
-  loadDuels().then(render);
+  loadDuels().then(() => { render(); startLive(); });
 }
 // Vrai classement mondial WTT (top 100 de chaque tableau), enregistré par le
 // robot de synchronisation dans world_rankings (voir
@@ -3097,7 +3097,7 @@ async function loadAccount() {
 async function handleSession(session) {
   if (!session) {
     S.session = null; S.pseudo = ''; S.isAdmin = false; S.matches = []; S.myPreds = {}; S.board = null;
-    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false;
+    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive();
     render(); return;
   }
   if (S.session && S.session.user.id === session.user.id) { S.session = session; return; }
@@ -7601,7 +7601,7 @@ async function sendEmote(did, kind) {
   S._emoBusy = true; setTimeout(() => { S._emoBusy = false; }, 2000);
   const r = await sb.from('duel_emotes').insert({ duel_id: did, sender: S.session.user.id, kind }).select().single();
   if (r.error) { toast(friendlyError(r.error), true); return; }
-  S.emotes = (S.emotes || []).concat([Object.assign({ created_at: new Date().toISOString() }, r.data)]);
+  if (!(S.emotes || []).some(x => x.id === r.data.id)) S.emotes = (S.emotes || []).concat([Object.assign({ created_at: new Date().toISOString() }, r.data)]);
   duelAct(did, 0, kind); playSound('tick'); keepRender();
 }
 // Les emotes reçues depuis la dernière fois : elles s'affichent à l'écran (3 au plus).
@@ -7629,9 +7629,10 @@ function popEmote(e) {
   duelAct(d.id, 1, e.kind); playSound('tick');
   setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 4200);
 }
-// Fiche d'un défi ouverte : on regarde s'il y a du nouveau toutes les 15 secondes.
+// Fiche d'un défi ouverte : on regarde s'il y a du nouveau toutes les 15 secondes
+// (seulement si le direct ne marche pas : sinon tout arrive tout de suite).
 setInterval(async () => {
-  if (!S.session || !S.openDuel || S.emotes === null || document.visibilityState !== 'visible') return;
+  if (!S.session || !S.openDuel || S.emotes === null || S.live || document.visibilityState !== 'visible') return;
   const before = (S.emotes || []).length;
   await loadEmotes(); checkNewEmotes();
   if ((S.emotes || []).length !== before) keepRender();
@@ -8145,6 +8146,80 @@ function onSubmit24(f) {
   if (f.id === 'pseudoform') { savePseudo(f); return true; }
   return false;
 }
+
+/* =============================================================================
+   Défis et emotes en direct. Supabase prévient le site à la seconde où un
+   défi est proposé, accepté, refusé ou annulé, et où une emote arrive : plus
+   besoin de recharger. Sans le script ajout-temps-reel.sql (ou si la
+   connexion tombe), l'ancien relevé toutes les 15 secondes reprend.
+   ========================================================================== */
+let LIVE = null;
+function startLive() {
+  if (LIVE || !S.session || !sb || typeof sb.channel !== 'function' || !S.duels) return;
+  const me = S.session.user.id;
+  try {
+    LIVE = sb.channel('spin-direct-' + me)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'duels', filter: `opponent=eq.${me}` }, p => onLiveDuel(p.new, true))
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'duels', filter: `challenger=eq.${me}` }, p => onLiveDuel(p.new, false))
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'duels', filter: `opponent=eq.${me}` }, p => onLiveDuel(p.new, false))
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'duels' }, p => onLiveDuelGone(p.old && p.old.id))
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'duel_emotes' }, p => onLiveEmote(p.new))
+      .subscribe(status => { S.live = status === 'SUBSCRIBED'; });
+  } catch (e) { LIVE = null; S.live = false; }
+}
+function stopLive() {
+  if (LIVE) { try { sb.removeChannel(LIVE); } catch (e) { /* déjà fermé */ } }
+  LIVE = null; S.live = false;
+}
+// Redessine sans écraser ce que la personne est en train de taper : on attend
+// qu'elle ait quitté le champ (la prochaine action redessine de toute façon).
+function liveRender() {
+  const a = document.activeElement;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && $app.contains(a)) { S._liveDirty = true; return; }
+  S._liveDirty = false; keepRender();
+}
+setInterval(() => {
+  if (!S._liveDirty) return;
+  const a = document.activeElement;
+  if (!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && $app.contains(a))) { S._liveDirty = false; keepRender(); }
+}, 1500);
+
+function onLiveDuel(d, isNew) {
+  if (!d || !S.duels || !S.session) return;
+  const me = S.session.user.id, i = S.duels.findIndex(x => x.id === d.id);
+  if (i >= 0) S.duels[i] = { ...S.duels[i], ...d }; else S.duels.push(d);
+  if (isNew && d.opponent === me && !duelAccepted(d)) { toast(`${pseudoMap()[d.challenger] || 'Un ami'} te propose un défi`); playSound('tick'); }
+  notifyAccepted(); // « … a accepté ton défi », une seule fois
+  liveRender();
+}
+function onLiveDuelGone(id) {
+  if (!id || !S.duels || !S.session) return;
+  const d = S.duels.find(x => x.id === id);
+  if (!d) return; // c'est nous qui l'avons retiré : déjà fait
+  const me = S.session.user.id, who = pseudoMap()[duelOther(d, me)] || 'Ton ami';
+  S.duels = S.duels.filter(x => x.id !== id);
+  if (S.openDuel === id) S.openDuel = null;
+  toast(d.challenger === me && !duelAccepted(d) ? `${who} a refusé ton défi` : `${who} a annulé le défi`);
+  liveRender();
+}
+function onLiveEmote(e) {
+  if (!e || S.emotes === null || !S.session) return;
+  S.emotes = S.emotes || [];
+  if (S.emotes.some(x => x.id === e.id)) return;
+  S.emotes.push(Object.assign({ created_at: new Date().toISOString() }, e));
+  if (e.sender !== S.session.user.id) {
+    try { localStorage.setItem(EMO_SEEN, String(Math.max(e.id, Number(localStorage.getItem(EMO_SEEN)) || 0))); } catch (err) { /* ignore */ }
+    if ((S.duels || []).some(d => d.id === e.duel_id)) popEmote(e);
+    else loadDuels().then(() => { popEmote(e); liveRender(); });
+  }
+  if (S.openDuel === e.duel_id) liveRender();
+}
+// De retour sur l'appli (téléphone sorti de veille) : on rattrape ce qui a pu
+// passer pendant que la connexion dormait.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !S.session || !S.duels) return;
+  loadDuels().then(() => { liveRender(); startLive(); });
+});
 
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
