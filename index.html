@@ -1875,6 +1875,41 @@ html.dark .sparklegend .dot[style*="var(--ground-2)"],html.halloween .sparklegen
 .forgotlink{display:block;margin:8px 0 0 auto;font-size:14px}
 .authlegal{margin:12px 0 0!important;text-align:center}
 .authlegal .linkbtn{font-size:inherit;padding:0}
+/* La roue des réglages : seule dans son coin. */
+.topright{display:flex;align-items:center;gap:4px}
+.gearbtn{width:42px;height:42px;padding:0;color:var(--ink)}
+.gearbtn .ico{width:25px;height:25px}
+.navfoot .gearbtn{color:rgba(255,255,255,.75)}
+.settingsx .settings{margin-top:2px}
+
+/* « Mon compte » : le profil d'abord. */
+.profilex{display:grid;gap:4px 18px;padding-top:16px}
+.prof-guy{display:block;width:150px;height:150px;margin:-6px auto -4px}
+.profilex:has(.pod3d > .scene3d[data-ready]) .prof-guy{display:none}
+.profilex .pod3d:has(> .scene3d[data-ready]){height:250px;margin:-2px -4px 4px}
+.prof-name{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.prof-name h1{margin:0;font:700 36px/1.05 var(--f-head);letter-spacing:-.015em;color:var(--ink);overflow-wrap:anywhere}
+.prof-name .linkbtn{padding:8px 2px;font-size:14px}
+.prof-form{margin:0}
+.prof-form label{margin-top:0}
+.prof-photo{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;margin-top:12px}
+.prof-photo .av{width:46px;height:46px;font-size:21px;flex:none}
+.prof-phototxt{flex:1;min-width:140px;font:400 13.5px/1.35 var(--f-text);color:var(--ink-2)}
+.skintoggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin:14px 0 0;padding:13px 2px 2px;
+  background:none;border:0;border-top:1px solid var(--line-2);color:var(--ink);text-align:left;cursor:pointer;font:700 18px/1.15 var(--f-head)}
+.skintoggle small{display:block;margin-top:3px;font:400 13px/1.3 var(--f-text);color:var(--ink-2)}
+.skintoggle i{flex:none;width:12px;height:12px;border-right:2.5px solid var(--ink-2);border-bottom:2.5px solid var(--ink-2);transform:translateY(-3px) rotate(45deg)}
+.skintoggle[aria-expanded="true"] i{transform:translateY(3px) rotate(-135deg)}
+@media (prefers-reduced-motion:no-preference){ .skintoggle i{transition:transform .2s var(--ease-out)} }
+.prof-skin{margin-top:10px}
+.prof-skin .mychar-pick{margin-bottom:6px}
+.stathead{margin:24px 2px 12px;font:700 26px/1.1 var(--f-head);letter-spacing:-.01em;color:var(--ink)}
+@media (min-width:700px){
+  .profilex{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-items:center}
+  .profilex .prof-guy,.profilex .pod3d{grid-column:1}
+  .profilex .prof-id{grid-column:2;grid-row:1}
+  .profilex .skintoggle,.profilex .prof-skin{grid-column:1 / -1}
+}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -2523,6 +2558,8 @@ function friendlyError(e) {
   if (/winner_picks/i.test(msg) && /row-level security/i.test(msg)) return 'Trop tard : le tableau a commencé, les choix sont figés.';
   if (/winner_pick/i.test(msg)) return "Le vainqueur du tournoi n'est pas encore activé : il faut lancer le script ajout-vainqueur-tournoi.sql dans Supabase.";
   if (/row-level security/i.test(msg)) return "Action refusée : le match a peut-être déjà commencé, ou tu n'as pas les droits.";
+  if (/profiles_pseudo/i.test(msg)) return 'Ce pseudo est déjà pris : choisis-en un autre.';
+  if (/pseudo_check|char_length\(pseudo\)/i.test(msg)) return 'Pseudo : entre 2 et 20 caractères.';
   if (/duplicate key/i.test(msg)) return 'Cet élément existe déjà.';
   if (/shirt_color/i.test(msg)) return "La couleur du maillot n'est pas encore activée : il faut lancer le script ajout-couleur-maillot.sql dans Supabase.";
   if (/Bucket not found|avatar_v/i.test(msg)) return "La photo de profil n'est pas encore activée : il faut lancer le script ajout-photo-profil.sql dans Supabase.";
@@ -3060,7 +3097,7 @@ async function loadAccount() {
 async function handleSession(session) {
   if (!session) {
     S.session = null; S.pseudo = ''; S.isAdmin = false; S.matches = []; S.myPreds = {}; S.board = null;
-    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false;
+    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false;
     render(); return;
   }
   if (S.session && S.session.user.id === session.user.id) { S.session = session; return; }
@@ -3134,20 +3171,20 @@ function render() {
         <div class="navbrand">${MARK(30)}</div>${cobwebHtml()}${spiderHtml('rail')}
         ${tabs.map(([k, label]) => `<button class="navitem" data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${navIcon(k)}<span>${label}</span>${k === 'matches' && todo ? `<span class="navdot" title="Pronos à faire">${todo}</span>` : ''}</button>`).join('')}
         <span class="navball" aria-hidden="true"></span>
-        <div class="navfoot">${soundToggleBtn()}<span class="avatar" title="${esc(S.pseudo)}">${esc(initial)}${avatarImg(S.session.user.id)}</span><button class="iconbtn" data-act="logout" aria-label="Se déconnecter" title="Se déconnecter">${ICONS.logout}</button></div>
+        <div class="navfoot">${gearBtn()}<span class="avatar" title="${esc(S.pseudo)}">${esc(initial)}${avatarImg(S.session.user.id)}</span></div>
       </nav>
       <div class="content">
         <div class="topbar">
           <header class="topbar-row">${spiderHtml('top')}
             <div class="brand">${MARK(26)}${esc(APP_NAME)}</div>
-            ${myStatusChip()}
+            <span class="topright">${myStatusChip()}${gearBtn()}</span>
           </header>
           ${liveTicker()}
         </div>
         <main class="tab-${S.tab}${Date.now() - (S._tabAt || 0) < 1500 ? ' fresh' : ''}">${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
         <aside class="side" aria-label="En un coup d'œil">${sideView()}</aside>
       </div>
-    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}${S.openWin ? winnerModal(S.openWin) : ''}${S.openDuelNew ? duelNewModal(S.openDuelNew) : ''}${S.openDuel ? duelModal(S.openDuel) : ''}${S.openCeleb ? celebModal(S.openCeleb) : ''}${modals23()}`;
+    </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}${S.openWin ? winnerModal(S.openWin) : ''}${S.openDuelNew ? duelNewModal(S.openDuelNew) : ''}${S.openDuel ? duelModal(S.openDuel) : ''}${S.openCeleb ? celebModal(S.openCeleb) : ''}${modals23()}${S.openSettings && S.session ? settingsModal() : ''}`;
   document.documentElement.classList.toggle('noscroll', !!S.openRecap);
   if (sheets.length) document.querySelectorAll('.modal, .recapx').forEach(m => {
     const old = sheets.find(s => s[0] === sheetKey(m));
@@ -7901,7 +7938,7 @@ function privacyModal() {
       <p>Les données du jeu sont chez Supabase (base de données en ligne). Le site est hébergé par GitHub Pages. Les polices viennent de Google Fonts et quelques outils de jsDelivr : ton navigateur les contacte en ouvrant le site. Les rappels passent par le service de ton navigateur (Google, Apple ou Mozilla).</p>
       <p>Sur ton appareil, le site garde ta connexion et quelques préférences (son, tuto vu, ligue choisie). Aucun cookie publicitaire.</p>
       <h3>Combien de temps</h3>
-      <p>Tant que ton compte existe. Si tu le supprimes (Mon compte, Réglages), tout est effacé tout de suite.</p>
+      <p>Tant que ton compte existe. Si tu le supprimes (la roue des réglages, puis « Supprimer mon compte »), tout est effacé tout de suite.</p>
       <h3>Tes droits</h3>
       <p>Tu peux consulter, corriger ou effacer tes données, et demander une copie : écris à ${mail}. Tu peux aussi saisir la CNIL (cnil.fr).</p>
       <h3>Mentions légales</h3>
@@ -8006,6 +8043,109 @@ function onEscape23() {
   if (S.openPrivacy) { S.openPrivacy = false; S.session ? keepRender() : render(); }
 }
 
+/* =============================================================================
+   Réglages dans une roue, toute seule dans un coin (en haut à droite sur
+   téléphone, en bas du rail sur ordinateur). « Mon compte » commence par ton
+   profil : pseudo, photo, personnage ; tes stats viennent dessous.
+   ========================================================================== */
+// L'onglet Admin prend un crayon : la roue, c'est désormais les réglages.
+PH.pencil = '<path d="M92 216H48a8 8 0 0 1-8-8v-44a8 8 0 0 1 2.3-5.7l120-120a8 8 0 0 1 11.4 0l44 44a8 8 0 0 1 0 11.4l-120 120A8 8 0 0 1 92 216Z" fill="none" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/><path d="M136 64l56 56" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>';
+PH['pencil.f'] = '<path d="M92 216H48a8 8 0 0 1-8-8v-44a8 8 0 0 1 2.3-5.7l120-120a8 8 0 0 1 11.4 0l44 44a8 8 0 0 1 0 11.4l-120 120A8 8 0 0 1 92 216Z"/>';
+NAV_ICON.admin = 'pencil';
+
+const gearBtn = () => `<button class="iconbtn gearbtn" data-act="settings" aria-label="Réglages" title="Réglages">${ico('gear-six')}</button>`;
+
+function settingsModal() {
+  return `<div class="modalbackdrop" data-act="closesettings"><div class="modal smallx settingsx" role="dialog" aria-modal="true" aria-label="Réglages" data-act="stop">
+    <button class="modalclose" data-act="closesettings" aria-label="Fermer">${ico('x')}</button>
+    <div class="modalhead"><div class="modalname">Réglages</div></div>
+    <div class="modalbody"><ul class="settings">
+      <li><span class="k">Sons<small>Un petit bruit quand tu poses un prono ou débloques un badge.</small></span>
+        <button class="toggle" role="switch" aria-checked="${S.soundOn}" aria-label="Sons" data-act="soundtoggle"></button></li>
+      ${pushRow()}
+      <li><span class="k">Tuto<small>La visite guidée, en 1 minute.</small></span>
+        <button class="btn small sec" data-act="tuto">Revoir</button></li>
+      <li><span class="k">Barème<small>Comment on marque des points.</small></span>
+        <button class="btn small sec" data-act="bareme">Voir</button></li>
+      <li><span class="k">Confidentialité<small>Tes données et tes droits.</small></span>
+        <button class="btn small sec" data-act="privacy">Lire</button></li>
+      ${HALLOWEEN ? `<li><span class="k">Décor d'Halloween<small>Jusqu'au 1er novembre, puis l'appli reprend son thème habituel. Dessins : game-icons.net (Delapouite, Lorc), licence CC BY 3.0.</small></span></li>` : ''}
+      ${S.leagues ? `<li><span class="k">Supprimer mon compte<small>Efface ton compte et tous tes pronos.</small></span>
+        <button class="btn small sec" data-act="deleteacc">Supprimer</button></li>` : ''}
+      <li><span class="k">Connecté en tant que <b>${esc(S.pseudo)}</b></span>
+        <button class="btn small sec" data-act="logout">${ICONS.logout}Se déconnecter</button></li>
+    </ul></div></div></div>`;
+}
+
+// Le haut de « Mon compte » : ton personnage, ton pseudo, ta photo, et de quoi l'habiller.
+function profilePanel() {
+  const uid = S.session.user.id, hex = shirtOf(uid), hs = hex ? hexHS(hex) : { h: 0, s: 1 }, photo = avatarUrl(uid);
+  const name = S.editPseudo
+    ? `<form id="pseudoform" class="lgform prof-form"><label for="newpseudo">Ton nouveau pseudo (2 à 20 caractères)</label>
+        <div class="lgrow"><input id="newpseudo" required minlength="2" maxlength="20" autocomplete="nickname" spellcheck="false" value="${esc(S.pseudo)}">
+          <button class="btn small" type="submit">OK</button><button class="btn small sec" type="button" data-act="pseudocancel">Annuler</button></div>
+        <div id="pseudoerr" class="ferr" role="alert"></div></form>`
+    : `<div class="prof-name"><h1>${esc(S.pseudo)}</h1><button class="linkbtn" data-act="pseudoedit">Changer de pseudo</button></div>`;
+  return `<section class="panel profilex mychar">
+    ${guy('salut', { cls: 'prof-guy' })}<div class="pod3d" data-kind="me"></div>
+    <div class="prof-id">
+      ${name}
+      <div class="prof-photo">${avatarHtml(uid, S.pseudo)}<span class="prof-phototxt">${photo ? 'Ta photo, sur la balle de ton personnage.' : 'Ta photo ira sur la balle de ton personnage.'}</span>
+        <span class="photobtns"><button class="btn small sec" data-act="avatarpick">${photo ? 'Changer' : 'Ajouter une photo'}</button>${photo ? '<button class="btn small sec" data-act="avatarremove">Retirer</button>' : ''}
+        <input type="file" id="avatarfile" accept="image/*" hidden></span></div>
+    </div>
+    <button class="skintoggle" data-act="skintoggle" aria-expanded="${!!S.skinOpen}"><span>Personnaliser mon perso<small>Couleur du maillot${S.outfitOk ? ', accessoires' : ''}</small></span><i aria-hidden="true"></i></button>
+    ${S.skinOpen ? `<div class="prof-skin">
+      <div class="mychar-pick">
+        <div class="wheel" role="slider" tabindex="0" aria-label="Couleur du maillot" aria-valuemin="0" aria-valuemax="359" aria-valuenow="${Math.round(hs.h)}"
+          data-h="${hs.h}" data-s="${hs.s}" style="--c:${hex || THEME.ALL.chip}"><i style="${hex ? wheelDot(hs.h, hs.s) : 'display:none'}"></i></div>
+        <div><p class="hint explain">Touche le cercle pour changer la couleur de ton maillot.</p>
+          ${hex ? '<button class="btn small sec" data-act="shirtreset">Couleur du tournoi</button>' : ''}</div>
+      </div>
+      ${S.outfitOk ? accessoriesHtml() : ''}
+    </div>` : ''}
+  </section>`;
+}
+
+async function savePseudo(f) {
+  const uid = S.session.user.id, err = f.querySelector('#pseudoerr'), btn = f.querySelector('button[type=submit]');
+  const v = f.querySelector('#newpseudo').value.trim();
+  err.textContent = '';
+  if (v === S.pseudo) { S.editPseudo = false; keepRender(); return; }
+  if (v.length < 2 || v.length > 20) { err.textContent = 'Entre 2 et 20 caractères.'; return; }
+  btn.disabled = true;
+  try {
+    // Pris par quelqu'un d'autre ? (changer seulement les majuscules du sien reste permis)
+    if (v.toLowerCase() !== S.pseudo.toLowerCase()) {
+      const free = await sb.rpc('pseudo_libre', { p: v });
+      if (!free.error && free.data === false) { err.textContent = 'Ce pseudo est déjà pris : choisis-en un autre.'; btn.disabled = false; return; }
+    }
+    const r = await sb.from('profiles').update({ pseudo: v }).eq('id', uid);
+    if (r.error) throw r.error;
+  } catch (e) {
+    err.textContent = /duplicate|unique|profiles_pseudo/i.test((e && e.message) || '') ? 'Ce pseudo est déjà pris : choisis-en un autre.' : friendlyError(e);
+    btn.disabled = false; return;
+  }
+  S.pseudo = v; S.editPseudo = false;
+  for (const b of [S.accountBoard, S.boardAll, S.board]) (b || []).forEach(x => { if (x.user_id === uid) x.pseudo = v; });
+  playSound('confirm'); toast(`Ton pseudo est maintenant « ${v} »`); keepRender();
+}
+
+async function onAct24(act) {
+  if (act === 'settings') { S.openSettings = true; keepRender(); return true; }
+  if (act === 'closesettings') { S.openSettings = false; keepRender(); return true; }
+  if (act === 'pseudoedit') { S.editPseudo = true; keepRender(); const i = document.getElementById('newpseudo'); if (i) { i.focus(); i.select(); } return true; }
+  if (act === 'pseudocancel') { S.editPseudo = false; keepRender(); return true; }
+  if (act === 'skintoggle') { S.skinOpen = !S.skinOpen; keepRender(); return true; }
+  // Depuis les réglages vers une autre page ou fenêtre : on range d'abord les réglages.
+  if (S.openSettings && ['tuto', 'bareme', 'privacy', 'deleteacc', 'logout'].includes(act)) { S.openSettings = false; keepRender(); }
+  return false;
+}
+function onSubmit24(f) {
+  if (f.id === 'pseudoform') { savePseudo(f); return true; }
+  return false;
+}
+
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
   // entièrement terminé (voir isTournamentFinished) : pas de bilan sur
@@ -8052,7 +8192,7 @@ function accountView() {
   if (finished === null) return '<div class="loading">Chargement…</div>';
 
   if (!finished.length) {
-    return `<header class="pagehead"><h1>Mon compte</h1><p>Tes stats, tes badges et ton personnage.</p></header>${emptyBox('loupe', 'Tes stats arrivent dès que ton premier prono est jugé.')}${myCharPanel()}${settingsPanel()}`;
+    return `${profilePanel()}${emptyBox('loupe', 'Tes stats arrivent dès que ton premier prono est jugé.')}`;
   }
 
   const n = finished.length;
@@ -8211,7 +8351,8 @@ function accountView() {
 
   const ordinal = r => r + (r === 1 ? 'er' : 'e');
   return `
-  <header class="pagehead"><h1>Mon compte</h1><p>Tes stats depuis le début.</p></header>
+  ${profilePanel()}
+  <h2 class="stathead">Tes stats</h2>
   <section class="acchero" style="${themeVarsCss('ALL')}">
     <div class="acchero-row">
       <div class="big"><span data-count="${total}">${total}</span><small>points</small></div>
@@ -8261,35 +8402,8 @@ function accountView() {
     <h3>Forme récente</h3>
     <ul class="cmlist" style="margin-top:8px">${recentRows}</ul>
   </section>
-  ${myCharPanel()}${settingsPanel()}
   </div>`;
 }
-// Réglages et déconnexion (sur mobile, c'est ici qu'on se déconnecte).
-function settingsPanel() {
-  return `<section class="panel">
-    <h3>Réglages</h3>
-    <ul class="settings">
-      <li><span class="k">Sons<small>Un petit bruit quand tu poses un prono ou débloques un badge.</small></span>
-        <button class="toggle" role="switch" aria-checked="${S.soundOn}" aria-label="Sons" data-act="soundtoggle"></button></li>
-      <li><span class="k">Tuto<small>La visite guidée, en 1 minute.</small></span>
-        <button class="btn small sec" data-act="tuto">Revoir</button></li>
-      <li><span class="k">Barème<small>Comment on marque des points.</small></span>
-        <button class="btn small sec" data-act="bareme">Voir</button></li>
-      ${HALLOWEEN ? `<li><span class="k">Décor d'Halloween<small>Jusqu'au 1er novembre, puis l'appli reprend son thème habituel. Dessins : game-icons.net (Delapouite, Lorc), licence CC BY 3.0.</small></span></li>` : ''}
-      <li class="photorow"><span class="k">${avatarHtml(S.session.user.id, S.pseudo)}<span>Photo de profil<small>Elle remplace ton initiale, pour toi et pour tes amis.</small></span></span>
-        <span class="photobtns"><button class="btn small sec" data-act="avatarpick">${avatarUrl(S.session.user.id) ? 'Changer' : 'Ajouter une photo'}</button>${avatarUrl(S.session.user.id) ? '<button class="btn small sec" data-act="avatarremove">Retirer</button>' : ''}
-        <input type="file" id="avatarfile" accept="image/*" hidden></span></li>
-      ${pushRow()}
-      <li><span class="k">Confidentialité<small>Tes données et tes droits.</small></span>
-        <button class="btn small sec" data-act="privacy">Lire</button></li>
-      ${S.leagues ? `<li><span class="k">Supprimer mon compte<small>Efface ton compte et tous tes pronos.</small></span>
-        <button class="btn small sec" data-act="deleteacc">Supprimer</button></li>` : ''}
-      <li><span class="k">Connecté en tant que <b>${esc(S.pseudo)}</b></span>
-        <button class="btn small sec" data-act="logout">${ICONS.logout}Se déconnecter</button></li>
-    </ul>
-  </section>`;
-}
-
 /* =============================================================================
    Bilan de tournoi animé ("récap") — déclenché depuis "Par tournoi / saison"
    dans "Mon compte" (bouton "Voir le récap" posé par breakdownRow, voir plus
@@ -8409,7 +8523,7 @@ const TUTO_STEPS = [
     text: () => S.leagues ? 'Dans Amis, joue dans une ligue avec tes amis (un code suffit) ou au classement mondial. Le 1er à la fin du mois devient champion du mois.' : 'Dans Amis : le général, le mois, le WTT et la Pro A. Le 1er à la fin du mois devient champion du mois.' },
   { id: 'perso', target: 'nav-account', pose: 'cadeau', next: "C'est parti", title: 'Ton personnage',
     text: () => S.outfitOk ? 'Chaque badge gagné lui débloque un accessoire. Habille-le dans Mon compte.' : 'Tes stats, tes badges et la couleur de ton maillot sont dans Mon compte.',
-    sch: () => '<p class="tuto-note">Le barème complet est en bas de l’onglet Amis. Ce tuto reste dans Mon compte, Réglages.</p>' },
+    sch: () => '<p class="tuto-note">Le barème complet est en bas de l’onglet Amis. Ce tuto reste dans les réglages : la roue, en haut.</p>' },
 ];
 let TUTO = null; // { i, el, picked, steps, mid }
 function tutoTarget(name) {
@@ -9269,6 +9383,7 @@ function esc0(s) { return String(s ?? ''); }
 $app.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (await onAct24(act)) return;
   if (await onAct23(act, el, v)) return;
   if (act === 'authmode') { S.authMode = S.authMode === 'login' ? 'signup' : 'login'; render(); }
   else if (act === 'logout') { await disablePush(true); await sb.auth.signOut(); }
@@ -9361,6 +9476,8 @@ $app.addEventListener('click', async e => {
   else if (act === 'closeceleb') closeCeleb();
 });
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && S.openSettings) { S.openSettings = false; keepRender(); return; }
+  if (e.key === 'Escape' && S.editPseudo) { S.editPseudo = false; keepRender(); return; }
   if (e.key === 'Escape' && (S.openLeague || S.openDelete || S.openPrivacy || S.recovery)) { onEscape23(); return; }
   if (e.key === 'Escape' && S.openCompetitor) { S.openCompetitor = null; keepRender(); }
   if (e.key === 'Escape' && S.openPlayer && !S.openDuel) { S.openPlayer = null; keepRender(); }
@@ -9374,6 +9491,7 @@ $app.addEventListener('submit', e => {
   e.preventDefault();
   if (e.target.id === 'authform') submitAuth(e.target);
   else if (onSubmit23(e.target)) { /* ligues, compte */ }
+  else if (onSubmit24(e.target)) { /* pseudo */ }
   else if (e.target.id === 'addmatch') addMatch(e.target);
 });
 $app.addEventListener('pointerdown', e => {
