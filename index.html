@@ -1958,6 +1958,71 @@ html.dark .sparklegend .dot[style*="var(--ground-2)"],html.halloween .sparklegen
 .modh{margin:22px 0 2px;font:700 18px/1.15 var(--f-head);color:var(--ink)}
 .suspnotice .recapnotice-sub a{color:inherit;text-decoration:underline;text-underline-offset:3px}
 @media (max-width:520px){.lgacts,.lgconfirm{padding-left:0}.modnotes{margin-left:0}.moditem .lgconfirm{padding-left:0}}
+/* L'avis de la ligue, sous un match à venir : une barre partagée aux couleurs du tournoi. */
+.avis{margin:12px 2px 0;padding:10px 12px 11px;border-radius:10px;background:var(--surface-2)}
+.avis-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font:600 13.5px/1.2 var(--f-text);color:var(--ink)}
+.avis-head span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avis-head small{flex:none;font-weight:500;color:var(--ink-2)}
+.avis-bar{height:8px;margin:8px 0 6px;border-radius:4px;background:color-mix(in srgb,var(--table) 22%,var(--surface));overflow:hidden}
+.avis-bar i{display:block;height:100%;background:var(--table);border-radius:4px 0 0 4px}
+.avis-legend{display:flex;justify-content:space-between;gap:10px;font:500 13px/1.25 var(--f-text);color:var(--ink-2)}
+.avis-legend span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avis-legend b{font:700 italic 15px/1 var(--f-head);color:var(--ink)}
+.avis-score{margin:6px 0 0;font:400 13px/1.3 var(--f-text);color:var(--ink-2)}
+.avis-score b{font-weight:700;color:var(--ink)}
+
+/* Défis à plusieurs. */
+.dnseg{margin:4px 0 14px}
+.avstack{display:inline-flex;flex:none}
+.avstack .av{width:24px;height:24px;font-size:12px;box-shadow:0 0 0 2px var(--surface-2)}
+.avstack .av + .av{margin-left:-8px}
+.gdhow{margin:0 0 4px}
+.gdpick .gdrow{grid-template-columns:22px 30px minmax(0,1fr);cursor:pointer}
+.gdpick .gdrow input{width:20px;height:20px;margin:0;padding:0;border-radius:4px;background:none;box-shadow:none;-webkit-appearance:checkbox;appearance:auto;accent-color:var(--table)}
+.gdpick .gdrow input:disabled + .av,.gdpick .gdrow input:disabled ~ .wname{opacity:.45}
+.gdpick + .btn{margin-top:14px}
+.gdalready{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 14px}
+.gdalready p{margin:0;flex:1 1 200px;font:500 14.5px/1.4 var(--f-text);color:var(--ink)}
+.gdalready .btn{margin:0}
+.gdx .modalhead{padding-right:64px}
+.gdhero{display:flex;justify-content:center;margin:2px 0 4px}
+.gdhero .guy{width:110px;height:110px}
+.gdlist{list-style:none;margin:6px 0 0;padding:0}
+.gdlist li{display:grid;grid-template-columns:22px 30px minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line-2);font:500 15px/1.2 var(--f-text);color:var(--ink)}
+.gdlist li:first-child{border-top:0}
+.gdlist li:not(:has(.gdrank)){grid-template-columns:30px minmax(0,1fr) auto}
+.gdlist li.wait{color:var(--ink-2)}
+.gdlist li.top{background:color-mix(in srgb,var(--gold) 16%,transparent);border-radius:8px;border-top-color:transparent;padding-left:6px;padding-right:6px}
+.gdlist .av{width:30px;height:30px;font-size:14px}
+.gdrank{font:700 italic 17px/1 var(--f-head);color:var(--ink-2);text-align:center}
+.gdname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gdpred{font:500 13.5px/1.2 var(--f-text);color:var(--ink-2);text-align:right}
+.gdpts{font:700 italic 16px/1 var(--f-head);color:var(--ink);min-width:44px;text-align:right}
+.gdx .duelbtns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* La cloche : à côté de la roue des réglages, avec le nombre de nouvelles. */
+.bellbtn{position:relative;width:42px;height:42px;padding:0;color:var(--ink)}
+.bellbtn .ico{width:24px;height:24px}
+.navfoot .bellbtn{color:rgba(255,255,255,.75)}
+.bellcount{position:absolute;top:3px;right:2px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;
+  font:700 11.5px/18px var(--f-head);text-align:center;box-shadow:0 0 0 2px var(--ground)}
+.navfoot .bellcount{box-shadow:0 0 0 2px var(--dock)}
+.bellh{margin:14px 0 4px;font:700 17px/1.15 var(--f-head);color:var(--ink)}
+.bellh:first-child{margin-top:2px}
+.belllist{list-style:none;margin:0;padding:0}
+.bellitem{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:center;gap:12px;width:100%;padding:10px 4px;border:0;border-top:1px solid var(--line-2);border-radius:0;background:none;text-align:left;color:var(--ink);cursor:pointer}
+.belllist li:first-child .bellitem{border-top:0}
+.bellitem .av{width:32px;height:32px;font-size:14px}
+.bellico{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--surface-2);color:var(--ink-2)}
+.bellico .ico{width:18px;height:18px}
+.belltxt{display:flex;flex-direction:column;gap:3px;min-width:0;font:500 14.5px/1.35 var(--f-text)}
+.belltxt small{font:400 12.5px/1.2 var(--f-text);color:var(--ink-2)}
+.belltxt span small{display:block;margin-top:2px}
+.bellitem.new .belltxt>span{font-weight:650}
+.bellitem.new{background:color-mix(in srgb,var(--table) 7%,transparent)}
+.bellitem:focus-visible{outline:2px solid var(--focus,var(--table));outline-offset:-2px}
+html.dark .avis-bar i,html.halloween .avis-bar i{background:color-mix(in srgb,var(--chip) 72%,white)}
+html.dark .avis-bar,html.halloween .avis-bar{background:color-mix(in srgb,var(--chip) 22%,var(--surface))}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -3021,6 +3086,7 @@ async function loadAll() {
   loadAccount().then(render); // idem : pour la pastille de série sur les cartes de match, sans bloquer la connexion
   loadWinners().then(render);
   loadModState().then(render).catch(() => {});
+  loadPlus().then(render).catch(() => {});
   loadDuels().then(() => { render(); startLive(); });
 }
 // Vrai classement mondial WTT (top 100 de chaque tableau), enregistré par le
@@ -3154,7 +3220,7 @@ async function loadAccount() {
 async function handleSession(session) {
   if (!session) {
     S.session = null; S.pseudo = ''; S.isAdmin = false; S.matches = []; S.myPreds = {}; S.board = null;
-    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive(); LITE.clear(); S.suspended = false; S.modReports = undefined; S.openReport = null; S.duelPts = null; S.rival = null;
+    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive(); LITE.clear(); S.suspended = false; S.modReports = undefined; S.openReport = null; stopPlus(); S.notifs = undefined; S.gdefis = undefined; S.openBell = false; S.openGd = null; _bellCache.at = 0; S.duelPts = null; S.rival = null;
     render(); return;
   }
   if (S.session && S.session.user.id === session.user.id) { S.session = session; return; }
@@ -3228,13 +3294,13 @@ function render() {
         <div class="navbrand">${MARK(30)}</div>${cobwebHtml()}${spiderHtml('rail')}
         ${tabs.map(([k, label]) => `<button class="navitem" data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${navIcon(k)}<span>${label}</span>${k === 'matches' && todo ? `<span class="navdot" title="Pronos à faire">${todo}</span>` : ''}</button>`).join('')}
         <span class="navball" aria-hidden="true"></span>
-        <div class="navfoot">${gearBtn()}<span class="avatar" title="${esc(S.pseudo)}">${esc(initial)}${avatarImg(S.session.user.id)}</span></div>
+        <div class="navfoot">${bellBtn()}${gearBtn()}<span class="avatar" title="${esc(S.pseudo)}">${esc(initial)}${avatarImg(S.session.user.id)}</span></div>
       </nav>
       <div class="content">
         <div class="topbar">
           <header class="topbar-row">${spiderHtml('top')}
             <div class="brand">${MARK(26)}${esc(APP_NAME)}</div>
-            <span class="topright">${myStatusChip()}${gearBtn()}</span>
+            <span class="topright">${myStatusChip()}${bellBtn()}${gearBtn()}</span>
           </header>
           ${liveTicker()}
         </div>
@@ -3809,6 +3875,7 @@ function matchRow(m, fresh, i, streakInfo) {
       </div></div>
       <div class="predstatus">${status}${streakTeaser}</div>
       ${gauge}
+      ${avisHtml(m)}
       ${ballesStepperHtml(m)}
       ${duelRowHtml(m)}
     </div>`;
@@ -3903,6 +3970,7 @@ async function pick(id, a, b) {
   if (cur && cur._pending && (cur.pred_a !== a || cur.pred_b !== b)) return; // un autre score a été touché entre-temps : il gagne
   S.myPreds[id] = data;
   toast(`Prono enregistré : ${a}–${b}`);
+  avisRefresh();
 }
 // Change la mise de balles sur un pronostic déjà posé (voir ballesStepperHtml
 // / ballesStock). newVal est la valeur ABSOLUE visée (pas un delta) ; elle
@@ -4254,6 +4322,7 @@ function checkNewBadges() {
     let initialized = false;
     try { initialized = localStorage.getItem('spin_badges_init') === '1'; } catch (e) { /* ignore */ }
     const newlyUnlocked = initialized ? list.filter(b => b.unlocked && !seenSet.has(b.id)) : [];
+    if (newlyUnlocked.length) { try { const at = JSON.parse(localStorage.getItem('spin_badges_at') || '{}') || {}; newlyUnlocked.forEach(b => { at[b.id] = Date.now(); }); localStorage.setItem('spin_badges_at', JSON.stringify(at)); } catch (e) { /* ignore */ } }
     list.forEach(b => { if (b.unlocked) seenSet.add(b.id); });
     try {
       localStorage.setItem('spin_badges_seen', JSON.stringify([...seenSet]));
@@ -7175,7 +7244,7 @@ async function loadDuels() {
     const r = await fetchAllRows(() => sb.from('duels').select('*').or(`challenger.eq.${me},opponent.eq.${me}`).order('id'));
     S.duels = r.error ? null : (r.data || []); // table absente (script SQL pas lancé) : les défis restent cachés
   } catch (e) { S.duels = null; }
-  if (S.duels) { await Promise.all([loadEmotes(), loadDuelPoints().catch(() => {})]); checkNewEmotes(); notifyAccepted(); }
+  if (S.duels) { await Promise.all([loadEmotes(), loadDuelPoints().catch(() => {}), loadGroupDefis().catch(() => {})]); checkNewEmotes(); notifyAccepted(); }
 }
 // Un défi compte une fois accepté (sans la colonne accepted_at, script pas encore lancé : comme avant).
 const duelAccepted = d => !('accepted_at' in d) || !!d.accepted_at;
@@ -7232,11 +7301,12 @@ function duelRowHtml(m) {
   if (!S.duels || !S.session) return '';
   const list = myDuels().filter(d => d.match_id === m.id);
   const canNew = !isLocked(m) && m.status === 'scheduled' && S.myPreds[m.id] && !S.myPreds[m.id]._pending;
-  if (!list.length && !canNew) return '';
-  return `<div class="duelrow">${list.map(duelChip).join('')}${canNew ? `<button class="duelnew" data-act="duelnew" data-id="${m.id}">${ico('ping-pong')}Défier un ami</button>` : ''}</div>`;
+  const gd = gdChipsFor(m);
+  if (!list.length && !canNew && !gd) return '';
+  return `<div class="duelrow">${list.map(duelChip).join('')}${gd}${canNew ? `<button class="duelnew" data-act="duelnew" data-id="${m.id}">${ico('ping-pong')}Défier un ami</button>` : ''}</div>`;
 }
 // En haut de l'onglet Matchs : un ami te défie et tu n'as pas encore pronostiqué.
-function duelNotice() {
+function duelNoticeOld() {
   if (!S.duels || !S.session) return '';
   const me = S.session.user.id;
   const withM = list => list.map(d => ({ d, m: S.matches.find(x => x.id === d.match_id) })).filter(x => x.m && !isLocked(x.m));
@@ -7261,7 +7331,7 @@ function duelNotice() {
   </section>`;
 }
 // Choisir l'ami à défier.
-function duelNewModal(mid) {
+function duelNewModalOld(mid) {
   const m = S.matches.find(x => x.id === mid);
   if (!m) return '';
   const me = S.session.user.id;
@@ -7375,7 +7445,7 @@ function duelRecord(otherId) {
   }
   return r;
 }
-function duelsPanel() {
+function duelsPanelOld() {
   if (!S.duels) return '';
   const r = duelRecord(null);
   if (!r.list.length) return '';
@@ -8005,7 +8075,7 @@ function privacyModal() {
 
 // --- Branchements -------------------------------------------------------------------------
 function modals23() {
-  return `${S.openLeague && S.session ? leagueModal(S.openLeague) : ''}${S.openDelete && S.session ? deleteModal() : ''}${S.openPrivacy ? privacyModal() : ''}${S.recovery && S.session ? recoveryModal() : ''}${modals27()}`;
+  return `${S.openLeague && S.session ? leagueModal(S.openLeague) : ''}${S.openDelete && S.session ? deleteModal() : ''}${S.openPrivacy ? privacyModal() : ''}${S.recovery && S.session ? recoveryModal() : ''}${modals27()}${modals28()}`;
 }
 async function onAct23(act, el, v) {
   const id = el.dataset.id ? Number(el.dataset.id) : null;
@@ -8703,6 +8773,450 @@ function onSubmit27(f) {
 // Échap ferme d'abord le signalement (la fiche du joueur reste ouverte dessous).
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && S.openReport) { S.openReport = null; keepRender(); e.stopImmediatePropagation(); }
+});
+
+/* =============================================================================
+   L'avis de la ligue, les défis à plusieurs et la cloche
+   (script ajout-avis-defis-cloche.sql). Sans le script, rien n'apparaît :
+   avis caché, défis à deux comme avant, cloche limitée à ce que l'appli
+   connaît déjà (tes résultats, défis, récaps, badges).
+   ========================================================================== */
+PH['bell-simple'] = '<path d="M168,224a8,8,0,0,1-8,8H96a8,8,0,1,1,0-16h64A8,8,0,0,1,168,224Zm53.85-32A15.8,15.8,0,0,1,208,200H48a16,16,0,0,1-13.8-24.06C39.75,166.38,48,139.34,48,104a80,80,0,1,1,160,0c0,35.33,8.26,62.38,13.81,71.94A15.89,15.89,0,0,1,221.84,192ZM208,184c-7.73-13.27-16-43.95-16-80a64,64,0,1,0-128,0c0,36.06-8.28,66.74-16,80Z"/>';
+PH['bell-simple.f'] = '<path d="M168,224a8,8,0,0,1-8,8H96a8,8,0,1,1,0-16h64A8,8,0,0,1,168,224Zm53.81-48.06C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H208a16,16,0,0,0,13.8-24.06Z"/>';
+
+SEG_LABELS.dnmode = 'Type de défi';
+// Déclenche une action de l'appli comme si on avait touché un bouton.
+function runAct(act, data) {
+  const b = document.createElement('button');
+  b.hidden = true; b.dataset.act = act;
+  Object.entries(data || {}).forEach(([k, v]) => { b.dataset[k] = v; });
+  $app.appendChild(b); b.click(); b.remove();
+}
+const matchLabel = mid => { const m = matchOf(mid); return m ? `${m.side_a} – ${m.side_b}` : ''; };
+const plural = (n, w, ws) => `${n} ${n > 1 ? (ws || w + 's') : w}`;
+
+// --- 1. L'avis de la ligue ----------------------------------------------------------
+// Les matchs à venir (ou en cours) des 10 prochains jours : un seul appel pour tous.
+function avisMatchIds() {
+  const lim = Date.now() + 10 * 864e5;
+  return (S.matches || []).filter(m => (m.status === 'scheduled' || m.status === 'live') && new Date(m.starts_at).getTime() < lim)
+    .map(m => m.id).sort((a, b) => a - b).slice(0, 80);
+}
+function avisFor(m) {
+  if (S.avisOk === false || !S.session) return null;
+  const lg = curLeague() ? curLeague().id : null, ids = avisMatchIds();
+  if (!ids.includes(m.id)) return null;
+  const v = liteGet('avis:' + lg + ':' + ids.join(','), async () => {
+    const r = await sb.rpc('avis_ligue', { p_league: lg, p_matches: ids });
+    if (r.error) { if (missingInDb(r.error)) { S.avisOk = false; return []; } throw r.error; }
+    S.avisOk = true;
+    return r.data || [];
+  });
+  return (v || []).find(x => x.match_id === m.id) || null;
+}
+// Après mon prono, l'avis se met à jour (ma voix compte aussi).
+function avisRefresh() { for (const k of [...LITE.keys()]) if (k.startsWith('avis:')) LITE.delete(k); }
+function avisHtml(m) {
+  const a = avisFor(m);
+  if (!a || !a.n) return '';
+  const pa = Math.round(a.pour_a / a.n * 100), pb = 100 - pa;
+  const lg = curLeague();
+  return `<div class="avis">
+    <div class="avis-head"><span>${lg ? `L'avis de la ligue « ${esc(lg.name)} »` : "L'avis de tout le monde"}</span><small>${plural(a.n, 'prono')}</small></div>
+    <div class="avis-bar" role="img" aria-label="${pa} % pour ${esc(m.side_a)}, ${pb} % pour ${esc(m.side_b)}"><i style="width:${pa}%"></i></div>
+    <div class="avis-legend"><span><b>${pa} %</b> ${esc(m.side_a)}</span><span>${esc(m.side_b)} <b>${pb} %</b></span></div>
+    <p class="avis-score">Score le plus joué : <b>${a.score_a}–${a.score_b}</b> (${a.score_n} sur ${a.n})</p>
+  </div>`;
+}
+
+// --- 2. Les défis à plusieurs ----------------------------------------------------------
+async function loadGroupDefis() {
+  if (!S.session) return;
+  const [j, g] = await Promise.all([
+    fetchAllRows(() => sb.from('defis_groupe_joueurs').select('defi_id,user_id,createur,accepte_le').order('defi_id').order('user_id')),
+    fetchAllRows(() => sb.from('defis_groupe').select('id,match_id,createur,created_at').order('id')),
+  ]);
+  if (j.error || g.error) { S.gdefis = null; return; }
+  S.gdefis = (g.data || []).map(d => ({ ...d, players: (j.data || []).filter(x => x.defi_id === d.id) }))
+    .filter(d => d.players.some(p => p.user_id === S.session.user.id));
+  await loadGdPoints();
+}
+// Les pronos (match commencé) et les points (match fini) des joueurs de mes défis.
+async function loadGdPoints() {
+  const started = (S.gdefis || []).filter(d => { const m = matchOf(d.match_id); return !m || m.status !== 'scheduled' || isLocked(m); });
+  S.gdPred = S.gdPred || new Map(); S.gdPts = S.gdPts || new Map();
+  if (!started.length) return;
+  const mids = [...new Set(started.map(d => d.match_id))], uids = [...new Set(started.flatMap(d => d.players.map(p => p.user_id)))];
+  const [p, pts] = await Promise.all([
+    fetchAllRows(() => sb.from('predictions').select('user_id,match_id,pred_a,pred_b').in('match_id', mids).in('user_id', uids).order('match_id').order('user_id')),
+    fetchAllRows(() => sb.from('prediction_points').select('user_id,match_id,points').in('match_id', mids).in('user_id', uids).order('match_id').order('user_id')),
+  ]);
+  if (!p.error) S.gdPred = new Map((p.data || []).map(x => [x.user_id + ':' + x.match_id, x]));
+  if (!pts.error) S.gdPts = new Map((pts.data || []).map(x => [x.user_id + ':' + x.match_id, x.points]));
+}
+// Où en est un défi à plusieurs, vu par moi.
+function gdInfo(d) {
+  const me = S.session.user.id, m = matchOf(d.match_id), names = pseudoMap();
+  const started = !m || m.status !== 'scheduled' || isLocked(m);
+  const mine = d.players.find(p => p.user_id === me) || {};
+  const accepted = d.players.filter(p => p.accepte_le), pending = d.players.filter(p => !p.accepte_le);
+  const who = uid => (uid === me ? 'Toi' : names[uid] || '?');
+  const base = { d, m, mine, accepted, pending, who, creator: d.createur === me, n: d.players.length };
+  if (m && m.status === 'cancelled') return { ...base, state: 'void', why: 'Le match a été annulé.' };
+  if (!started) return { ...base, state: mine.accepte_le ? 'open' : 'invited' };
+  if (!mine.accepte_le) return { ...base, state: 'void', why: "Tu n'as pas accepté avant le match." };
+  if (accepted.length < 2) return { ...base, state: 'void', why: "Personne n'a accepté avant le match." };
+  const rows = accepted.map(p => {
+    const k = p.user_id + ':' + d.match_id, pr = S.gdPred.get(k);
+    return { uid: p.user_id, pred: pr ? `${pr.pred_a}–${pr.pred_b}` : null, pts: pr && S.gdPts.has(k) ? S.gdPts.get(k) : null };
+  });
+  if (!m || m.status !== 'finished') return { ...base, state: 'live', rows };
+  const played = rows.filter(r => r.pred);
+  if (played.length < 2) return { ...base, state: 'void', rows, why: 'Moins de deux joueurs avaient fait leur prono.' };
+  played.sort((a, b) => (b.pts ?? 0) - (a.pts ?? 0));
+  let rk = 0, prev = null;
+  played.forEach((r, i) => { if (r.pts !== prev) { rk = i + 1; prev = r.pts; } r.rank = rk; });
+  const top = played.filter(r => r.rank === 1), meRow = played.find(r => r.uid === me);
+  return { ...base, state: 'done', rows: played.concat(rows.filter(r => !r.pred)), top, meRow, k: played.length };
+}
+const gdMine = () => (S.gdefis || []);
+function gdChip(d) {
+  const i = gdInfo(d), me = S.session.user.id;
+  const others = d.players.filter(p => p.user_id !== me).slice(0, 3);
+  const stack = `<span class="avstack">${others.map(p => avatarHtml(p.user_id, pseudoMap()[p.user_id])).join('')}</span>`;
+  const label = i.state === 'invited' ? `${i.who(d.createur)} te propose un défi à ${i.n}`
+    : i.state === 'open' ? (i.pending.length ? `Défi à ${i.n} : ${plural(i.pending.length, 'réponse attendue', 'réponses attendues')}` : `Défi à ${i.n}, tout le monde a accepté`)
+    : i.state === 'live' ? `Défi à ${i.accepted.length} en cours`
+    : i.state === 'done' ? (!i.meRow ? `Défi à ${i.k} : pas de prono` : i.meRow.rank === 1 ? (i.top.length > 1 ? `Défi à ${i.k} : 1er ex aequo` : `Défi à ${i.k} gagné`) : `Défi à ${i.k} : tu finis ${i.meRow.rank}e`)
+    : 'Défi à plusieurs annulé';
+  const cls = i.state === 'done' ? (i.meRow && i.meRow.rank === 1 ? 'win' : 'loss') : i.state === 'invited' ? 'proposed incoming' : i.state;
+  return `<button class="duelchip gdchip ${cls}" data-act="gdefi" data-gid="${d.id}">${stack}<span>${esc(label)}</span></button>`;
+}
+const gdChipsFor = m => gdMine().filter(d => d.match_id === m.id).map(gdChip).join('');
+
+function gdModal(id) {
+  const d = gdMine().find(x => x.id === id);
+  if (!d) return '';
+  const i = gdInfo(d), m = i.m, me = S.session.user.id, names = pseudoMap();
+  const when = m ? fmtClose(new Date(m.starts_at).getTime()) : '';
+  const title = i.state === 'invited' ? `${esc(i.who(d.createur))} te propose un défi à ${i.n}` : `Défi à ${i.state === 'done' ? i.k : i.state === 'live' ? i.accepted.length : i.n}`;
+  const verdict = i.state === 'invited' ? `Accepte avant le match (${esc(when)}) pour jouer. Celui qui marque le plus de points sur ce match gagne.`
+    : i.state === 'open' ? `Le défi se joue entre ceux qui ont accepté avant le match (${esc(when)}). Les pronos restent cachés jusque-là.`
+    : i.state === 'live' ? 'Match en cours : les pronos sont dévoilés.'
+    : i.state === 'done' ? (i.top.length > 1 ? `Égalité en tête : ${i.top.map(r => (r.uid === me ? 'toi' : esc(i.who(r.uid)))).join(' et ')}, avec ${plural(i.top[0].pts, 'point')}.`
+      : i.top[0].uid === me ? `Tu gagnes avec ${plural(i.top[0].pts, 'point')}.` : `${esc(i.who(i.top[0].uid))} gagne avec ${plural(i.top[0].pts, 'point')}.`)
+    : `Défi annulé. ${esc(i.why || '')}`;
+  const status = p => {
+    if (i.state === 'invited' || i.state === 'open') return p.user_id === d.createur ? 'a lancé le défi' : p.accepte_le ? 'a accepté' : 'pas encore répondu';
+    return '';
+  };
+  const list = (i.state === 'live' || i.state === 'done' || (i.state === 'void' && i.rows))
+    ? (i.rows || []).map(r => `<li class="${i.state === 'done' && r.rank === 1 ? 'top' : ''}"><span class="gdrank">${r.rank || '–'}</span>${avatarHtml(r.uid, names[r.uid])}<span class="gdname">${esc(i.who(r.uid))}</span>
+        <span class="gdpred">${r.pred ? esc(r.pred) : 'pas de prono'}</span><b class="gdpts">${i.state === 'done' && r.pred ? plural(r.pts ?? 0, 'pt') : ''}</b></li>`).join('')
+    : d.players.slice().sort((a, b) => (a.user_id === d.createur ? -1 : b.user_id === d.createur ? 1 : 0) || (!!b.accepte_le - !!a.accepte_le))
+        .map(p => `<li class="${p.accepte_le ? '' : 'wait'}">${avatarHtml(p.user_id, names[p.user_id])}<span class="gdname">${esc(i.who(p.user_id))}</span><span class="gdpred">${status(p)}</span></li>`).join('');
+  const btns = i.state === 'invited' ? `<div class="duelbtns"><button class="btn small" data-act="gdaccept" data-gid="${d.id}">Accepter</button><button class="btn small sec" data-act="gddecline" data-gid="${d.id}">Refuser</button></div>`
+    : i.state === 'open' && i.creator ? `<button class="btn small sec" data-act="gdcancel" data-gid="${d.id}">Annuler le défi</button>`
+    : i.state === 'open' ? `<button class="btn small sec" data-act="gddecline" data-gid="${d.id}">Quitter le défi</button>` : '';
+  const hero = i.state === 'done' ? `<div class="gdhero">${guy('trophee', { uid: i.top[0].uid, cls: 'gdguy' })}</div>` : '';
+  return `<div class="modalbackdrop" data-act="closegdefi"><div class="modal duelx gdx" role="dialog" aria-modal="true" aria-label="Défi à plusieurs" data-act="stop" style="${themeVarsCss(m ? themeKeyFor(m) : 'ALL')}">
+    <button class="modalclose" data-act="closegdefi" aria-label="Fermer">${ico('x')}</button>
+    <div class="modalhead"><div class="modalsub">${m ? `${esc(m.side_a)} – ${esc(m.side_b)}${m.status === 'finished' ? `, ${m.score_a}–${m.score_b}` : ''}` : 'Défi à plusieurs'}</div><div class="modalname">${title}</div></div>
+    <div class="modalbody">${hero}
+      <ul class="gdlist">${list}</ul>
+      <p class="duelverdict">${verdict}</p>
+      ${btns}
+      <p class="hint">Pour l'honneur : le classement ne change pas.</p>
+    </div></div></div>`;
+}
+async function gdRpc(fn, args, msg) {
+  const r = await sb.rpc(fn, args);
+  if (r.error) { toast(friendlyError(r.error), true); return null; }
+  await loadGroupDefis();
+  if (msg) { playSound('confirm'); toast(msg); }
+  keepRender();
+  return r;
+}
+
+// Choisir l'ami (ou les amis) à défier.
+function duelNewModal(mid) {
+  if (!S.gdefis) return duelNewModalOld(mid);
+  const m = S.matches.find(x => x.id === mid);
+  if (!m) return '';
+  const me = S.session.user.id, group = S._dnMode === 'group';
+  const friends = (S.accountBoard || S.board || []).filter(r => r.user_id !== me && isFriend(r.user_id)).slice().sort((a, b) => a.pseudo.localeCompare(b.pseudo));
+  const mineHere = gdMine().find(d => d.match_id === mid && d.createur === me);
+  const sw = `<div class="dnseg">${segRow([['one', 'Un ami'], ['group', 'À plusieurs']], group ? 'group' : 'one', 'dnmode')}</div>`;
+  if (!group) {
+    // L'ancienne fenêtre, avec le choix en plus en haut.
+    return duelNewModalOld(mid).replace('<div class="modalbody">', `<div class="modalbody">${sw}`);
+  }
+  const body = mineHere ? `<div class="explain gdalready"><p>Tu as déjà lancé un défi à plusieurs sur ce match.</p><button class="btn small" data-act="gdefi" data-gid="${mineHere.id}">Le voir</button></div>`
+    : friends.length ? `<form id="gdform" data-mid="${mid}">
+        <p class="hint gdhow">Jusqu'à 6 amis. Ceux qui acceptent avant le match jouent ; le plus de points sur ce match gagne.</p>
+        <ul class="wlist gdpick">${friends.map(r => `<li><label class="wrow gdrow"><input type="checkbox" name="gd" value="${esc(r.user_id)}">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span></label></li>`).join('')}</ul>
+        <button class="btn" type="submit">Lancer le défi</button><div id="gderr" class="ferr" role="alert"></div></form>`
+    : emptyBox('pense', 'Personne à défier pour l’instant : invite tes amis dans une ligue (onglet Amis, « + Ligue »).');
+  return `<div class="modalbackdrop" data-act="closeduelnew"><div class="modal duelnewx" role="dialog" aria-modal="true" aria-label="Défi à plusieurs" data-act="stop" style="${themeVarsCss(themeKeyFor(m))}">
+      <button class="modalclose" data-act="closeduelnew" aria-label="Fermer">${ico('x')}</button>
+      <div class="modalhead"><div class="modalsub">${esc(m.side_a)} – ${esc(m.side_b)}</div><div class="modalname">Proposer un défi</div></div>
+      <div class="modalbody">${sw}${body}</div></div></div>`;
+}
+async function sendGroupDefi(f) {
+  const mid = Number(f.dataset.mid), err = f.querySelector('#gderr'), btn = f.querySelector('button[type=submit]');
+  const ids = [...f.querySelectorAll('input[name=gd]:checked')].map(x => x.value);
+  if (!ids.length) { err.textContent = 'Choisis au moins un ami.'; return; }
+  if (ids.length > 6) { err.textContent = 'Six amis au maximum.'; return; }
+  btn.disabled = true;
+  const r = await sb.rpc('creer_defi_groupe', { p_match: mid, p_invites: ids });
+  if (r.error) { err.textContent = friendlyError(r.error); btn.disabled = false; return; }
+  await loadGroupDefis();
+  S.openDuelNew = null; S._dnMode = null; S.openGd = r.data;
+  playSound('confirm'); toast(`Défi lancé : ${plural(ids.length, 'ami invité', 'amis invités')}`); keepRender();
+}
+// Le bandeau du haut : une invitation à un défi à plusieurs (après les défis à deux).
+function gdNotice() {
+  const inv = gdMine().map(gdInfo).filter(i => i.state === 'invited' && i.m && !isLocked(i.m));
+  if (!inv.length) return '';
+  const i = inv[0], m = i.m;
+  return `<section class="recapnotice duelnotice" style="${themeVarsCss(themeKeyFor(m))}" aria-label="Défi à plusieurs">
+    <span class="rn-ico guyico" aria-hidden="true">${guy('garde', { uid: i.d.createur, flip: true })}</span>
+    <h2 class="recapnotice-title">${esc(i.who(i.d.createur))} te propose un défi à ${i.n}${inv.length > 1 ? ` (et ${inv.length - 1} autre${inv.length > 2 ? 's' : ''})` : ''}</h2>
+    <p class="recapnotice-sub">Sur ${esc(m.side_a)} – ${esc(m.side_b)}, ${esc(fmtClose(new Date(m.starts_at).getTime()))}. Accepte avant le match pour jouer.</p>
+    <div class="noticebtns"><button class="btn small" data-act="gdaccept" data-gid="${i.d.id}">Accepter</button><button class="btn small sec" data-act="gddecline" data-gid="${i.d.id}">Refuser</button><button class="linkbtn" data-act="gdefi" data-gid="${i.d.id}">Voir le défi</button></div>
+  </section>`;
+}
+function duelNotice() {
+  const me = S.session && S.session.user.id;
+  const duelAsk = S.duels && S.duels.some(d => d.opponent === me && !duelAccepted(d) && (m => m && !isLocked(m))(S.matches.find(x => x.id === d.match_id)));
+  return duelAsk ? duelNoticeOld() : (gdNotice() || duelNoticeOld());
+}
+// « Tes défis » (Mon compte) : les défis à plusieurs en plus.
+function duelsPanel() {
+  const old = duelsPanelOld(), list = gdMine().slice().sort((a, b) => b.id - a.id).slice(0, 6);
+  if (!list.length) return old;
+  const chips = list.map(gdChip).join('');
+  if (old) return old.replace(/<\/div>\s*<\/section>\s*$/, `${chips}</div>\n  </section>`);
+  return `<section class="panel"><h3>Tes défis</h3><p class="hint">Le résultat arrive après le match. Pour l’honneur : hors classement.</p><div class="duelrow col">${chips}</div></section>`;
+}
+
+// --- 3. La cloche -----------------------------------------------------------------------
+async function loadNotifs() {
+  if (!S.session) return;
+  const r = await sb.from('notifications').select('id,kind,data,created_at,lu_le').order('created_at', { ascending: false }).limit(60);
+  S.notifs = r.error ? null : (r.data || []);
+}
+const BELL_KEY = 'spin_bell_vu';
+const bellSeen = () => { try { const v = JSON.parse(localStorage.getItem(BELL_KEY)); return Array.isArray(v) ? new Set(v) : null; } catch (e) { return null; } };
+const emoteLabel = k => (EMOTES.find(e => e.id === k) || {}).label || 'une emote';
+// Ce que la base a envoyé (défis, emotes, ligue…), en phrases.
+function notifItem(n) {
+  const d = n.data || {}, de = esc(pseudoMap()[d.de] || "Quelqu'un"), on = d.match && matchLabel(d.match) ? ` <small>${esc(matchLabel(d.match))}</small>` : '';
+  const L = {
+    defi_recu: [`${de} te propose un défi${on}`, d.duel ? { duel: d.duel } : { match: d.match }],
+    defi_accepte: [`${de} a accepté ton défi${on}`, { duel: d.duel }],
+    defi_refuse: [`${de} a refusé ton défi${on}`, { match: d.match }],
+    defi_annule: [`${de} a annulé le défi${on}`, { match: d.match }],
+    emote: [`${de} t'envoie « ${esc(emoteLabel(d.emote))} »${d.n > 1 ? ` <small>et ${d.n - 1} autre${d.n > 2 ? 's' : ''}</small>` : ''}`, { duel: d.duel }],
+    gdefi_invite: [`${de} te propose un défi à plusieurs${on}`, { gdefi: d.defi }],
+    gdefi_accepte: [`${de} a accepté ton défi à plusieurs${on}`, { gdefi: d.defi }],
+    gdefi_refuse: [`${de} a refusé ton défi à plusieurs${on}`, { gdefi: d.defi }],
+    gdefi_annule: [`${de} a annulé son défi à plusieurs${on}`, { match: d.match }],
+    ligue_arrivee: [`${de} a rejoint ${esc(d.nom || 'ta ligue')}`, { league: d.ligue }],
+    ligue_exclu: [`Tu ne fais plus partie de ${esc(d.nom || 'la ligue')}`, {}],
+    ligue_confiee: [`Tu gères maintenant ${esc(d.nom || 'la ligue')}`, { league: d.ligue }],
+    signalement: [`Nouveau signalement : ${esc(pseudoMap()[d.cible] || 'un joueur')}`, { admin: 1 }],
+  }[n.kind] || ['Nouvelle notification', {}];
+  return { key: 'n' + n.id, t: n.created_at, html: L[0], go: L[1], who: d.de || d.cible, unread: !n.lu_le, stored: n };
+}
+// Ce que l'appli sait déjà : tes résultats, tes défis terminés, les récaps, les badges.
+function derivedItems() {
+  const out = [], since = Date.now() - 14 * 864e5, me = S.session.user.id;
+  const recent = t => new Date(t).getTime() >= since;
+  for (const h of (myJudgedHistory() || [])) {
+    const m = h.matches;
+    if (!recent(m.starts_at) || !h.pt) continue;
+    const pts = h.pt.total;
+    out.push({ key: 'r' + h.match_id, t: m.starts_at, kind: 'res', go: { match: h.match_id },
+      html: `${esc(m.side_a)} – ${esc(m.side_b)} : ${pts > 0 ? `<b>+${pts} pt${pts > 1 ? 's' : ''}</b>${h.pt.exact ? ', score exact !' : ''}` : 'raté, 0 point'}` });
+  }
+  for (const d of myDuels()) {
+    const i = duelInfo(d);
+    if (!['win', 'loss', 'draw'].includes(i.state) || !i.m || !recent(i.m.starts_at)) continue;
+    out.push({ key: 'd' + d.id, t: i.m.starts_at, who: i.other, go: { duel: d.id },
+      html: i.state === 'win' ? `Défi gagné contre ${esc(i.pseudo)}, ${i.myPts} à ${i.otPts}` : i.state === 'loss' ? `Défi perdu contre ${esc(i.pseudo)}, ${i.myPts} à ${i.otPts}` : `Défi nul avec ${esc(i.pseudo)}` });
+  }
+  for (const d of gdMine()) {
+    const i = gdInfo(d);
+    if (i.state !== 'done' || !i.m || !recent(i.m.starts_at) || !i.meRow) continue;
+    out.push({ key: 'g' + d.id, t: i.m.starts_at, who: i.top[0].uid, go: { gdefi: d.id },
+      html: i.meRow.rank === 1 ? `Défi à ${i.k} gagné${i.top.length > 1 ? ' (ex aequo)' : ''}` : `Défi à ${i.k} : tu finis ${i.meRow.rank}e` });
+  }
+  const seenRecap = new Set(recapSeenList()), groups = new Map();
+  for (const h of (myJudgedHistory() || [])) {
+    const m = h.matches, key = tournamentGroupKey(m), id = m.circuit + '|' + key;
+    const g = groups.get(id) || { circuit: m.circuit, key, last: m.starts_at };
+    if (m.starts_at > g.last) g.last = m.starts_at;
+    groups.set(id, g);
+  }
+  for (const [id, g] of groups) {
+    if (!recent(g.last) || !isTournamentFinished(g.circuit, g.key)) continue;
+    out.push({ key: 'c' + id, t: g.last, kind: 'recap', go: { recap: g }, done: seenRecap.has(id), html: `Le récap de ${esc(g.key)} est prêt` });
+  }
+  let at = {};
+  try { at = JSON.parse(localStorage.getItem('spin_badges_at') || '{}') || {}; } catch (e) { /* ignore */ }
+  const fresh = Object.entries(at).filter(([, t]) => Date.now() - t <= 30 * 864e5), all = fresh.length ? (computeBadges() || []) : [];
+  for (const [id, t] of fresh) {
+    const b = all.find(x => x.id === id);
+    if (b) out.push({ key: 'b' + id, t: new Date(t).toISOString(), kind: 'badge', go: { badge: id }, html: `Nouveau badge : <b>${esc(b.name)}</b>` });
+  }
+  return out;
+}
+let _bellCache = { at: 0, items: [] };
+function bellItems() {
+  if (!S.session) return [];
+  if (Date.now() - _bellCache.at < 400) return _bellCache.items;
+  let derived = [];
+  try { derived = derivedItems(); } catch (e) { derived = []; }
+  // Premier passage sur cet appareil : ce qui existe déjà ne compte pas comme nouveau.
+  let seen = bellSeen();
+  const ready = S.myHistory !== null && S.duels !== undefined && S.gdefis !== undefined;
+  if (!seen && ready) { seen = new Set(derived.map(x => x.key)); try { localStorage.setItem(BELL_KEY, JSON.stringify([...seen])); } catch (e) { /* ignore */ } }
+  derived.forEach(x => { x.unread = !!seen && !seen.has(x.key) && !x.done; });
+  const items = (S.notifs || []).map(notifItem).concat(derived).sort((a, b) => (b.t > a.t ? 1 : b.t < a.t ? -1 : 0)).slice(0, 50);
+  _bellCache = { at: Date.now(), items };
+  return items;
+}
+const bellCount = () => bellItems().filter(x => x.unread).length;
+function bellBtn() {
+  if (!S.session) return '';
+  const n = bellCount();
+  return `<button class="iconbtn bellbtn" data-act="bell" aria-label="Notifications${n ? `, ${n} nouvelle${n > 1 ? 's' : ''}` : ''}">${ico(n ? 'bell-simple.f' : 'bell-simple')}${n ? `<span class="bellcount">${n > 9 ? '9+' : n}</span>` : ''}</button>`;
+}
+async function openBell() {
+  const items = bellItems();
+  S._bellNew = new Set(items.filter(x => x.unread).map(x => x.key));
+  S.openBell = true; keepRender();
+  // Tout est lu : sur le serveur pour ce qui vient de la base, sur l'appareil pour le reste.
+  const seen = bellSeen() || new Set();
+  items.forEach(x => { if (!x.stored) seen.add(x.key); });
+  try { localStorage.setItem(BELL_KEY, JSON.stringify([...seen].slice(-400))); } catch (e) { /* ignore */ }
+  if ((S.notifs || []).some(n => !n.lu_le)) {
+    const now = new Date().toISOString();
+    const r = await sb.from('notifications').update({ lu_le: now }).is('lu_le', null);
+    if (!r.error) (S.notifs || []).forEach(n => { if (!n.lu_le) n.lu_le = now; });
+  }
+  _bellCache.at = 0;
+}
+function bellModal() {
+  const items = bellItems(), fresh = S._bellNew || new Set();
+  const icon = x => x.who ? avatarHtml(x.who, pseudoMap()[x.who]) : `<span class="bellico">${ico(x.kind === 'badge' ? 'trophy' : x.kind === 'recap' ? 'ranking' : x.kind === 'res' ? 'ping-pong' : 'users-three')}</span>`;
+  const row = x => `<li><button class="bellitem${fresh.has(x.key) ? ' new' : ''}" data-act="bellgo" data-k="${esc(x.key)}">${icon(x)}<span class="belltxt"><span>${x.html}</span><small>${esc(timeAgo(x.t))}</small></span></button></li>`;
+  const nw = items.filter(x => fresh.has(x.key)), old = items.filter(x => !fresh.has(x.key));
+  return `<div class="modalbackdrop" data-act="closebell"><div class="modal smallx bellx" role="dialog" aria-modal="true" aria-label="Notifications" data-act="stop">
+    <button class="modalclose" data-act="closebell" aria-label="Fermer">${ico('x')}</button>
+    <div class="modalhead"><div class="modalname">Notifications</div></div>
+    <div class="modalbody">${items.length
+      ? `${nw.length ? `<h3 class="bellh">Nouveau</h3><ul class="belllist">${nw.map(row).join('')}</ul>` : ''}
+         ${old.length ? `<h3 class="bellh">${nw.length ? 'Plus tôt' : 'Ces derniers jours'}</h3><ul class="belllist">${old.map(row).join('')}</ul>` : ''}`
+      : emptyBox('pense', 'Rien de neuf pour l’instant. Tes résultats, tes défis et la vie de tes ligues arriveront ici.')}</div>
+  </div></div>`;
+}
+async function bellGo(key) {
+  const x = bellItems().find(i => i.key === key);
+  S.openBell = false;
+  if (!x) { keepRender(); return; }
+  const g = x.go || {};
+  if (g.duel && (S.duels || []).some(d => d.id === g.duel)) { S.openDuel = g.duel; keepRender(); return; }
+  if (g.gdefi && gdMine().some(d => d.id === g.gdefi)) { S.openGd = g.gdefi; keepRender(); return; }
+  if (g.league && (S.leagues || []).some(l => l.id === g.league)) { S.openLeague = g.league; keepRender(); return; }
+  if (g.badge) { S.openBadge = g.badge; keepRender(); return; }
+  if (g.recap) { runAct('recap', { key: g.recap.key, circuit: g.recap.circuit }); return; }
+  if (g.admin) { runAct('tab', { tab: 'admin' }); return; }
+  if (g.match) { if (S.tab !== 'matches') { S.tab = 'matches'; render(); } runAct('gotomatch', { id: g.match }); return; }
+  keepRender();
+}
+
+// --- Direct : la cloche et les défis à plusieurs, sans recharger --------------------------
+let PLUS = null;
+function startPlus() {
+  if (PLUS || !S.session || !sb || typeof sb.channel !== 'function' || (S.notifs === null && !S.gdefis)) return;
+  const me = S.session.user.id;
+  try {
+    PLUS = sb.channel('spin-plus-' + me);
+    if (S.notifs) PLUS.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${me}` }, p => onNotif(p.new));
+    if (S.gdefis) {
+      PLUS.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'defis_groupe_joueurs' }, () => loadGroupDefis().then(liveRender));
+      PLUS.on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'defis_groupe_joueurs' }, () => loadGroupDefis().then(liveRender));
+    }
+    PLUS.subscribe(status => { S.live2 = status === 'SUBSCRIBED'; });
+  } catch (e) { PLUS = null; S.live2 = false; }
+}
+function stopPlus() {
+  if (PLUS) { try { sb.removeChannel(PLUS); } catch (e) { /* déjà fermé */ } }
+  PLUS = null; S.live2 = false;
+}
+const NOTIF_TOAST = ['gdefi_invite', 'gdefi_accepte', 'gdefi_refuse', 'gdefi_annule', 'ligue_arrivee', 'ligue_exclu', 'ligue_confiee', 'signalement'];
+function onNotif(n) {
+  if (!n || !S.session || n.user_id !== S.session.user.id) return;
+  S.notifs = S.notifs || [];
+  if (S.notifs.some(x => x.id === n.id)) return;
+  S.notifs.unshift(n); _bellCache.at = 0;
+  if (NOTIF_TOAST.includes(n.kind)) { const t = document.createElement('div'); t.innerHTML = notifItem(n).html.replace(/<small>.*<\/small>/, ''); toast(t.textContent.trim()); }
+  if (n.kind.startsWith('gdefi')) loadGroupDefis().then(liveRender);
+  if (n.kind.startsWith('ligue')) loadLeagues().then(() => { applyLeague(); liveRender(); });
+  liveRender();
+}
+async function loadPlus() {
+  await Promise.all([loadNotifs(), loadGroupDefis()]);
+  startPlus();
+}
+// Sans direct (ou téléphone en veille) : un coup d'œil chaque minute, et au retour sur l'appli.
+setInterval(() => {
+  if (!S.session || S.live2 || document.visibilityState !== 'visible' || S.notifs === null) return;
+  loadNotifs().then(() => { _bellCache.at = 0; liveRender(); });
+}, 60e3);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !S.session || S.notifs === undefined) return;
+  loadNotifs().then(() => { _bellCache.at = 0; liveRender(); });
+});
+
+// --- Branchements -------------------------------------------------------------------------
+function modals28() {
+  if (!S.session) return '';
+  return `${S.openGd ? gdModal(S.openGd) : ''}${S.openBell ? bellModal() : ''}`;
+}
+async function onAct28(act, el) {
+  const gid = el.dataset.gid ? Number(el.dataset.gid) : null;
+  if (act === 'bell') { await openBell(); return true; }
+  if (act === 'closebell') { S.openBell = false; keepRender(); return true; }
+  if (act === 'bellgo') { await bellGo(el.dataset.k); return true; }
+  if (act === 'gdefi') { S.openDuelNew = null; S.openGd = gid; keepRender(); return true; }
+  if (act === 'closegdefi') { S.openGd = null; keepRender(); return true; }
+  if (act === 'gdaccept') { const d = gdMine().find(x => x.id === gid); await gdRpc('repondre_defi_groupe', { p_defi: gid, p_oui: true }, d && !S.myPreds[d.match_id] ? 'Défi accepté : fais ton prono avant le début du match' : 'Défi accepté'); return true; }
+  if (act === 'gddecline') { const r = await gdRpc('repondre_defi_groupe', { p_defi: gid, p_oui: false }, 'Tu ne participes pas à ce défi'); if (r) S.openGd = null; keepRender(); return true; }
+  if (act === 'gdcancel') { const r = await gdRpc('annuler_defi_groupe', { p_defi: gid }, 'Défi annulé'); if (r) S.openGd = null; keepRender(); return true; }
+  if (act === 'dnmode') { S._dnMode = el.dataset.v; keepRender(); return true; }
+  if (act === 'closeduelnew') S._dnMode = null;
+  return false;
+}
+function onSubmit28(f) {
+  if (f.id === 'gdform') { sendGroupDefi(f); return true; }
+  return false;
+}
+document.addEventListener('change', e => {
+  const f = e.target.closest && e.target.closest('#gdform');
+  if (!f) return;
+  const boxes = [...f.querySelectorAll('input[name=gd]')], n = boxes.filter(b => b.checked).length;
+  boxes.forEach(b => { b.disabled = !b.checked && n >= 6; });
+  const btn = f.querySelector('button[type=submit]');
+  if (btn) btn.textContent = n ? `Lancer le défi à ${n + 1}` : 'Lancer le défi';
+  const err = f.querySelector('#gderr'); if (err) err.textContent = n >= 6 ? 'Six amis au maximum : c’est complet.' : '';
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (S.openBell) { S.openBell = false; keepRender(); e.stopImmediatePropagation(); return; }
+  if (S.openGd) { S.openGd = null; keepRender(); e.stopImmediatePropagation(); }
 });
 
 function breakdownRow(label, s, col, circuit) {
@@ -9949,6 +10463,7 @@ function esc0(s) { return String(s ?? ''); }
 $app.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (await onAct28(act, el)) return;
   if (await onAct27(act, el)) return;
   if (await onAct24(act)) return;
   if (await onAct23(act, el, v)) return;
@@ -10060,6 +10575,7 @@ $app.addEventListener('submit', e => {
   else if (onSubmit23(e.target)) { /* ligues, compte */ }
   else if (onSubmit24(e.target)) { /* pseudo */ }
   else if (onSubmit27(e.target)) { /* signalement */ }
+  else if (onSubmit28(e.target)) { /* défi à plusieurs */ }
   else if (e.target.id === 'addmatch') addMatch(e.target);
 });
 $app.addEventListener('pointerdown', e => {
