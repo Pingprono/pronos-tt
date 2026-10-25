@@ -2067,6 +2067,46 @@ button.tside{cursor:pointer}
 /* Accessoires d'événement : une pastille dessinée, et le moment pour les gagner. */
 .acc.evt .accimg > svg{width:38px;height:38px}
 .acc.evt.locked .accimg > svg{opacity:.45;filter:grayscale(.6)}
+/* --- Se repérer (feat30) --- */
+/* Matchs : les annonces dans un seul bloc, séparées d'un trait. */
+.foryou{margin:0 0 18px;background:var(--surface);border-radius:14px;box-shadow:var(--lift);overflow:hidden}
+.foryou > .recapnotice{margin:0;background:transparent;box-shadow:none;border-radius:0}
+.foryou > .recapnotice + .recapnotice{border-top:1px solid var(--line-2)}
+.foryou .recapnotice-title{font-size:19px}
+.foryou .rn-ico.guyico{width:46px;height:46px}
+/* Le tournoi et le jour en cours de lecture, sous l'en-tête. */
+.ctxwrap{position:sticky;top:0;height:0;z-index:6}
+.ctxbar{position:absolute;left:-4px;right:-4px;top:0;display:flex;align-items:center;gap:8px;min-width:0;padding:9px 12px;
+  background:var(--ground);border-bottom:1px solid var(--line-2);font:600 14px/1.2 var(--f-text);color:var(--ink-2)}
+.ctxbar[hidden]{display:none}
+.ctxbar i{width:10px;height:10px;border-radius:3px;background:var(--chip);flex:none}
+.ctxbar b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 15px/1.2 var(--f-head);color:var(--ink)}
+.ctxbar span{flex:none;white-space:nowrap}
+.ctxbar span::before{content:"·";margin:0 6px 0 0;color:var(--ink-3)}
+@media (min-width:860px){ .ctxbar{left:0;right:0;border-radius:0 0 10px 10px} }
+/* Un match sans prono, repérable d'un coup d'œil. */
+.statuspill.todo{color:var(--ink);background:transparent;box-shadow:inset 0 0 0 1.5px var(--ink-2)}
+/* Sous le tableau de score : le reste, séparé du prono. */
+.predextra{margin:14px 0 0;padding-top:2px;border-top:1px solid var(--line-2)}
+.predextra > :first-child{margin-top:12px}
+.oddslbl{flex:none;font:500 13px/1.2 var(--f-text);color:var(--ink-2)}
+/* À l'affiche : « 16 matchs attendent ton prono » mène au prochain. */
+.herotodo{display:inline;background:none;border:0;padding:0;margin:0;color:inherit;font:inherit;text-align:left;cursor:pointer;
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+/* Moi : les sous-onglets. */
+.metabs{margin:22px 0 14px}
+.metabs .pillrow{margin:0}
+.pagehead{margin-top:6px}
+/* Ligue : le barème replié. */
+.baremefold{margin:18px 0 14px;background:var(--explain);border-radius:14px;box-shadow:inset 0 0 0 1px var(--explain-line),var(--lift)}
+.baremefold .foldbtn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:16px 18px;background:none;border:0;
+  color:var(--ink);text-align:left;cursor:pointer;font:700 18px/1.15 var(--f-head)}
+.baremefold .foldbtn small{display:block;margin-top:3px;font:400 13px/1.3 var(--f-text);color:var(--ink-2)}
+.baremefold .foldbtn i{flex:none;width:12px;height:12px;border-right:2.5px solid var(--ink-2);border-bottom:2.5px solid var(--ink-2);transform:translateY(-3px) rotate(45deg)}
+.baremefold.open .foldbtn i{transform:translateY(3px) rotate(-135deg)}
+.baremefold .panel.bareme{margin:0;background:transparent;box-shadow:none;border-top:1px solid var(--explain-line);border-radius:0 0 14px 14px}
+.tab-board .duelpanel,.tab-board > .panel{margin-top:18px}
+.mehint{margin:0 2px 12px}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -3268,7 +3308,7 @@ async function loadAccount() {
 async function handleSession(session) {
   if (!session) {
     S.session = null; S.pseudo = ''; S.isAdmin = false; S.matches = []; S.myPreds = {}; S.board = null;
-    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive(); LITE.clear(); S.suspended = false; S.modReports = undefined; S.openReport = null; stopPlus(); S.notifs = undefined; S.gdefis = undefined; S.openBell = false; S.openGd = null; _bellCache.at = 0; S.trees = undefined; S.treePts = []; S.openTree = null; S.openFete = null; S.feteQueue = []; S._fetesDone = false; _feteTries = 0; S.duelPts = null; S.rival = null;
+    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive(); LITE.clear(); S.suspended = false; S.modReports = undefined; S.openReport = null; stopPlus(); S.notifs = undefined; S.gdefis = undefined; S.openBell = false; S.openGd = null; _bellCache.at = 0; S.trees = undefined; S.treePts = []; S.openTree = null; S.openFete = null; S.feteQueue = []; S._fetesDone = false; _feteTries = 0; S.meTab = 'stats'; S.baremeOpen = false; S.duelPts = null; S.rival = null;
     render(); return;
   }
   if (S.session && S.session.user.id === session.user.id) { S.session = session; return; }
@@ -3333,7 +3373,7 @@ function render() {
   const sheetKey = m => m.className.replace(/ still\b/g, '') + '|' + (m.getAttribute('aria-label') || '');
   const sheets = [...document.querySelectorAll('.modal, .recapx')].map(m => [sheetKey(m), m.scrollTop]);
   const todo = S.matches.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
-  const tabs = [['matches', 'Matchs'], ['board', 'Amis'], ['rankings', 'Classements'], ['account', 'Mon compte']];
+  const tabs = [['matches', 'Matchs'], ['board', 'Ligue'], ['rankings', 'Pros'], ['account', 'Moi']];
   if (S.isAdmin) tabs.push(['admin', 'Admin']);
   const initial = (S.pseudo || '?').slice(0, 1).toUpperCase();
   $app.innerHTML = `
@@ -3391,6 +3431,7 @@ function afterRender() {
     placeNavBall();
     if (!reducedMotion() && document.querySelector('main.fresh')) document.querySelectorAll('main [data-count]').forEach(countUp);
   } catch (e) { /* un mouvement raté ne doit jamais casser l'écran */ }
+  try { ctxMount(); } catch (e) { /* pas de barre « où suis-je » */ }
   try { mountMedal(); } catch (e) { /* la médaille reste à plat */ }
   try { mountScenes3D(); } catch (e) { /* l'affichage d'avant reste en place */ }
 }
@@ -3718,12 +3759,12 @@ function matchesView() {
       const m0 = g.matches[0];
       const tierName = m0.circuit === 'PRO_A' ? 'Pro A' : (m0.tier || 'WTT');
       return `<section class="compgroup" style="${themeVarsCss(themeKeyFor(m0))}"><div class="complabel">
-        <div><h2 style="margin:0"><b>${esc(g.competition)}</b></h2><small><span class="tier"><i aria-hidden="true"></i>${esc(tierName)}</span><span>${n} match${n > 1 ? 's' : ''}</span></small></div>${groupBallesBudgetHtml(g.matches)}</div>${m0.circuit === 'WTT' && !seenWin.has(g.competition) ? (seenWin.add(g.competition), winnerStrip(g.competition) + treeStrip(g.competition)) : ''}
+        <div><h2 style="margin:0"><b>${esc(g.competition)}</b></h2><small><span class="tier"><i aria-hidden="true"></i>${esc(tierName)}</span><span>${n} match${n > 1 ? 's' : ''}</span></small></div>${S.view === 'upcoming' ? groupBallesBudgetHtml(g.matches) : ''}</div>${m0.circuit === 'WTT' && !seenWin.has(g.competition) ? (seenWin.add(g.competition), winnerStrip(g.competition) + treeStrip(g.competition)) : ''}
         <div class="complist">${rows}</div></section>`;
     }).join('');
   }
   const cnt = n => `<span class="cnt">${n}</span>`;
-  return heroCard(up) + suspendNotice() + halloweenNotice() + recapNotice() + duelNotice() + `<div class="filters">`
+  return `<div class="ctxwrap" aria-hidden="true"><div class="ctxbar" hidden></div></div>` + heroCard(up) + suspendNotice() + forYou([halloweenNotice(), recapNotice(), duelNotice()]) + `<div class="filters">`
     + segRow([['upcoming', `À venir ${cnt(up.length)}`], ['done', `Terminés ${cnt(doneAll.length)}`]], S.view, 'view')
     + segRow([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit')
     + `</div>` + journeeRow + body;
@@ -3816,6 +3857,7 @@ function heroCard(up) {
     ? `<div class="hero-clock"><div class="digits" role="img" aria-label="Score ${m.score_a ?? 0} à ${m.score_b ?? 0}"><span class="flipd">${m.score_a ?? 0}</span><span class="sep">–</span><span class="flipd">${m.score_b ?? 0}</span></div><small>en direct</small></div>`
     : `<div class="hero-clock" data-start="${esc(m.starts_at)}">${clockInner(m.starts_at)}</div>`;
   const cta = isLive ? 'Voir le match' : (mine ? `Mon prono ${mine.pred_a}–${mine.pred_b}` : 'Pronostiquer');
+  const jump = todo.length && (isLive || m.id !== todo[0].id) ? todo[0] : null;
   const left = todo.length
     ? `<b data-count="${todo.length}">${todo.length}</b>${todo.length > 1 ? 'matchs attendent' : 'match attend'} ton prono`
     : `<b>0</b>prono à faire, tu es à jour`;
@@ -3826,7 +3868,7 @@ function heroCard(up) {
       ${mid}
       <div class="hero-side b">${flagHtml(cb)}<b>${esc(m.side_b)}</b>${seed(cb)}</div>
     </div></div>
-    <div class="hero-foot"><p>${left}</p><button class="btn small light" data-act="gotomatch" data-id="${m.id}">${cta}</button></div>
+    <div class="hero-foot"><p>${jump ? `<button class="herotodo" data-act="gotomatch" data-id="${jump.id}">${left}</button>` : left}</p><button class="btn small light" data-act="gotomatch" data-id="${m.id}">${cta}</button></div>
   </section>`;
 }
 function ordinalRank(board, mine) {
@@ -3881,6 +3923,7 @@ function matchRow(m, fresh, i, streakInfo) {
   else if (canc) statusPill = `<span class="statuspill">${HALLOWEEN ? ico('ghost.f') : ''}Annulé</span>`;
   else if (awaiting) statusPill = '<span class="statuspill wait">En attente</span>';
   else if (live) statusPill = '<span class="statuspill live">Live</span>';
+  else if (!locked && !mine) statusPill = '<span class="statuspill todo">À faire</span>';
 
   const sideHtml = (c, label, side, isWinner, isLoser) => {
     const scoreOrPred = fin
@@ -3904,7 +3947,7 @@ function matchRow(m, fresh, i, streakInfo) {
     const pickProb = (mine && t) ? Math.round(scoreProb(t.q, m.wins_needed, mine.pred_a, mine.pred_b) * 100) : null;
     const gauge = pickProb !== null ? `
       <div class="oddsgauge" role="img" aria-label="${pickProb} % de chances d'avoir le score ${mine.pred_a}–${mine.pred_b}">
-        <div class="bar"><i style="--w:${pickProb}%;width:${pickProb}%"></i></div><b>${pickProb}%</b>
+        <span class="oddslbl">Chances de ce score</span><div class="bar"><i style="--w:${pickProb}%;width:${pickProb}%"></i></div><b>${pickProb}%</b>
       </div>` : '';
     const status = awaiting
       ? `<span>${mine ? `Ton prono : <b>${mine.pred_a}–${mine.pred_b}</b>. ` : ''}En attente du résultat.</span>`
@@ -3922,10 +3965,7 @@ function matchRow(m, fresh, i, streakInfo) {
         <div class="pickside"><span class="pslabel">${flag(cb)}${esc(m.side_b)}</span>${chips(m, 'B', mine, locked)}</div>
       </div></div>
       <div class="predstatus">${status}${streakTeaser}</div>
-      ${gauge}
-      ${avisHtml(m)}
-      ${ballesStepperHtml(m)}
-      ${duelRowHtml(m)}
+      ${predExtra(gauge + avisHtml(m) + ballesStepperHtml(m) + duelRowHtml(m))}
     </div>`;
   } else {
     let foot, stamp = '';
@@ -4048,9 +4088,9 @@ function boardViewInner() {
   const seg = segRow([['ALL', 'Général'], ['MONTH', 'Ce mois'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.boardScope, 'boardscope');
   const exportBtn = `<button class="btn small sec" data-act="exportboard">${ico('share-network')}Partager en image</button>`;
   if (S.board === null) return seg + '<div class="loading">Chargement…</div>';
-  if (S.boardScope === 'MONTH') return `<div class="boardtools">${seg}${exportBtn}</div>` + monthView();
-  if (!S.board.length) return seg + emptyBox('loupe', 'Pas encore de points : le classement démarre au premier match terminé.') + rules();
-  return `<div class="boardtools">${seg}${exportBtn}</div>${boardPodium(S.board)}${standingsTable(S.board)}` + rules();
+  if (S.boardScope === 'MONTH') return `<div class="boardtools">${seg}${exportBtn}</div>` + monthView() + duelsSection() + rules();
+  if (!S.board.length) return seg + emptyBox('loupe', 'Pas encore de points : le classement démarre au premier match terminé.') + duelsSection() + rules();
+  return `<div class="boardtools">${seg}${exportBtn}</div>${boardPodium(S.board)}${standingsTable(S.board)}` + duelsSection() + rules();
 }
 // Rang dans un tableau : pastille de médaille pour le podium.
 const rankInner = r => (r >= 1 && r <= 3) ? `<span class="medal">${r}</span>` : r;
@@ -4072,12 +4112,12 @@ function boardPodium(board) {
   </div>`;
   return `<div class="boardpod"><div class="pod3d" data-kind="board"></div><div class="podium" aria-label="Podium">${col(top[1], 2)}${col(top[0], 1)}${col(top[2], 3)}</div></div>`;
 }
-const rules = () => baremeHtml();
+const rules = () => baremeFold();
 
 /* --- Classements WTT (mondial, messieurs/dames séparés) et Pro A
    (championnat) : à distinguer du classement des amis (points de
    pronostics) affiché dans l'onglet "Amis". --- */
-function rankingsView() {
+function rankingsViewOld() {
   const scope = S.rankView;
   const seg = segRow([['WTT', 'WTT'], ['PRO_A', 'Pro A']], scope, 'rankview');
 
@@ -7425,7 +7465,7 @@ function duelNewModalOld(mid) {
         ${friends.length ? `<ul class="wlist">${friends.map(r => taken.has(r.user_id)
           ? `<li class="wrow out">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span><span class="wpts">déjà défié</span></li>`
           : `<li><button class="wrow" data-act="duelsave" data-id="${mid}" data-uid="${esc(r.user_id)}">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span><span class="wpts">Défier</span></button></li>`).join('')}</ul>`
-          : emptyBox('pense', S.leagues ? 'Personne à défier pour l’instant : invite tes amis dans une ligue (onglet Amis, « + Ligue »).' : 'Personne à défier pour l’instant : invite d’abord tes amis.')}
+          : emptyBox('pense', S.leagues ? 'Personne à défier pour l’instant : invite tes amis dans une ligue (onglet Ligue, « + Ligue »).' : 'Personne à défier pour l’instant : invite d’abord tes amis.')}
       </div>
     </div>
   </div>`;
@@ -7962,14 +8002,14 @@ function inLeague(rows) {
 const inLeagueUid = uid => !curLeague() || leagueIds(S.league).has(uid);
 // Un « ami » : quelqu'un d'au moins une de mes ligues (défis, pronos des amis).
 const isFriend = uid => !S.leagues || (S.friendIds && S.friendIds.has(uid));
-const leagueTitle = () => (curLeague() ? curLeague().name : S.leagues ? 'Mondial' : 'Entre amis');
-const rankScopeLabel = () => (curLeague() ? `de la ligue ${curLeague().name}` : S.leagues ? 'du classement mondial' : 'du classement général');
+const leagueTitle = () => (curLeague() ? curLeague().name : S.leagues ? 'Tout SPIN' : 'Entre amis');
+const rankScopeLabel = () => (curLeague() ? `de la ligue ${curLeague().name}` : S.leagues ? 'de Tout SPIN' : 'du classement général');
 
 // En haut de l'onglet Amis : Mondial, mes ligues, et « + Ligue ».
 function leagueBar() {
   if (!S.leagues) return '';
   const cur = curLeague();
-  const chips = [['world', 'Mondial'], ...S.leagues.map(l => [l.id, l.name])];
+  const chips = [...S.leagues.map(l => [l.id, l.name]), ['world', 'Tout SPIN']];
   const row = `<div class="journeerow leaguerow" role="group" aria-label="Ligue">${chips.map(([k, n]) => `<button class="jchip" data-act="league" data-v="${k}" aria-pressed="${S.league === k}">${esc(n)}</button>`).join('')}<button class="jchip addleague" data-act="leaguenew">+ Ligue</button></div>`;
   if (cur) {
     const n = (S.leagueMembers.get(cur.id) || []).length;
@@ -9034,7 +9074,7 @@ function duelNewModal(mid) {
         <p class="hint gdhow">Jusqu'à 6 amis. Ceux qui acceptent avant le match jouent ; le plus de points sur ce match gagne.</p>
         <ul class="wlist gdpick">${friends.map(r => `<li><label class="wrow gdrow"><input type="checkbox" name="gd" value="${esc(r.user_id)}">${avatarHtml(r.user_id, r.pseudo)}<span class="wname">${esc(r.pseudo)}</span></label></li>`).join('')}</ul>
         <button class="btn" type="submit">Lancer le défi</button><div id="gderr" class="ferr" role="alert"></div></form>`
-    : emptyBox('pense', 'Personne à défier pour l’instant : invite tes amis dans une ligue (onglet Amis, « + Ligue »).');
+    : emptyBox('pense', 'Personne à défier pour l’instant : invite tes amis dans une ligue (onglet Ligue, « + Ligue »).');
   return `<div class="modalbackdrop" data-act="closeduelnew"><div class="modal duelnewx" role="dialog" aria-modal="true" aria-label="Défi à plusieurs" data-act="stop" style="${themeVarsCss(themeKeyFor(m))}">
       <button class="modalclose" data-act="closeduelnew" aria-label="Fermer">${ico('x')}</button>
       <div class="modalhead"><div class="modalsub">${esc(m.side_a)} – ${esc(m.side_b)}</div><div class="modalname">Proposer un défi</div></div>
@@ -9532,7 +9572,7 @@ function feteModal(f) {
   const me = S.session.user.id, mine = f.champs.some(r => r.user_id === me), more = (S.feteQueue || []).length;
   const who = f.champs.map(r => (r.user_id === me ? 'toi' : r.pseudo));
   const list = who.length > 1 ? who.slice(0, -1).join(', ') + ' et ' + who[who.length - 1] : who[0];
-  const where = f.league ? `dans « ${esc(f.league.name)} »` : 'au classement mondial';
+  const where = f.league ? `dans « ${esc(f.league.name)} »` : 'dans Tout SPIN';
   const title = f.type === 'mois'
     ? (mine && f.champs.length === 1 ? `${monthLabel(f.k).replace(/ \d+$/, '')} est à toi !` : `${monthLabel(f.k).replace(/ \d+$/, '')} est à ${esc(list)}`)
     : (mine && f.champs.length === 1 ? `Tu remportes ${f.circuit === 'PRO_A' ? 'la ' : ''}${esc(f.key)} !` : `${esc(list.charAt(0).toUpperCase() + list.slice(1))} remporte${f.champs.length > 1 ? 'nt' : ''} ${f.circuit === 'PRO_A' ? 'la ' : ''}${esc(f.key)}`);
@@ -9553,24 +9593,26 @@ function feteModal(f) {
 // --- 3. Les accessoires d'événement ---------------------------------------------------
 // Gagnés pendant l'événement, gardés pour toujours. La Citrouille d'or (avant :
 // un badge) devient celui d'Halloween.
+// Pour l'instant, seulement Halloween : les autres s'ajouteront un par un (mettre leur id dans EVENTS_ON).
+const EVENTS_ON = ['halloween'];
 const EVENTS = [
   { id: 'halloween', name: 'Halloween', acc: 'lanterne', when: 'du 15 octobre au 1er novembre', goal: 5, what: 'bons pronos',
     inWin: d => (d.m === 10 && d.d >= 15) || (d.m === 11 && d.d <= 1) },
   { id: 'noel', name: 'Noël', acc: 'bonnet', when: 'en décembre', goal: 5, what: 'bons pronos', inWin: d => d.m === 12 },
   { id: 'nouvelan', name: 'Nouvel an', acc: 'chapeaufete', when: 'du 1er au 7 janvier', goal: 1, what: 'prono posé', posed: true, inWin: d => d.m === 1 && d.d <= 7 },
   { id: 'wttfinals', name: 'WTT Finals', acc: 'medaille', when: 'en fin de saison', goal: 3, what: 'bons pronos sur les WTT Finals', finals: true },
-];
+].filter(e => EVENTS_ON.includes(e.id));
 const parisDate = t => { const s = parisYMD(t); return { y: +s.slice(0, 4), m: +s.slice(5, 7), d: +s.slice(8, 10) }; };
 const BADGE_GONE = BADGE_DEFS.findIndex(b => b.id === 'citrouille');
 if (BADGE_GONE >= 0) BADGE_DEFS.splice(BADGE_GONE, 1);
 (function () {
   const a = ACCESSORIES.find(x => x.id === 'lanterne');
   if (a) { a.name = "Citrouille d'or"; delete a.badge; a.event = 'halloween'; }
-  ACCESSORIES.push(
+  ACCESSORIES.push(...[
     { id: 'bonnet', name: 'Bonnet de Noël', slot: 'tete', event: 'noel' },
     { id: 'chapeaufete', name: 'Chapeau de fête', slot: 'tete', event: 'nouvelan' },
     { id: 'medaille', name: 'Médaille des Finals', slot: 'cou', event: 'wttfinals' },
-  );
+  ].filter(a => EVENTS.some(e => e.id === a.event)));
 })();
 // Mes progrès pour un événement : sur toute mon histoire (chaque année compte).
 function eventProgress(ev) {
@@ -9646,7 +9688,7 @@ function checkEventAcc() {
   if (!Array.isArray(seen)) return; // premier passage : rien à fêter
   got.filter(id => !seen.includes(id)).forEach((id, k) => {
     const a = ACCESSORIES.find(x => x.id === id);
-    afterSplash(() => setTimeout(() => toast(`Accessoire d'événement gagné : ${a.name}. Il t'attend dans Mon compte.`), 1500 + k * 1800));
+    afterSplash(() => setTimeout(() => toast(`Accessoire d'événement gagné : ${a.name}. Il t'attend dans l'onglet Moi.`), 1500 + k * 1800));
     try { const at = JSON.parse(localStorage.getItem('spin_evt_at') || '{}') || {}; at[id] = Date.now(); localStorage.setItem('spin_evt_at', JSON.stringify(at)); } catch (e) { /* ignore */ }
   });
 }
@@ -9697,6 +9739,123 @@ document.addEventListener('keydown', e => {
   if (S.openFete) { closeFete(); e.stopImmediatePropagation(); }
 });
 
+/* =============================================================================
+   Se repérer : les onglets Matchs · Ligue · Pros · Moi, Moi en trois
+   sous-onglets, les défis dans Ligue, les annonces regroupées, et une barre
+   qui rappelle le tournoi et le jour pendant qu'on descend la liste.
+   ========================================================================== */
+if (!S.meTab) S.meTab = 'stats';
+S.baremeOpen = false;
+
+// --- Matchs : les annonces (récap prêt, défi reçu…) dans un seul bloc ---------
+function forYou(list) {
+  const html = list.filter(Boolean).join('');
+  return (html.match(/<section\b/g) || []).length >= 2 ? `<div class="foryou">${html}</div>` : html;
+}
+// Sous le tableau de score : ce qui n'est pas le prono lui-même, à part.
+const predExtra = s => (s && s.trim() ? `<div class="predextra">${s}</div>` : '');
+
+// --- La barre « où suis-je » : le tournoi et le jour en cours de lecture -----
+const MOIS_COURT = { janvier: 'janv.', février: 'févr.', avril: 'avr.', juillet: 'juil.', septembre: 'sept.', octobre: 'oct.', novembre: 'nov.', décembre: 'déc.' };
+// « Dimanche 25 octobre » -> « dim. 25 oct. » (la place manque à côté du nom du tournoi).
+function dayShort(t) {
+  const w = String(t).trim().split(/\s+/);
+  if (w.length !== 3 || !/^\d+$/.test(w[1])) return t;
+  return `${w[0].slice(0, 3).toLowerCase()}. ${w[1]} ${MOIS_COURT[w[2].toLowerCase()] || w[2]}`;
+}
+function ctxTop() {
+  const bar = document.querySelector('.topbar');
+  if (!bar || getComputedStyle(bar).position !== 'sticky') return 0;
+  return Math.round(bar.getBoundingClientRect().bottom);
+}
+function ctxUpdate() {
+  const wrap = document.querySelector('.ctxwrap'), bar = wrap && wrap.querySelector('.ctxbar');
+  if (!bar) return;
+  const top = ctxTop();
+  wrap.style.top = top + 'px';
+  let cur = null;
+  for (const g of document.querySelectorAll('main .compgroup')) {
+    if (g.getBoundingClientRect().top < top + 8) cur = g; else break;
+  }
+  const label = cur && cur.querySelector('.complabel');
+  if (!cur || !label || label.getBoundingClientRect().bottom > top + 4 || cur.getBoundingClientRect().bottom < top + 60) {
+    if (!bar.hidden) bar.hidden = true;
+    return;
+  }
+  let day = '';
+  for (const d of cur.querySelectorAll('.day')) { if (d.getBoundingClientRect().top < top + 48) day = d.textContent; else break; }
+  const name = (label.querySelector('h2 b') || label).textContent;
+  const key = name + '|' + day;
+  if (bar.dataset.k !== key) {
+    bar.dataset.k = key;
+    bar.setAttribute('style', cur.getAttribute('style') || '');
+    bar.innerHTML = `<i aria-hidden="true"></i><b>${esc(name)}</b>${day ? `<span>${esc(dayShort(day))}</span>` : ''}`;
+  }
+  if (bar.hidden) bar.hidden = false;
+}
+let _ctxRaf = 0, _ctxOn = false;
+function ctxMount() {
+  if (!_ctxOn) {
+    _ctxOn = true;
+    const tick = () => { if (_ctxRaf) return; _ctxRaf = requestAnimationFrame(() => { _ctxRaf = 0; try { ctxUpdate(); } catch (e) { /* la barre reste cachée */ } }); };
+    addEventListener('scroll', tick, { passive: true });
+    addEventListener('resize', tick);
+  }
+  ctxUpdate();
+}
+
+// --- Ligue : les défis, et le barème replié -----------------------------------
+function duelsSection() { return duelsPanel() || ''; }
+function baremeFold() {
+  const open = !!S.baremeOpen;
+  return `<section class="baremefold${open ? ' open' : ''}" id="bareme">
+    <button class="foldbtn" data-act="baremefold" aria-expanded="${open}">
+      <span><b>Comment on marque</b><small>Points, séries, balles, bonus du WTT</small></span><i aria-hidden="true"></i>
+    </button>
+    ${open ? baremeHtml().replace('<section class="panel bareme" id="bareme">', '<section class="panel bareme">') : ''}
+  </section>`;
+}
+
+// --- Pros : le classement officiel, dit en haut ---------------------------------
+function rankingsView() { return `<h2 class="stathead pagehead">Classement officiel des pros</h2>${rankingsViewOld()}`; }
+
+// --- Moi : trois sous-onglets sous ton profil ------------------------------------
+const ME_TABS = [['stats', 'Stats'], ['badges', 'Badges'], ['histo', 'Historique']];
+function meTabsHtml() {
+  if (!ME_TABS.some(([k]) => k === S.meTab)) S.meTab = 'stats';
+  return `<div class="metabs">${segRow(ME_TABS, S.meTab, 'metab')}</div>`;
+}
+const meSkinLink = () => (S.outfitOk ? '<p class="mehint"><button class="linkbtn" data-act="skinopen">Habille ton perso avec tes accessoires</button></p>' : '');
+const meBadges = () => `${meSkinLink()}<div class="acc-cols">${badgesPanel()}${winnerHistoryPanel()}</div>`;
+// Pas encore de prono jugé : les sous-onglets sont là quand même (les badges à gagner se voient déjà).
+function meNewbie() {
+  const t = S.meTab;
+  const body = t === 'badges' ? meBadges()
+    : t === 'histo' ? emptyBox('pense', 'Ton historique commence avec ton premier prono jugé.')
+    : emptyBox('loupe', 'Tes stats arrivent dès que ton premier prono est jugé.');
+  return `${profilePanel()}${meTabsHtml()}${body}`;
+}
+
+async function onAct30(act, el) {
+  if (act === 'metab') {
+    const before = document.querySelector('.metabs');
+    const y = before ? before.getBoundingClientRect().top : null;
+    S.meTab = el.dataset.v; playSound('tick'); render();
+    // On garde les sous-onglets au même endroit de l'écran : seul le contenu change.
+    const after = document.querySelector('.metabs');
+    if (after && y !== null) window.scrollBy(0, after.getBoundingClientRect().top - y);
+    return true;
+  }
+  if (act === 'baremefold') { S.baremeOpen = !S.baremeOpen; keepRender(); return true; }
+  if (act === 'bareme') { S.baremeOpen = true; return false; } // la suite (aller dans Ligue, descendre au barème) reste la même
+  if (act === 'skinopen') {
+    S.skinOpen = true; keepRender();
+    requestAnimationFrame(() => { const a = document.querySelector('.accwrap') || document.querySelector('.mychar'); if (a) a.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' }); });
+    return true;
+  }
+  return false;
+}
+
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
   // entièrement terminé (voir isTournamentFinished) : pas de bilan sur
@@ -9743,7 +9902,7 @@ function accountView() {
   if (finished === null) return '<div class="loading">Chargement…</div>';
 
   if (!finished.length) {
-    return `${profilePanel()}${emptyBox('loupe', 'Tes stats arrivent dès que ton premier prono est jugé.')}`;
+    return meNewbie();
   }
 
   const n = finished.length;
@@ -9900,14 +10059,34 @@ function accountView() {
     ${worstReads.length && worstReads[0].name !== bestReads[0].name ? `<h4 class="subh">Tes angles morts</h4><ul class="cmlist">${worstReads.map(playerRow).join('')}</ul>` : ''}
   </section>` : '';
 
-  const ordinal = r => r + (r === 1 ? 'er' : 'e');
-  return `
-  ${profilePanel()}
-  <h2 class="stathead">Tes stats</h2>
+  const rankBox = myRank ? `<div class="rank"><span>${S.leagues ? 'dans<br>Tout SPIN' : 'au classement<br>général'}</span><span class="medalball" style="--medal:${myRank === 1 ? 'var(--gold)' : myRank === 2 ? 'var(--silver)' : myRank === 3 ? 'var(--bronze)' : '#F3F4F1'}">${myRank}</span></div>` : '';
+  const bestPanel = best && best.pt.total > 0 ? `
+  <section class="panel">
+    <h3>Ton meilleur coup</h3>
+    <div class="bestshot">
+      ${ptsBlock(best.pt.total, best.pt)}
+      <div style="min-width:0">
+        <div class="adm-title">${matchLabel(best.matches)}</div>
+        <div class="hint">${esc(fmtDay(best.matches.starts_at))} · prono ${best.pred_a}–${best.pred_b}, score réel ${best.matches.score_a}–${best.matches.score_b}</div>
+      </div>
+    </div>
+  </section>` : '';
+  const formePanel = `
+  <section class="panel">
+    <h3>Forme récente</h3>
+    <ul class="cmlist" style="margin-top:8px">${recentRows}</ul>
+  </section>`;
+  let body;
+  if (S.meTab === 'badges') {
+    body = meBadges();
+  } else if (S.meTab === 'histo') {
+    body = `<div class="acc-cols">${seasonPanel}${bestPanel}${formePanel}${playerPanel}</div>`;
+  } else {
+    body = `
   <section class="acchero" style="${themeVarsCss('ALL')}">
     <div class="acchero-row">
       <div class="big"><span data-count="${total}">${total}</span><small>points</small></div>
-      ${myRank ? `<div class="rank"><span>au classement<br>${S.leagues ? 'mondial' : 'général'}</span><span class="medalball" style="--medal:${myRank === 1 ? 'var(--gold)' : myRank === 2 ? 'var(--silver)' : myRank === 3 ? 'var(--bronze)' : '#F3F4F1'}">${myRank}</span></div>` : ''}
+      ${rankBox}
     </div>
     <p>${n} prono${n > 1 ? 's' : ''} jugé${n > 1 ? 's' : ''}, dont ${exactN} score${exactN > 1 ? 's' : ''} exact${exactN > 1 ? 's' : ''}.</p>
   </section>
@@ -9927,33 +10106,15 @@ function accountView() {
   ${machinePanel(finished)}
   ${originPanel(finished, winPts)}
   ${gridPanel(finished)}
-  ${winnerHistoryPanel()}
-  ${duelsPanel()}
-  ${badgesPanel()}
   ${sparkline}
   ${byCircuit.length ? `
   <section class="panel">
     <h3>Par circuit</h3>
     <div class="laddwrap">${circuitRows}</div>
   </section>` : ''}
-  ${seasonPanel}
-  ${playerPanel}
-  ${best && best.pt.total > 0 ? `
-  <section class="panel">
-    <h3>Ton meilleur coup</h3>
-    <div class="bestshot">
-      ${ptsBlock(best.pt.total, best.pt)}
-      <div style="min-width:0">
-        <div class="adm-title">${matchLabel(best.matches)}</div>
-        <div class="hint">${esc(fmtDay(best.matches.starts_at))} · prono ${best.pred_a}–${best.pred_b}, score réel ${best.matches.score_a}–${best.matches.score_b}</div>
-      </div>
-    </div>
-  </section>` : ''}
-  <section class="panel">
-    <h3>Forme récente</h3>
-    <ul class="cmlist" style="margin-top:8px">${recentRows}</ul>
-  </section>
   </div>`;
+  }
+  return `${profilePanel()}${meTabsHtml()}${body}`;
 }
 /* =============================================================================
    Bilan de tournoi animé ("récap") — déclenché depuis "Par tournoi / saison"
@@ -10076,11 +10237,11 @@ const TUTO_STEPS = [
     text: 'Sur un match, vous comparez vos points.', sch: () => DUEL_FLOW() + '<p class="tuto-note">Pour l’honneur : ça ne compte pas au classement.</p>' },
   { id: 'emotes', art: 'emotes', need: () => S.duels !== null && S.emotes !== null, title: 'Encourage ou chambre',
     text: 'Pendant un défi, envoie des emotes à ton ami. C’est ton personnage qui les joue.' },
-  { id: 'board', target: 'nav-board', pose: 'allez', title: 'Les classements',
-    text: () => S.leagues ? 'Dans Amis, joue dans une ligue avec tes amis (un code suffit) ou au classement mondial. Le 1er à la fin du mois devient champion du mois.' : 'Dans Amis : le général, le mois, le WTT et la Pro A. Le 1er à la fin du mois devient champion du mois.' },
+  { id: 'board', target: 'nav-board', pose: 'allez', title: 'Ta ligue',
+    text: () => S.leagues ? 'Dans Ligue, joue avec tes amis (un code suffit) ou contre tout le monde dans Tout SPIN. Tes défis y sont aussi. Le 1er à la fin du mois devient champion du mois.' : 'Dans Ligue : le général, le mois, le WTT et la Pro A, et tes défis. Le 1er à la fin du mois devient champion du mois.' },
   { id: 'perso', target: 'nav-account', pose: 'cadeau', next: "C'est parti", title: 'Ton personnage',
-    text: () => S.outfitOk ? 'Chaque badge gagné lui débloque un accessoire. Habille-le dans Mon compte.' : 'Tes stats, tes badges et la couleur de ton maillot sont dans Mon compte.',
-    sch: () => '<p class="tuto-note">Le barème complet est en bas de l’onglet Amis. Ce tuto reste dans les réglages : la roue, en haut.</p>' },
+    text: () => S.outfitOk ? 'Chaque badge gagné lui débloque un accessoire. Habille-le dans l’onglet Moi.' : 'Tes stats, tes badges et la couleur de ton maillot sont dans l’onglet Moi.',
+    sch: () => '<p class="tuto-note">Le barème complet est en bas de l’onglet Ligue. Ce tuto reste dans les réglages : la roue, en haut.</p>' },
 ];
 let TUTO = null; // { i, el, picked, steps, mid }
 function tutoTarget(name) {
@@ -10941,6 +11102,7 @@ function esc0(s) { return String(s ?? ''); }
 $app.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (await onAct30(act, el)) return;
   if (await onAct29(act, el)) return;
   if (await onAct28(act, el)) return;
   if (await onAct27(act, el)) return;
