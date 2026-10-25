@@ -2107,6 +2107,54 @@ button.tside{cursor:pointer}
 .baremefold .panel.bareme{margin:0;background:transparent;box-shadow:none;border-top:1px solid var(--explain-line);border-radius:0 0 14px 14px}
 .tab-board .duelpanel,.tab-board > .panel{margin-top:18px}
 .mehint{margin:0 2px 12px}
+/* --- Accueil, calendrier, derniers résultats (feat31) --- */
+/* Le lien vers le calendrier, à droite des filtres. */
+.filters .calink{margin-left:auto;display:inline-flex;align-items:center;gap:6px;align-self:center}
+.filters .calink .ico{font-size:18px}
+/* « Derniers résultats » : une rangée sobre sous l'affiche. */
+.resbtn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin:0 0 18px;padding:13px 16px;border:0;border-radius:14px;
+  background:var(--surface);color:var(--ink);box-shadow:var(--lift);text-align:left;cursor:pointer}
+.resbtn-t{min-width:0}
+.resbtn-t b{display:block;font:700 18px/1.15 var(--f-head)}
+.resbtn-t small{display:block;margin-top:3px;font:400 13.5px/1.3 var(--f-text);color:var(--ink-2)}
+.resbtn .cnt{flex:none;display:inline-grid;place-items:center;min-width:28px;height:26px;padding:0 8px;border-radius:13px;background:var(--ink);color:var(--surface);font:700 14px/1 var(--f-text)}
+/* Le calendrier : la bande de jours, puis le jour choisi. */
+.calstrip{margin:10px 0 4px;scroll-behavior:auto}
+.calday{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:54px;padding:8px 8px 7px}
+.calday small{font:500 11.5px/1 var(--f-text);color:var(--ink-2)}
+.calday b{font:700 20px/1 var(--f-head);color:var(--ink)}
+.calday.past b{color:var(--ink-2)}
+.calday.today small:first-child{font-weight:700;color:var(--ink)}
+.calday[aria-pressed="true"] b{color:var(--ink)}
+.cdm{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%}
+.cdm.live{background:var(--red)}
+.cdm.todo{box-shadow:inset 0 0 0 1.5px var(--ink-2)}
+.calnav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:16px 0 0}
+.calnav h3{margin:0;text-align:center;font:700 20px/1.15 var(--f-head);color:var(--ink)}
+.calnav h3::first-letter{text-transform:uppercase}
+.calnav h3 small{display:block;margin-top:3px;font:500 13px/1 var(--f-text);color:var(--ink-2)}
+.calnav .iconbtn{width:40px;height:40px;font-size:20px;background:var(--surface);box-shadow:var(--lift);color:var(--ink)}
+.calnav .iconbtn:disabled{opacity:.35;box-shadow:none}
+.tab-calendar .compgroup:first-of-type{margin-top:14px}
+/* Les petites cartes de résultats. */
+.restot{margin:8px 0 14px;font:500 15px/1.3 var(--f-text);color:var(--ink-2)}
+.restot b{font:700 italic 30px/1 var(--f-head);color:var(--ink);margin-right:4px}
+.resgrid{list-style:none;margin:0 0 14px;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rescard{display:flex;flex-direction:column;gap:5px;width:100%;height:100%;padding:11px 12px 12px;border:0;border-radius:12px;background:var(--ground);
+  box-shadow:inset 0 0 0 1px var(--line-2);color:var(--ink);text-align:left;cursor:pointer}
+.rc-comp{display:flex;align-items:center;gap:6px;min-width:0;font:500 12px/1.2 var(--f-text);color:var(--ink-2)}
+.rc-comp i{width:9px;height:9px;border-radius:2px;background:var(--chip);flex:none}
+.rc-comp span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rc-line{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font:400 14px/1.25 var(--f-text);color:var(--ink-2)}
+.rc-line span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rc-line b{flex:none;font:700 italic 17px/1 var(--f-head)}
+.rc-line.win{color:var(--ink);font-weight:600}
+.rc-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:auto;padding-top:6px;font:400 12.5px/1.25 var(--f-text);color:var(--ink-2)}
+.rc-foot b{color:var(--ink)}
+.rescard .ptsblock{min-width:0;padding:6px 8px 5px;border-radius:9px}
+.rescard .ptsblock b{font-size:20px}
+.rescard .ptsblock span{font-size:10px;margin-top:2px}
+@media (max-width:340px){ .resgrid{grid-template-columns:1fr} }
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -3308,7 +3356,7 @@ async function loadAccount() {
 async function handleSession(session) {
   if (!session) {
     S.session = null; S.pseudo = ''; S.isAdmin = false; S.matches = []; S.myPreds = {}; S.board = null;
-    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive(); LITE.clear(); S.suspended = false; S.modReports = undefined; S.openReport = null; stopPlus(); S.notifs = undefined; S.gdefis = undefined; S.openBell = false; S.openGd = null; _bellCache.at = 0; S.trees = undefined; S.treePts = []; S.openTree = null; S.openFete = null; S.feteQueue = []; S._fetesDone = false; _feteTries = 0; S.meTab = 'stats'; S.baremeOpen = false; S.duelPts = null; S.rival = null;
+    S.boardAll = null; S.leagues = undefined; S.openLeague = null; S.openDelete = false; S.recovery = false; S.pushOk = false; S.openSettings = false; S.editPseudo = false; stopLive(); LITE.clear(); S.suspended = false; S.modReports = undefined; S.openReport = null; stopPlus(); S.notifs = undefined; S.gdefis = undefined; S.openBell = false; S.openGd = null; _bellCache.at = 0; S.trees = undefined; S.treePts = []; S.openTree = null; S.openFete = null; S.feteQueue = []; S._fetesDone = false; _feteTries = 0; S.meTab = 'stats'; S.baremeOpen = false; S.openResults = null; S.calDay = null; S.duelPts = null; S.rival = null;
     render(); return;
   }
   if (S.session && S.session.user.id === session.user.id) { S.session = session; return; }
@@ -3373,7 +3421,7 @@ function render() {
   const sheetKey = m => m.className.replace(/ still\b/g, '') + '|' + (m.getAttribute('aria-label') || '');
   const sheets = [...document.querySelectorAll('.modal, .recapx')].map(m => [sheetKey(m), m.scrollTop]);
   const todo = S.matches.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
-  const tabs = [['matches', 'Matchs'], ['board', 'Ligue'], ['rankings', 'Pros'], ['account', 'Moi']];
+  const tabs = [['matches', 'Accueil'], ['calendar', 'Calendrier'], ['board', 'Ligue'], ['rankings', 'Pros'], ['account', 'Moi']];
   if (S.isAdmin) tabs.push(['admin', 'Admin']);
   const initial = (S.pseudo || '?').slice(0, 1).toUpperCase();
   $app.innerHTML = `
@@ -3432,6 +3480,7 @@ function afterRender() {
     if (!reducedMotion() && document.querySelector('main.fresh')) document.querySelectorAll('main [data-count]').forEach(countUp);
   } catch (e) { /* un mouvement raté ne doit jamais casser l'écran */ }
   try { ctxMount(); } catch (e) { /* pas de barre « où suis-je » */ }
+  try { calAfter(); } catch (e) { /* la bande de jours reste où elle est */ }
   try { mountMedal(); } catch (e) { /* la médaille reste à plat */ }
   try { mountScenes3D(); } catch (e) { /* l'affichage d'avant reste en place */ }
 }
@@ -3613,6 +3662,7 @@ function sideView() {
 
 function tabView() {
   if (S.tab === 'board') return boardView();
+  if (S.tab === 'calendar') return calendarView();
   if (S.tab === 'rankings') return rankingsView();
   if (S.tab === 'account') return accountView();
   if (S.tab === 'admin' && S.isAdmin) return adminView();
@@ -3702,7 +3752,7 @@ async function submitAuth(f) {
    maquette), l'accueil mène directement à l'essentiel : deux tuiles de
    stats compactes, puis la liste groupée par compétition — comme on
    ouvrirait une vraie app de scores plutôt qu'un tableau de bord perso. */
-function matchesView() {
+function matchesViewOld() {
   // "fresh" : la liste vient d'être ouverte ou filtrée (pas juste un prono posé
   // ailleurs sur la même liste) -> les rangées ont le droit de rejouer leur entrée.
   const fresh = S._freshMatches; S._freshMatches = false;
@@ -8193,7 +8243,7 @@ function privacyModal() {
 
 // --- Branchements -------------------------------------------------------------------------
 function modals23() {
-  return `${S.openLeague && S.session ? leagueModal(S.openLeague) : ''}${S.openDelete && S.session ? deleteModal() : ''}${S.openPrivacy ? privacyModal() : ''}${S.recovery && S.session ? recoveryModal() : ''}${modals27()}${modals28()}${modals29()}`;
+  return `${S.openLeague && S.session ? leagueModal(S.openLeague) : ''}${S.openDelete && S.session ? deleteModal() : ''}${S.openPrivacy ? privacyModal() : ''}${S.recovery && S.session ? recoveryModal() : ''}${modals27()}${modals28()}${modals29()}${modals31()}`;
 }
 async function onAct23(act, el, v) {
   const id = el.dataset.id ? Number(el.dataset.id) : null;
@@ -9856,6 +9906,206 @@ async function onAct30(act, el) {
   return false;
 }
 
+/* =============================================================================
+   Accueil, calendrier, derniers résultats.
+   - L'accueil montre directement les prochains matchs (plus de « Terminés »).
+   - Le calendrier (onglet à part) : une bande de jours, les matchs du jour
+     choisi, joués ou à venir.
+   - « Derniers résultats » : tes nouveaux résultats en petites cartes ; une
+     fois vus, ils sortent de la liste (souvenir sur cet appareil).
+   ========================================================================== */
+PH['calendar-blank'] = '<path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z"/>';
+PH['calendar-blank.f'] = '<path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,48H48V48H72v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24Z"/>';
+PH['caret-left'] = '<path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"/>';
+PH['caret-right'] = '<path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/>';
+NAV_ICON.calendar = 'calendar-blank';
+S.calDay = null; S.openResults = null;
+
+const isUpcoming = m => (m.status === 'scheduled' || m.status === 'live') && !isAwaitingResult(m);
+const byStart = (a, b) => new Date(a.starts_at) - new Date(b.starts_at);
+const inCircuit = m => S.circuit === 'ALL' || m.circuit === S.circuit;
+
+// Les matchs groupés par compétition (bandeau du tournoi, puis les rangées).
+function matchGroupsHtml(shown, fresh, o = {}) {
+  const streakInfo = myStreakInfo();
+  const groups = [];
+  for (const m of shown) {
+    let g = groups[groups.length - 1];
+    if (!g || g.competition !== m.competition) { g = { competition: m.competition, matches: [] }; groups.push(g); }
+    g.matches.push(m);
+  }
+  let i = 0;
+  const seenWin = new Set(); // un tournoi coupé en deux groupes n'affiche ses choix qu'une fois
+  return groups.map(g => {
+    const n = g.matches.length;
+    let lastDay = '', rows = '';
+    for (const m of g.matches) {
+      const d = fmtDay(m.starts_at);
+      if (o.days !== false && d !== lastDay) { rows += `<div class="day">${esc(d)}</div>`; lastDay = d; }
+      rows += matchRow(m, fresh, i++, streakInfo);
+    }
+    const m0 = g.matches[0];
+    const tierName = m0.circuit === 'PRO_A' ? 'Pro A' : (m0.tier || 'WTT');
+    const open = g.matches.filter(m => !isLocked(m));
+    return `<section class="compgroup" style="${themeVarsCss(themeKeyFor(m0))}"><div class="complabel">
+        <div><h2 style="margin:0"><b>${esc(g.competition)}</b></h2><small><span class="tier"><i aria-hidden="true"></i>${esc(tierName)}</span><span>${n} match${n > 1 ? 's' : ''}</span></small></div>${open.length ? groupBallesBudgetHtml(open) : ''}</div>${m0.circuit === 'WTT' && !seenWin.has(g.competition) ? (seenWin.add(g.competition), winnerStrip(g.competition) + treeStrip(g.competition)) : ''}
+        <div class="complist">${rows}</div></section>`;
+  }).join('');
+}
+const CTX = '<div class="ctxwrap" aria-hidden="true"><div class="ctxbar" hidden></div></div>';
+const circuitSeg = () => segRow([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit');
+
+// --- L'accueil : les prochains matchs ------------------------------------------------
+function matchesView() {
+  S.view = 'upcoming';
+  const fresh = S._freshMatches; S._freshMatches = false;
+  const list = S.matches.filter(inCircuit);
+  const up = list.filter(isUpcoming).sort(byStart);
+  let shown = up, journeeRow = '';
+  // Pro A : une journée à la fois (la prochaine, tant qu'on n'en a pas choisi une autre).
+  if (S.circuit === 'PRO_A') {
+    const journeeOf = m => { const mm = /^Journée (\d+)$/.exec(m.round || ''); return mm ? +mm[1] : null; };
+    const nums = [...new Set(up.map(journeeOf).filter(n => n !== null))].sort((a, b) => a - b);
+    if (nums.length) {
+      if (S.proJournee === null || !nums.includes(S.proJournee)) S.proJournee = nums[0];
+      journeeRow = `<div class="journeerow" role="group" aria-label="Journée">
+        ${nums.map(n => `<button class="jchip" data-act="journee" data-v="${n}" aria-pressed="${S.proJournee === n}">Journée ${n}</button>`).join('')}
+      </div>`;
+      shown = up.filter(m => journeeOf(m) === S.proJournee);
+    }
+  }
+  const body = shown.length ? matchGroupsHtml(shown, fresh)
+    : emptyBox('dodo', S.isAdmin ? "Aucun match à venir. Ajoute le premier dans l'onglet Admin." : S.circuit === 'PRO_A' ? 'Aucun match de Pro A à venir pour l’instant.' : 'Pas de match à venir pour l’instant. Les résultats sont dans le calendrier.');
+  return CTX + heroCard(up) + resultsBtn() + suspendNotice() + forYou([halloweenNotice(), recapNotice(), duelNotice()])
+    + `<div class="filters">${circuitSeg()}<button class="linkbtn calink" data-act="tab" data-tab="calendar">${ico('calendar-blank')}Calendrier</button></div>` + journeeRow + body;
+}
+
+// --- Le calendrier --------------------------------------------------------------------
+const MOIS_C = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+const JOURS_C = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+const ymdDate = d => new Date(`${d}T12:00:00`);
+function calDays(list) { return [...new Set(list.map(m => parisYMD(m.starts_at)))].sort(); }
+function calDefault(days) {
+  const today = parisYMD(Date.now());
+  return days.includes(today) ? today : (days.find(d => d > today) || days[days.length - 1]);
+}
+function calendarView() {
+  const fresh = S._freshMatches; S._freshMatches = false;
+  const list = S.matches.filter(inCircuit);
+  const days = calDays(list);
+  const head = `<h2 class="stathead pagehead">Calendrier</h2><div class="filters">${circuitSeg()}</div>`;
+  if (!days.length) return head + emptyBox('dodo', 'Aucun match pour l’instant.');
+  if (!S.calDay || !days.includes(S.calDay)) S.calDay = calDefault(days);
+  const today = parisYMD(Date.now());
+  const chip = d => {
+    const ms = list.filter(m => parisYMD(m.starts_at) === d), dt = ymdDate(d);
+    const live = ms.some(m => m.status === 'live' && !isAwaitingResult(m));
+    const todo = ms.some(m => !isLocked(m) && !S.myPreds[m.id]);
+    const past = d < today;
+    const mark = live ? '<i class="cdm live" title="En direct"></i>' : todo ? '<i class="cdm todo" title="Pronos à faire"></i>' : '';
+    return `<button class="jchip calday${past ? ' past' : ''}${d === today ? ' today' : ''}" data-act="calday" data-v="${d}" aria-pressed="${S.calDay === d}" aria-label="${esc(fmtDay(dt))}, ${ms.length} match${ms.length > 1 ? 's' : ''}">
+      <small>${d === today ? 'auj.' : JOURS_C[dt.getDay()]}</small><b>${dt.getDate()}</b><small>${MOIS_C[dt.getMonth()]}</small>${mark}</button>`;
+  };
+  const shown = list.filter(m => parisYMD(m.starts_at) === S.calDay).sort(byStart);
+  const i = days.indexOf(S.calDay), prev = days[i - 1], next = days[i + 1];
+  const nav = `<div class="calnav">
+    <button class="iconbtn" data-act="calday" data-v="${prev || ''}" aria-label="Jour de match précédent" ${prev ? '' : 'disabled'}>${ico('caret-left')}</button>
+    <h3>${esc(fmtDay(ymdDate(S.calDay)))}${S.calDay === today ? ' <small>aujourd’hui</small>' : ''}</h3>
+    <button class="iconbtn" data-act="calday" data-v="${next || ''}" aria-label="Jour de match suivant" ${next ? '' : 'disabled'}>${ico('caret-right')}</button>
+  </div>`;
+  return CTX + head + `<div class="journeerow calstrip" role="group" aria-label="Jours de match">${days.map(chip).join('')}</div>` + nav + matchGroupsHtml(shown, fresh, { days: false });
+}
+// La bande de jours garde le jour choisi en vue.
+function calAfter() {
+  const r = document.querySelector('.calstrip'), b = r && r.querySelector('[aria-pressed="true"]');
+  if (!b || r.dataset.k === S.calDay) return;
+  r.dataset.k = S.calDay;
+  r.scrollLeft = b.offsetLeft - (r.clientWidth - b.offsetWidth) / 2;
+}
+
+// --- Derniers résultats -----------------------------------------------------------------
+const RES_KEY = 'spin_resultats_vus';
+function resSeen() { try { const v = JSON.parse(localStorage.getItem(RES_KEY) || '[]'); return new Set(Array.isArray(v) ? v.map(String) : []); } catch (e) { return new Set(); } }
+function resMarkSeen(ids) {
+  try { const s = resSeen(); ids.forEach(id => s.add(String(id))); localStorage.setItem(RES_KEY, JSON.stringify([...s].slice(-400))); } catch (e) { /* stockage bloqué : ils reviendront */ }
+}
+// Tes matchs jugés de la dernière semaine, pas encore vus ici.
+function resultsNew() {
+  if (!S.session) return [];
+  const seen = resSeen(), since = Date.now() - 7 * 864e5;
+  return S.matches.filter(m => m.status === 'finished' && S.myPreds[m.id] && new Date(m.starts_at).getTime() >= since && !seen.has(String(m.id)))
+    .sort((a, b) => byStart(b, a)).slice(0, 24);
+}
+function resultPts(m, si) {
+  const mine = S.myPreds[m.id], before = si.before.get(m.id) || 0;
+  return { mine, pt: points(m, mine, before), det: pointsDetail(m, mine, before) };
+}
+function resultsBtn() {
+  const list = resultsNew();
+  if (!list.length) return '';
+  const si = myStreakInfo(), tot = list.reduce((s, m) => s + (resultPts(m, si).pt || 0), 0);
+  return `<button class="resbtn" data-act="results"><span class="resbtn-t"><b>Derniers résultats</b><small>${list.length} match${list.length > 1 ? 's' : ''} · ${tot > 0 ? '+' : ''}${tot} pt${Math.abs(tot) > 1 ? 's' : ''} pour toi</small></span><span class="cnt">${list.length}</span></button>`;
+}
+function resultCard(m, si) {
+  const { mine, pt, det } = resultPts(m, si);
+  const winA = m.score_a > m.score_b, winB = m.score_b > m.score_a;
+  const line = (name, sc, win) => `<span class="rc-line${win ? ' win' : ''}"><span>${esc(name)}</span><b>${sc}</b></span>`;
+  return `<li><button class="rescard" data-act="resgo" data-id="${m.id}" style="${themeVarsCss(themeKeyFor(m))}">
+    <span class="rc-comp"><i aria-hidden="true"></i><span>${esc(m.circuit === 'PRO_A' ? (m.round || 'Pro A') : m.competition)}</span></span>
+    ${line(m.side_a, m.score_a, winA)}${line(m.side_b, m.score_b, winB)}
+    <span class="rc-foot"><span>Ton prono <b>${mine.pred_a}–${mine.pred_b}</b></span>${pt !== null ? ptsBlock(pt, det) : ''}</span>
+  </button></li>`;
+}
+function resultsModal() {
+  const list = S.openResults || [];
+  const si = myStreakInfo(), tot = list.reduce((s, m) => s + (resultPts(m, si).pt || 0), 0);
+  const exact = list.filter(m => (resultPts(m, si).det || {}).exact).length;
+  return `<div class="modalbackdrop" data-act="closeresults"><div class="modal resx" role="dialog" aria-modal="true" aria-label="Derniers résultats" data-act="stop">
+    <button class="modalclose" data-act="closeresults" aria-label="Fermer">${ico('x')}</button>
+    <div class="modalhead"><div class="modalsub">${list.length} match${list.length > 1 ? 's' : ''} depuis ta dernière visite</div><div class="modalname">Derniers résultats</div></div>
+    <div class="modalbody">
+      <p class="restot"><b>${tot > 0 ? '+' : ''}${tot}</b> pt${Math.abs(tot) > 1 ? 's' : ''}${exact ? `, dont ${exact} score${exact > 1 ? 's' : ''} exact${exact > 1 ? 's' : ''}` : ''}</p>
+      <ul class="resgrid">${list.map(m => resultCard(m, si)).join('')}</ul>
+      <p class="hint">Vus : ils quittent l’accueil. Tous les résultats restent dans le calendrier.</p>
+    </div>
+  </div></div>`;
+}
+const modals31 = () => (S.openResults ? resultsModal() : '');
+function closeResults() {
+  if (!S.openResults) return;
+  resMarkSeen(S.openResults.map(m => m.id));
+  S.openResults = null;
+}
+// Ouvre le calendrier au jour d'un match, et le montre.
+function calGo(id) {
+  const m = S.matches.find(x => String(x.id) === String(id));
+  if (!m) return false;
+  S.tab = 'calendar'; S.circuit = 'ALL'; S.calDay = parisYMD(m.starts_at); S._tabAt = Date.now(); render();
+  const row = document.querySelector(`.mrow[data-mid="${m.id}"]`);
+  if (row) { row.scrollIntoView({ behavior: 'auto', block: 'center' }); row.classList.remove('spot'); void row.offsetWidth; row.classList.add('spot'); }
+  return true;
+}
+
+async function onAct31(act, el) {
+  if (act === 'calday') { if (el.dataset.v) { S.calDay = el.dataset.v; S._freshMatches = true; playSound('tick'); navigate(render); } return true; }
+  if (act === 'results') { S.openResults = resultsNew(); playSound('tick'); keepRender(); return true; }
+  if (act === 'closeresults') { closeResults(); keepRender(); return true; }
+  if (act === 'resgo') { closeResults(); calGo(el.dataset.id); return true; }
+  if (act === 'tab' && el.dataset.tab === 'calendar') { S._freshMatches = true; return false; }
+  // Un match joué ou en attente de résultat : il est dans le calendrier, plus à l'accueil.
+  if (act === 'gotomatch') {
+    const m = S.matches.find(x => String(x.id) === String(el.dataset.id));
+    if (m && !isUpcoming(m)) { calGo(m.id); return true; }
+    if (S.tab !== 'matches') { S.tab = 'matches'; render(); }
+    return false;
+  }
+  return false;
+}
+addEventListener('keydown', e => {
+  if (e.key !== 'Escape' || !S.openResults) return;
+  e.stopImmediatePropagation(); closeResults(); keepRender();
+}, true);
+
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
   // entièrement terminé (voir isTournamentFinished) : pas de bilan sur
@@ -11102,6 +11352,7 @@ function esc0(s) { return String(s ?? ''); }
 $app.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (await onAct31(act, el)) return;
   if (await onAct30(act, el)) return;
   if (await onAct29(act, el)) return;
   if (await onAct28(act, el)) return;
