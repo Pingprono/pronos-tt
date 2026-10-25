@@ -2111,13 +2111,6 @@ button.tside{cursor:pointer}
 /* Le lien vers le calendrier, à droite des filtres. */
 .filters .calink{margin-left:auto;display:inline-flex;align-items:center;gap:6px;align-self:center}
 .filters .calink .ico{font-size:18px}
-/* « Derniers résultats » : une rangée sobre sous l'affiche. */
-.resbtn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin:0 0 18px;padding:13px 16px;border:0;border-radius:14px;
-  background:var(--surface);color:var(--ink);box-shadow:var(--lift);text-align:left;cursor:pointer}
-.resbtn-t{min-width:0}
-.resbtn-t b{display:block;font:700 18px/1.15 var(--f-head)}
-.resbtn-t small{display:block;margin-top:3px;font:400 13.5px/1.3 var(--f-text);color:var(--ink-2)}
-.resbtn .cnt{flex:none;display:inline-grid;place-items:center;min-width:28px;height:26px;padding:0 8px;border-radius:13px;background:var(--ink);color:var(--surface);font:700 14px/1 var(--f-text)}
 /* Le calendrier : la bande de jours, puis le jour choisi. */
 .calstrip{margin:10px 0 4px;scroll-behavior:auto}
 .calday{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:54px;padding:8px 8px 7px}
@@ -2136,25 +2129,62 @@ button.tside{cursor:pointer}
 .calnav .iconbtn{width:40px;height:40px;font-size:20px;background:var(--surface);box-shadow:var(--lift);color:var(--ink)}
 .calnav .iconbtn:disabled{opacity:.35;box-shadow:none}
 .tab-calendar .compgroup:first-of-type{margin-top:14px}
-/* Les petites cartes de résultats. */
-.restot{margin:8px 0 14px;font:500 15px/1.3 var(--f-text);color:var(--ink-2)}
-.restot b{font:700 italic 30px/1 var(--f-head);color:var(--ink);margin-right:4px}
-.resgrid{list-style:none;margin:0 0 14px;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.rescard{display:flex;flex-direction:column;gap:5px;width:100%;height:100%;padding:11px 12px 12px;border:0;border-radius:12px;background:var(--ground);
-  box-shadow:inset 0 0 0 1px var(--line-2);color:var(--ink);text-align:left;cursor:pointer}
-.rc-comp{display:flex;align-items:center;gap:6px;min-width:0;font:500 12px/1.2 var(--f-text);color:var(--ink-2)}
-.rc-comp i{width:9px;height:9px;border-radius:2px;background:var(--chip);flex:none}
-.rc-comp span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rc-line{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font:400 14px/1.25 var(--f-text);color:var(--ink-2)}
-.rc-line span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rc-line b{flex:none;font:700 italic 17px/1 var(--f-head)}
-.rc-line.win{color:var(--ink);font-weight:600}
-.rc-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:auto;padding-top:6px;font:400 12.5px/1.25 var(--f-text);color:var(--ink-2)}
-.rc-foot b{color:var(--ink)}
-.rescard .ptsblock{min-width:0;padding:6px 8px 5px;border-radius:9px}
-.rescard .ptsblock b{font-size:20px}
-.rescard .ptsblock span{font-size:10px;margin-top:2px}
-@media (max-width:340px){ .resgrid{grid-template-columns:1fr} }
+/* Derniers résultats : un paquet de cartes en haut de l'accueil. */
+.resdeck{position:relative;display:block;width:100%;margin:0 0 30px;padding:0;border:0;background:none;color:var(--ink);text-align:left;cursor:pointer}
+.rd-back{position:absolute;left:12px;right:12px;bottom:-8px;height:40px;border-radius:14px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line-2),var(--lift)}
+.rd-back.two{left:24px;right:24px;bottom:-15px;opacity:.7}
+.resdeck:not(.many) .rd-back{display:none}
+.rd-card{position:relative;display:block;padding:16px 18px 15px;border-radius:16px;background:var(--surface);box-shadow:inset 0 0 0 2px var(--ink),var(--lift)}
+.rd-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.rd-top b{font:700 21px/1.1 var(--f-head)}
+.rd-pts{flex:none;font:700 italic 24px/1 var(--f-head)}
+.rd-tiles{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.rd-pt{min-width:42px;padding:7px 8px 6px;border-radius:8px;text-align:center;font:700 italic 16px/1 var(--f-head)}
+.rd-pt.p3{background:var(--red);color:#fff}
+.rd-pt.p1{background:var(--ink);color:var(--surface)}
+.rd-pt.p0,.rd-pt.more{background:var(--surface-2);color:var(--ink-2);box-shadow:inset 0 0 0 1.5px var(--line)}
+.rd-go{display:inline-flex;align-items:center;gap:4px;margin-top:14px;font:600 15px/1 var(--f-text);text-decoration:underline;text-underline-offset:3px}
+.rd-go .ico{font-size:15px}
+html.halloween .rd-pt.p3{color:var(--on-red)}
+/* Les cartes, une par match, qu'on fait glisser. */
+.resx-head{display:flex;flex-direction:column;gap:6px;padding:22px 64px 4px 22px}
+.resx-head h2{margin:0;font:700 26px/1.05 var(--f-head);color:var(--ink)}
+.resx-count{font:500 14px/1.2 var(--f-text);color:var(--ink-2)}
+.resx-count b{color:var(--ink)}
+.fctrack{position:relative;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:12px 22px 6px;scroll-padding:0 22px;outline:none}
+.fctrack::-webkit-scrollbar{display:none}
+.fctrack:focus-visible{box-shadow:inset 0 0 0 2px var(--ink)}
+.fcard{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;gap:12px;min-width:0;padding:16px 16px 12px;border-radius:16px;
+  background:var(--ground);box-shadow:inset 0 0 0 1.5px var(--line-2)}
+.fc-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font:500 13px/1.2 var(--f-text);color:var(--ink-2)}
+.fc-comp{display:flex;align-items:center;gap:7px;min-width:0;font-weight:600;color:var(--ink)}
+.fc-comp i{width:10px;height:10px;border-radius:3px;background:var(--chip);flex:none}
+.fc-comp span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc-when{flex:none}
+.fc-round{margin-top:-6px;font:400 13px/1.2 var(--f-text);color:var(--ink-2)}
+.fc-board{padding:4px 14px;border-radius:12px;background:var(--table);color:var(--on-table);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.fc-side{display:flex;align-items:center;gap:8px;min-width:0;padding:10px 0;opacity:.72}
+.fc-side + .fc-side{border-top:1px solid rgba(255,255,255,.28)}
+.fc-side.win{opacity:1}
+.fc-side span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 17px/1.2 var(--f-text)}
+.fc-side.win span{font-weight:700}
+.fc-side b{flex:none;font:700 italic 32px/1 var(--f-head)}
+.fc-me{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px}
+.fc-guy .guy{width:62px;height:62px;display:block}
+.fc-txt{min-width:0;font:400 14px/1.3 var(--f-text);color:var(--ink-2)}
+.fc-txt b{color:var(--ink)}
+.fc-txt p{margin:3px 0 0;font:700 16px/1.25 var(--f-head);color:var(--ink)}
+.fc-txt .ptsum{margin-top:6px}
+.fc-cal{align-self:flex-start;font-size:14px}
+@media (prefers-reduced-motion:no-preference){ .fcard.on .ptsblock{animation:popin .5s var(--ease-out) .1s both} }
+.fcdots{display:flex;justify-content:center;gap:6px;padding:8px 22px 0}
+.fcdots i{width:7px;height:7px;border-radius:4px;background:var(--line)}
+.fcdots i.vu{background:var(--ink-3)}
+.fcdots i.on{width:20px;background:var(--ink)}
+.fcnav{display:flex;gap:10px;padding:14px 22px 22px}
+.fcnav .btn{flex:1;margin:0}
+@media (max-width:360px){ .fc-me{grid-template-columns:minmax(0,1fr) auto} .fc-guy{display:none} }
+.resx .modalclose{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -3481,6 +3511,7 @@ function afterRender() {
   } catch (e) { /* un mouvement raté ne doit jamais casser l'écran */ }
   try { ctxMount(); } catch (e) { /* pas de barre « où suis-je » */ }
   try { calAfter(); } catch (e) { /* la bande de jours reste où elle est */ }
+  try { resAfter(); } catch (e) { /* les cartes restent à plat */ }
   try { mountMedal(); } catch (e) { /* la médaille reste à plat */ }
   try { mountScenes3D(); } catch (e) { /* l'affichage d'avant reste en place */ }
 }
@@ -9976,7 +10007,7 @@ function matchesView() {
   }
   const body = shown.length ? matchGroupsHtml(shown, fresh)
     : emptyBox('dodo', S.isAdmin ? "Aucun match à venir. Ajoute le premier dans l'onglet Admin." : S.circuit === 'PRO_A' ? 'Aucun match de Pro A à venir pour l’instant.' : 'Pas de match à venir pour l’instant. Les résultats sont dans le calendrier.');
-  return CTX + heroCard(up) + resultsBtn() + suspendNotice() + forYou([halloweenNotice(), recapNotice(), duelNotice()])
+  return CTX + resultsBtn() + heroCard(up) + suspendNotice() + forYou([halloweenNotice(), recapNotice(), duelNotice()])
     + `<div class="filters">${circuitSeg()}<button class="linkbtn calink" data-act="tab" data-tab="calendar">${ico('calendar-blank')}Calendrier</button></div>` + journeeRow + body;
 }
 
@@ -10040,42 +10071,91 @@ function resultPts(m, si) {
   const mine = S.myPreds[m.id], before = si.before.get(m.id) || 0;
   return { mine, pt: points(m, mine, before), det: pointsDetail(m, mine, before) };
 }
+const resTot = (list, si) => list.reduce((s, m) => s + (resultPts(m, si).pt || 0), 0);
+const ptsTxt = n => `${n > 0 ? '+' : ''}${n} pt${Math.abs(n) > 1 ? 's' : ''}`;
+// En haut de l'accueil : un paquet de cartes, une par nouveau résultat.
 function resultsBtn() {
   const list = resultsNew();
   if (!list.length) return '';
-  const si = myStreakInfo(), tot = list.reduce((s, m) => s + (resultPts(m, si).pt || 0), 0);
-  return `<button class="resbtn" data-act="results"><span class="resbtn-t"><b>Derniers résultats</b><small>${list.length} match${list.length > 1 ? 's' : ''} · ${tot > 0 ? '+' : ''}${tot} pt${Math.abs(tot) > 1 ? 's' : ''} pour toi</small></span><span class="cnt">${list.length}</span></button>`;
+  const si = myStreakInfo(), tot = resTot(list, si), n = list.length;
+  const tiles = list.slice(0, 6).map(m => { const { pt, det } = resultPts(m, si); return `<i class="rd-pt ${pt === 0 ? 'p0' : det && det.exact ? 'p3' : 'p1'}">${pt > 0 ? '+' : ''}${pt}</i>`; }).join('');
+  return `<button class="resdeck${n > 1 ? ' many' : ''}" data-act="results" aria-label="Voir tes ${n} nouveaux résultats, ${ptsTxt(tot)}">
+    <span class="rd-back" aria-hidden="true"></span><span class="rd-back two" aria-hidden="true"></span>
+    <span class="rd-card">
+      <span class="rd-top"><b>${n} nouveau${n > 1 ? 'x' : ''} résultat${n > 1 ? 's' : ''}</b><span class="rd-pts">${ptsTxt(tot)}</span></span>
+      <span class="rd-tiles" aria-hidden="true">${tiles}${n > 6 ? `<i class="rd-pt more">+${n - 6}</i>` : ''}</span>
+      <span class="rd-go">Voir les cartes${ico('caret-right')}</span>
+    </span>
+  </button>`;
 }
-function resultCard(m, si) {
+// Une carte = un match : le score, ton prono, tes points.
+function flashCard(m, si, k, n) {
   const { mine, pt, det } = resultPts(m, si);
-  const winA = m.score_a > m.score_b, winB = m.score_b > m.score_a;
-  const line = (name, sc, win) => `<span class="rc-line${win ? ' win' : ''}"><span>${esc(name)}</span><b>${sc}</b></span>`;
-  return `<li><button class="rescard" data-act="resgo" data-id="${m.id}" style="${themeVarsCss(themeKeyFor(m))}">
-    <span class="rc-comp"><i aria-hidden="true"></i><span>${esc(m.circuit === 'PRO_A' ? (m.round || 'Pro A') : m.competition)}</span></span>
-    ${line(m.side_a, m.score_a, winA)}${line(m.side_b, m.score_b, winB)}
-    <span class="rc-foot"><span>Ton prono <b>${mine.pred_a}–${mine.pred_b}</b></span>${pt !== null ? ptsBlock(pt, det) : ''}</span>
-  </button></li>`;
+  const winA = m.score_a > m.score_b, winner = winA ? m.side_a : m.side_b, exact = !!(det && det.exact);
+  const verdict = pt === null ? '' : exact ? 'Pile le bon score.' : pt > 0 ? `Bon vainqueur. Le score : ${m.score_a}–${m.score_b}.` : `Raté : ${esc(winner)} a gagné.`;
+  const ca = S.competitors[m.competitor_a_id], cb = S.competitors[m.competitor_b_id];
+  const side = (c, name, sc, win) => `<div class="fc-side${win ? ' win' : ''}">${flagHtml(c)}<span>${esc(name)}</span><b>${sc}</b></div>`;
+  const round = m.round ? String(m.round).split(/\s*,\s*/).join(' · ') : '';
+  return `<article class="fcard${k === 0 ? ' on' : ''}" data-id="${m.id}" style="${themeVarsCss(themeKeyFor(m))}" aria-roledescription="carte" aria-label="Résultat ${k + 1} sur ${n}">
+    <div class="fc-head"><span class="fc-comp"><i aria-hidden="true"></i><span>${esc(m.competition)}</span></span><span class="fc-when">${esc(dayShort(fmtDay(m.starts_at)))}</span></div>
+    ${round ? `<div class="fc-round">${esc(round)}</div>` : ''}
+    <div class="fc-board">${side(ca, m.side_a, m.score_a, winA)}${side(cb, m.side_b, m.score_b, !winA)}</div>
+    <div class="fc-me"><span class="fc-guy" aria-hidden="true">${guy(exact ? 'trophee' : pt > 0 ? 'pouce' : 'pense')}</span>
+      <div class="fc-txt"><span>Ton prono <b>${mine.pred_a}–${mine.pred_b}</b></span><p>${verdict}</p>${ptsSumHtml(det)}</div>
+      ${pt !== null ? ptsBlock(pt, det) : ''}</div>
+    <button class="linkbtn fc-cal" data-act="resgo" data-id="${m.id}">Voir dans le calendrier</button>
+  </article>`;
 }
 function resultsModal() {
-  const list = S.openResults || [];
-  const si = myStreakInfo(), tot = list.reduce((s, m) => s + (resultPts(m, si).pt || 0), 0);
-  const exact = list.filter(m => (resultPts(m, si).det || {}).exact).length;
+  const R = S.openResults, list = R.list, n = list.length, si = myStreakInfo(), i = Math.min(R.i, n - 1), last = i === n - 1;
   return `<div class="modalbackdrop" data-act="closeresults"><div class="modal resx" role="dialog" aria-modal="true" aria-label="Derniers résultats" data-act="stop">
     <button class="modalclose" data-act="closeresults" aria-label="Fermer">${ico('x')}</button>
-    <div class="modalhead"><div class="modalsub">${list.length} match${list.length > 1 ? 's' : ''} depuis ta dernière visite</div><div class="modalname">Derniers résultats</div></div>
-    <div class="modalbody">
-      <p class="restot"><b>${tot > 0 ? '+' : ''}${tot}</b> pt${Math.abs(tot) > 1 ? 's' : ''}${exact ? `, dont ${exact} score${exact > 1 ? 's' : ''} exact${exact > 1 ? 's' : ''}` : ''}</p>
-      <ul class="resgrid">${list.map(m => resultCard(m, si)).join('')}</ul>
-      <p class="hint">Vus : ils quittent l’accueil. Tous les résultats restent dans le calendrier.</p>
-    </div>
+    <div class="resx-head"><h2>Derniers résultats</h2><span class="resx-count"><b>${i + 1}</b> sur ${n} · ${ptsTxt(resTot(list, si))} en tout</span></div>
+    <div class="fctrack" tabindex="0" aria-label="Fais glisser pour passer d’une carte à l’autre">${list.map((m, k) => flashCard(m, si, k, n)).join('')}</div>
+    <div class="fcdots" aria-hidden="true">${list.map((m, k) => `<i class="${k === i ? 'on' : ''}${R.seen.has(String(m.id)) ? ' vu' : ''}"></i>`).join('')}</div>
+    <div class="fcnav"><button class="btn sec" data-act="resprev" ${i === 0 ? 'disabled' : ''}>Précédente</button><button class="btn fcnext" data-act="${last ? 'closeresults' : 'resnext'}">${last ? 'Terminer' : 'Suivante'}</button></div>
   </div></div>`;
 }
 const modals31 = () => (S.openResults ? resultsModal() : '');
-function closeResults() {
-  if (!S.openResults) return;
-  resMarkSeen(S.openResults.map(m => m.id));
-  S.openResults = null;
+// La carte affichée est vue : elle quittera l'accueil (les autres restent).
+function resSetIndex(i) {
+  const R = S.openResults;
+  if (!R || !R.list[i]) return;
+  R.i = i;
+  const id = String(R.list[i].id);
+  if (!R.seen.has(id)) { R.seen.add(id); resMarkSeen([id]); }
+  const box = document.querySelector('.resx');
+  if (!box) return;
+  const n = R.list.length, last = i === n - 1;
+  box.querySelectorAll('.fcard').forEach((c, k) => c.classList.toggle('on', k === i));
+  box.querySelectorAll('.fcdots i').forEach((d, k) => { d.classList.toggle('on', k === i); if (R.seen.has(String(R.list[k].id))) d.classList.add('vu'); });
+  const cnt = box.querySelector('.resx-count b'); if (cnt) cnt.textContent = i + 1;
+  const prev = box.querySelector('[data-act="resprev"]'); if (prev) prev.disabled = i === 0;
+  const nx = box.querySelector('.fcnext'); if (nx) { nx.dataset.act = last ? 'closeresults' : 'resnext'; nx.textContent = last ? 'Terminer' : 'Suivante'; }
 }
+const fcLeft = (t, c) => c.offsetLeft - t.firstElementChild.offsetLeft;
+function resNearest(t) {
+  let best = 0, d = Infinity;
+  [...t.children].forEach((c, k) => { const x = Math.abs(fcLeft(t, c) - t.scrollLeft); if (x < d) { d = x; best = k; } });
+  return best;
+}
+function resGoTo(i) {
+  const t = document.querySelector('.fctrack'), c = t && t.children[i];
+  if (!c) return;
+  t.scrollTo({ left: fcLeft(t, c), behavior: reducedMotion() ? 'auto' : 'smooth' });
+  resSetIndex(i);
+}
+// Après chaque rendu : la carte en cours reste en place, le glissé est suivi.
+function resAfter() {
+  const t = document.querySelector('.fctrack');
+  if (!t || !S.openResults) return;
+  const c = t.children[S.openResults.i];
+  if (c) t.scrollLeft = fcLeft(t, c);
+  let tm = 0;
+  t.addEventListener('scroll', () => { clearTimeout(tm); tm = setTimeout(() => resSetIndex(resNearest(t)), 90); }, { passive: true });
+  resSetIndex(S.openResults.i);
+}
+function closeResults() { S.openResults = null; }
 // Ouvre le calendrier au jour d'un match, et le montre.
 function calGo(id) {
   const m = S.matches.find(x => String(x.id) === String(id));
@@ -10088,7 +10168,9 @@ function calGo(id) {
 
 async function onAct31(act, el) {
   if (act === 'calday') { if (el.dataset.v) { S.calDay = el.dataset.v; S._freshMatches = true; playSound('tick'); navigate(render); } return true; }
-  if (act === 'results') { S.openResults = resultsNew(); playSound('tick'); keepRender(); return true; }
+  if (act === 'results') { const list = resultsNew(); if (list.length) { S.openResults = { list, i: 0, seen: new Set() }; playSound('tick'); keepRender(); } return true; }
+  if (act === 'resnext') { resGoTo((S.openResults ? S.openResults.i : 0) + 1); return true; }
+  if (act === 'resprev') { resGoTo((S.openResults ? S.openResults.i : 0) - 1); return true; }
   if (act === 'closeresults') { closeResults(); keepRender(); return true; }
   if (act === 'resgo') { closeResults(); calGo(el.dataset.id); return true; }
   if (act === 'tab' && el.dataset.tab === 'calendar') { S._freshMatches = true; return false; }
@@ -10102,8 +10184,9 @@ async function onAct31(act, el) {
   return false;
 }
 addEventListener('keydown', e => {
-  if (e.key !== 'Escape' || !S.openResults) return;
-  e.stopImmediatePropagation(); closeResults(); keepRender();
+  if (!S.openResults) return;
+  if (e.key === 'Escape') { e.stopImmediatePropagation(); closeResults(); keepRender(); }
+  else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); resGoTo(S.openResults.i + (e.key === 'ArrowRight' ? 1 : -1)); }
 }, true);
 
 function breakdownRow(label, s, col, circuit) {
