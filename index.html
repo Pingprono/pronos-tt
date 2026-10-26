@@ -2252,6 +2252,60 @@ html.dark .friendstoggle[aria-expanded="true"],html.halloween .friendstoggle[ari
 .sechead .leagueinfo .btn{padding:8px 11px;font-size:14px}
 .leagueinfo .btn.iconly{width:40px;height:38px;padding:0;justify-content:center}
 .leagueinfo .btn.iconly .ico{margin:0;width:19px;height:19px}
+/* --- L'arbre du tournoi, en tableau (feat33) --- */
+@media (min-width:640px){ .modal.wide{max-width:min(1080px,94vw)} }
+.treehow{margin:2px 0 8px}
+.bracket{--bm-h:70px;display:flex;align-items:stretch;gap:26px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px -22px 0;padding:6px 22px 16px;scrollbar-width:thin;outline:none}
+.bracket:focus-visible{box-shadow:inset 0 0 0 2px var(--ink)}
+.bcol{flex:0 0 152px;display:flex;flex-direction:column;min-width:0}
+.bcol h4{margin:0 0 10px;padding:7px 8px;border-radius:8px;background:var(--surface-2);text-align:center;font:700 14px/1 var(--f-head);color:var(--ink)}
+.bcol h4 small{margin-left:4px;font:600 12px/1 var(--f-text);color:var(--ink-2)}
+.bbody{position:relative;flex:1;display:flex;flex-direction:column}
+.bpair{position:relative;flex:1;display:flex;flex-direction:column;justify-content:space-around;min-height:calc(2 * var(--bm-h) + 20px)}
+/* Les traits du tableau : deux matchs se rejoignent vers le tour suivant. */
+.bpair::after{content:"";position:absolute;right:-13px;top:25%;bottom:25%;width:13px;border:2px solid var(--line);border-left:0;border-radius:0 8px 8px 0}
+.bpair::before{content:"";position:absolute;right:-26px;top:50%;width:13px;margin-top:-1px;border-top:2px solid var(--line)}
+.bcol.final .bbody,.bcol.champ .bbody{justify-content:center}
+.bcol.final .bbody::after{content:"";position:absolute;right:-26px;top:50%;width:26px;margin-top:-1px;border-top:2px solid var(--line)}
+.bm{height:var(--bm-h);display:flex;flex-direction:column;border-radius:10px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line),0 1px 2px rgba(18,26,38,.06);overflow:hidden}
+.bp{flex:1;display:flex;align-items:center;gap:6px;min-width:0;padding:0 9px;border:0;background:none;color:var(--ink);text-align:left;font:500 13.5px/1.1 var(--f-text)}
+button.bp{cursor:pointer}
+.bp + .bp{border-top:1px solid var(--line-2)}
+.bp .bp-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bp .bp-s{flex:none;font:600 11px/1 var(--f-text);color:var(--ink-2)}
+.bp .flag{flex:none}
+.bp.on{background:var(--table);color:var(--on-table);font-weight:700}
+.bp.on .bp-s{color:var(--on-table-2)}
+.bp.vide{color:var(--ink-3);font-size:12px;font-style:italic}
+.bp.on.ok{background:color-mix(in srgb,var(--gold) 34%,var(--surface));color:var(--ink)}
+.bp.on.ko{background:var(--surface-2);color:var(--ink-2);text-decoration:line-through;text-decoration-thickness:1.5px;font-weight:600}
+.bp.on.ok .bp-s,.bp.on.ko .bp-s{color:var(--ink-2)}
+.bcol.champ{flex-basis:130px}
+.bchamp{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 10px;border-radius:12px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line);text-align:center}
+.bchamp .ico{font-size:30px;color:var(--gold)}
+.bchamp b{display:flex;align-items:center;gap:6px;font:700 16px/1.15 var(--f-head);color:var(--ink)}
+.bchamp span{font:500 13px/1.2 var(--f-text);color:var(--ink-3)}
+.bchamp.on{box-shadow:inset 0 0 0 2px var(--gold)}
+.bchamp.ok{background:color-mix(in srgb,var(--gold) 30%,var(--surface))}
+.bchamp.ko b{color:var(--ink-2);text-decoration:line-through}
+.blegend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;font:500 13px/1.2 var(--f-text);color:var(--ink-2)}
+.blegend span::before{content:"";display:inline-block;width:12px;height:12px;margin-right:6px;border-radius:3px;vertical-align:-2px;background:var(--table)}
+.blegend .ok::before{background:color-mix(in srgb,var(--gold) 34%,var(--surface));box-shadow:inset 0 0 0 1px var(--gold)}
+.blegend .ko::before{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+.bswipe{margin:2px 0 0}
+@media (min-width:1000px){ .bswipe{display:none} }
+/* --- Les rubriques aux couleurs du thème : le dessin en filigrane --- */
+.sechead.themed,.tab-account .profilex{overflow:hidden}
+.sechead.themed > :not(.sh-motif){position:relative;z-index:1}
+.sh-motif{position:absolute;z-index:0;right:-14px;bottom:-18px;width:150px;height:auto;fill:currentColor;color:#fff;opacity:.16;pointer-events:none}
+.sh-motif.bat{width:180px;right:-26px;top:-6px;bottom:auto;transform:rotate(-12deg)}
+.sh-motif.web{width:200px;right:-56px;top:-56px;bottom:auto;opacity:.15}
+.sh-motif.ghost{width:126px;right:-8px;bottom:-26px}
+.tab-account .profilex > .sh-motif{right:-18px;top:-14px;bottom:auto;width:170px}
+.tab-account .profilex > :not(.sh-motif){position:relative;z-index:1}
+.treex .treefoot .btn{width:auto;flex:none}
+.treex .treefoot span{flex:1 1 auto;min-width:0}
+@media (min-width:1000px){ .bcol{flex-basis:176px} }
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -3580,6 +3634,8 @@ function afterRender() {
   try { calAfter(); } catch (e) { /* la bande de jours reste où elle est */ }
   try { resAfter(); } catch (e) { /* les cartes restent à plat */ }
   try { histSync(); } catch (e) { /* le retour garde son comportement d'avant */ }
+  try { bracketAfter(); } catch (e) { /* le tableau repart du début */ }
+  try { motifAfter(); } catch (e) { /* pas de dessin */ }
   try { scrollRestore(); } catch (e) { /* on reste en haut */ }
   try { mountMedal(); } catch (e) { /* la médaille reste à plat */ }
   try { mountScenes3D(); } catch (e) { /* l'affichage d'avant reste en place */ }
@@ -3753,7 +3809,7 @@ function sideView() {
       <li><b>×2 à ×4</b><span>avec 1 à 3 balles, si gagnant</span></li>
       <li><b>+75 %</b><span>au plus, grâce à la série</span></li>
       <li><b>+5 pts</b><span>au plus, avec l'outsider (WTT)</span></li>
-      <li><b>5 à 15</b><span>pour le vainqueur du tournoi (WTT)</span></li>
+      <li><b>0 à 30</b><span>avec l'arbre du tournoi (WTT)</span></li>
     </ul>
     <span class="sidelinks"><button class="linkbtn" data-act="bareme">Tout le barème</button><button class="linkbtn" data-act="tuto">Revoir le tuto</button></span>
   </section>`);
@@ -3909,7 +3965,7 @@ function matchesViewOld() {
       const m0 = g.matches[0];
       const tierName = m0.circuit === 'PRO_A' ? 'Pro A' : (m0.tier || 'WTT');
       return `<section class="compgroup" style="${themeVarsCss(themeKeyFor(m0))}"><div class="complabel">
-        <div><h2 style="margin:0"><b>${esc(g.competition)}</b></h2><small><span class="tier"><i aria-hidden="true"></i>${esc(tierName)}</span><span>${n} match${n > 1 ? 's' : ''}</span></small></div>${S.view === 'upcoming' ? groupBallesBudgetHtml(g.matches) : ''}</div>${m0.circuit === 'WTT' && !seenWin.has(g.competition) ? (seenWin.add(g.competition), winnerStrip(g.competition) + treeStrip(g.competition)) : ''}
+        <div><h2 style="margin:0"><b>${esc(g.competition)}</b></h2><small><span class="tier"><i aria-hidden="true"></i>${esc(tierName)}</span><span>${n} match${n > 1 ? 's' : ''}</span></small></div>${S.view === 'upcoming' ? groupBallesBudgetHtml(g.matches) : ''}</div>${m0.circuit === 'WTT' && !seenWin.has(g.competition) ? (seenWin.add(g.competition), treeStrip(g.competition)) : ''}
         <div class="complist">${rows}</div></section>`;
     }).join('');
   }
@@ -8070,7 +8126,7 @@ function baremeHtml() {
         <p class="bsub">Série et balles s'additionnent.</p></div></li>
       <li><span class="bn" aria-hidden="true">3</span><div><h4>En plus, en WTT</h4>
         <div class="brow"><span class="bk">Outsider</span><p class="bsub">Le moins bien classé gagne et tu l'avais dit : +1 pt par 4 places d'écart, 5 au plus.</p></div>
-        <div class="brow"><span class="bk">Vainqueur du tournoi</span>${schWin()}</div></div></li>
+        <div class="brow"><span class="bk">Arbre du tournoi</span><p class="bsub">Avant le premier match, pronostique tout le tableau jusqu'au champion : de 0 à 30 pts selon ta part de vainqueurs trouvés.</p></div></div></li>
     </ol>
     <p class="bex"><span>Exemple</span>score exact + 2 balles = 3 × 3 = <b>9 pts</b></p>
     <p class="bsub">À égalité au classement, le plus de scores exacts passe devant.</p>
@@ -8080,7 +8136,7 @@ function baremeHtml() {
 function monthRulesHtml() {
   return `<ul class="rulelist explain">
     <li>Les points des matchs joués ce mois-ci (heure de Paris).</li>
-    <li>Le vainqueur du tournoi compte le mois de la finale.</li>
+    <li>L'arbre du tournoi compte le mois de la finale.</li>
     <li>Le 1er à la fin du mois devient champion du mois.</li>
     <li>Ta série continue d'un mois à l'autre.</li>
   </ul>`;
@@ -9587,7 +9643,7 @@ function treeScore(info, picks) {
   return { ok, ko, n, rest: info.total - ok - ko };
 }
 const treePtsOf = (bons, total) => Math.round(TREE_PTS * bons / total);
-function treeStrip(comp) {
+function treeStripOld(comp) {
   if (!S.trees || !S.session) return '';
   const items = WIN_DRAWS.map(d => treeInfo(comp, d)).filter(Boolean).map(info => {
     const saved = S.trees.get(info.key), picks = treePicks(info), sc = treeScore(info, picks), official = (S.treePts || []).find(r => r.competition === comp && r.draw === info.draw);
@@ -9604,7 +9660,7 @@ function treeStrip(comp) {
   }).filter(Boolean);
   return items.length ? `<div class="wpicks treepicks">${items.join('')}</div>` : '';
 }
-function treeModal(o) {
+function treeModalList(o) {
   const info = treeInfo(o.comp, o.draw);
   if (!info) return '';
   const picks = treePicks(info), sc = treeScore(info, picks), saved = S.trees && S.trees.get(info.key);
@@ -9978,7 +10034,7 @@ function meTabsHtml() {
   return `<div class="metabs">${segRow(ME_TABS, S.meTab, 'metab')}</div>`;
 }
 const meSkinLink = () => (S.outfitOk ? '<p class="mehint"><button class="linkbtn" data-act="skinopen">Habille ton perso avec tes accessoires</button></p>' : '');
-const meBadges = () => `${meSkinLink()}<div class="acc-cols">${badgesPanel()}${winnerHistoryPanel()}</div>`;
+const meBadges = () => `${meSkinLink()}<div class="acc-cols">${badgesPanel()}${treeHistoryPanel()}</div>`;
 // Pas encore de prono jugé : les sous-onglets sont là quand même (les badges à gagner se voient déjà).
 function meNewbie() {
   const t = S.meTab;
@@ -10050,7 +10106,7 @@ function matchGroupsHtml(shown, fresh, o = {}) {
     const tierName = m0.circuit === 'PRO_A' ? 'Pro A' : (m0.tier || 'WTT');
     const open = g.matches.filter(m => !isLocked(m));
     return `<section class="compgroup" style="${themeVarsCss(themeKeyFor(m0))}"><div class="complabel">
-        <div><h2 style="margin:0"><b>${esc(g.competition)}</b></h2><small><span class="tier"><i aria-hidden="true"></i>${esc(tierName)}</span><span>${n} match${n > 1 ? 's' : ''}</span></small></div>${open.length ? groupBallesBudgetHtml(open) : ''}</div>${m0.circuit === 'WTT' && !seenWin.has(g.competition) ? (seenWin.add(g.competition), winnerStrip(g.competition) + treeStrip(g.competition)) : ''}
+        <div><h2 style="margin:0"><b>${esc(g.competition)}</b></h2><small><span class="tier"><i aria-hidden="true"></i>${esc(tierName)}</span><span>${n} match${n > 1 ? 's' : ''}</span></small></div>${open.length ? groupBallesBudgetHtml(open) : ''}</div>${m0.circuit === 'WTT' && !seenWin.has(g.competition) ? (seenWin.add(g.competition), treeStrip(g.competition)) : ''}
         <div class="complist">${rows}</div></section>`;
   }).join('');
 }
@@ -10271,12 +10327,27 @@ addEventListener('keydown', e => {
      l'onglet actif et l'en-tête de la page prennent la couleur de la rubrique.
    ========================================================================== */
 const SEC = { matches: '#1D4F8C', calendar: '#B4531A', board: '#1D6B4A', rankings: '#7A5A12', account: '#6E2C5E', admin: '#3E4652' };
-const secColor = k => SEC[k] || SEC.matches;
+// Pendant un événement, chaque rubrique prend une couleur et un dessin du thème.
+const SEC_THEMES = {
+  halloween: { matches: { c: '#C2581B', m: 'lantern' }, calendar: { c: '#3A2560', m: 'bat' }, board: { c: '#2F4A1E', m: 'web' },
+    rankings: { c: '#2E3D5C', m: 'ghost' }, account: { c: '#7A4A0E', m: 'lantern' } },
+};
+const secTheme = k => ((HALLOWEEN && SEC_THEMES.halloween[k]) || { c: SEC[k] || SEC.matches });
+const secColor = k => secTheme(k).c;
+const MOTIF_BOX = { bat: [480, 356], web: [512, 512], lantern: [512, 512] };
+// Le dessin de la rubrique, en filigrane dans son en-tête.
+function secMotif(k) {
+  const m = secTheme(k).m;
+  if (!m) return '';
+  if (m === 'ghost') return `<svg class="sh-motif ghost" viewBox="0 0 256 256" aria-hidden="true">${PH['ghost.f'] || ''}</svg>`;
+  const [w, h] = MOTIF_BOX[m];
+  return `<svg class="sh-motif ${m}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><use href="#gi-${m}" width="${w}" height="${h}"/></svg>`;
+}
 const secVars = k => `--sec:${secColor(k)}`;
 
 // --- L'en-tête d'une rubrique : titre, une ligne de contexte, les réglages de la page.
 function secHead(title, sub, inner, right) {
-  return `<section class="sechead" style="${secVars(S.tab)}">
+  return `<section class="sechead${secTheme(S.tab).m ? ' themed' : ''}" style="${secVars(S.tab)}">${secMotif(S.tab)}
     <div class="sh-top"><h1>${title}</h1>${right ? `<span class="sh-act">${right}</span>` : ''}${sub ? `<p>${sub}</p>` : ''}</div>${inner || ''}
   </section>`;
 }
@@ -10381,6 +10452,127 @@ async function onAct32(act, el) {
     S._restoreTab = to; S._restoreY = S._scroll[to] || null;
     return false;
   }
+  return false;
+}
+
+/* =============================================================================
+   L'arbre du tournoi, dessiné comme un vrai tableau, et seul pari sur le
+   tournoi (le choix du vainqueur seul disparaît : la finale de l'arbre le fait).
+   ========================================================================== */
+
+// --- Sous l'en-tête d'un tournoi WTT : un bouton clair -----------------------------------
+function treeStrip(comp) {
+  if (!S.trees || !S.session) return '';
+  const items = WIN_DRAWS.map(d => treeInfo(comp, d)).filter(Boolean).map(info => {
+    const saved = S.trees.get(info.key), picks = treePicks(info), sc = treeScore(info, picks), official = (S.treePts || []).find(r => r.competition === comp && r.draw === info.draw);
+    let name, sub, cls = '';
+    if (info.open) {
+      name = saved ? (sc.n === info.total ? 'Ton tableau est complet' : `Ton tableau : ${sc.n} sur ${info.total}`) : 'Pronostique tout le tableau';
+      sub = saved ? `Modifiable jusqu'à ${fmtClose(info.closesAt)}` : `Du 1er tour jusqu'au champion, jusqu'à ${TREE_PTS} pts. Ouvert jusqu'à ${fmtClose(info.closesAt)}`;
+      if (!saved) cls = ' todo';
+    } else if (!saved) return '';
+    else if (info.done) { const pct = official ? official.pct : Math.round(100 * sc.ok / info.total); name = `Ton tableau : ${pct} % de bons`; sub = `+${official ? official.points : treePtsOf(sc.ok, info.total)} pts au classement`; cls = ' won'; }
+    else { name = `Ton tableau : ${sc.ok} bon${sc.ok > 1 ? 's' : ''}`; sub = `${sc.ko} raté${sc.ko > 1 ? 's' : ''}, ${sc.rest} à venir`; }
+    return `<button class="wpick treebtn${cls}" data-act="tree" data-comp="${esc(comp)}" data-draw="${esc(info.draw)}">
+      ${ico('tree')}<span class="wpick-t"><small>Arbre du ${esc(info.draw.toLowerCase())}</small><b>${esc(name)}</b><span>${esc(sub)}</span></span></button>`;
+  }).filter(Boolean);
+  return items.length ? `<div class="wpicks treepicks">${items.join('')}</div>` : '';
+}
+
+// --- La feuille de l'arbre : les tours en colonnes, reliés comme un tableau ------------
+function treeModal(o) {
+  const info = treeInfo(o.comp, o.draw);
+  if (!info) return '';
+  const picks = treePicks(info), sc = treeScore(info, picks), saved = S.trees && S.trees.get(info.key);
+  const official = (S.treePts || []).find(r => r.competition === o.comp && r.draw === o.draw);
+  const dirty = !!(S.treeDraft && S.treeDraft[info.key]) && JSON.stringify(picks) !== JSON.stringify(saved ? saved.choix : null);
+  const data = `data-comp="${esc(o.comp)}" data-draw="${esc(o.draw)}"`;
+  // Un joueur dans une case : à toucher (ouvert), ou marqué trouvé / raté (fermé).
+  const player = (n, i, j) => {
+    if (!n) return `<span class="bp vide">${i ? 'gagnant d’avant' : '?'}</span>`;
+    const p = info.players.get(n) || { name: n }, c = p.cid && S.competitors[p.cid], on = picks[i][j] === n;
+    const st = !info.open && on ? treeStatus(info, i, n) : '';
+    const inner = `${c ? flagHtml(c) : ''}<span class="bp-n">${esc(n)}</span>${p.seed ? `<small class="bp-s">${p.seed}</small>` : ''}`;
+    return info.open
+      ? `<button class="bp${on ? ' on' : ''}" data-act="treepick" ${data} data-i="${i}" data-j="${j}" data-name="${esc(n)}" aria-pressed="${on}" aria-label="${esc(n)} gagne ce match">${inner}</button>`
+      : `<span class="bp${on ? ' on' : ''}${st ? ' ' + st : ''}"${on ? ` aria-label="${esc(n)}, ${st === 'ok' ? 'trouvé' : st === 'ko' ? 'raté' : 'ton choix'}"` : ''}>${inner}</span>`;
+  };
+  const match = (i, j) => { const [a, b] = treeCands(info, picks, i, j); return `<div class="bm${picks[i][j] ? ' done' : ''}">${player(a, i, j)}${player(b, i, j)}</div>`; };
+  const cols = info.rounds.map((t, i) => {
+    const n = picks[i].length, left = picks[i].filter(x => !x).length;
+    let body = '';
+    if (n === 1) body = match(i, 0);
+    else for (let j = 0; j < n; j += 2) body += `<div class="bpair">${match(i, j)}${match(i, j + 1)}</div>`;
+    return `<div class="bcol${n === 1 ? ' final' : ''}" data-col="${i}"><h4>${TREE_SHORT[info.p0 + i]}${info.open && left ? ` <small>${left}</small>` : ''}</h4><div class="bbody">${body}</div></div>`;
+  }).join('');
+  const champ = picks[picks.length - 1][0], cp = champ && info.players.get(champ), cc = cp && cp.cid && S.competitors[cp.cid];
+  const champSt = !info.open && champ ? treeStatus(info, picks.length - 1, champ) : '';
+  const champCol = `<div class="bcol champ" data-col="${info.rounds.length}"><h4>Champion</h4><div class="bbody"><div class="bchamp${champ ? ' on' : ''}${champSt ? ' ' + champSt : ''}">${ico('trophy')}${champ ? `<b>${cc ? flagHtml(cc) : ''}${esc(champ)}</b>` : '<span>Ton champion</span>'}</div></div></div>`;
+  const how = info.open ? `<ol class="schflow treehow"><li>Touche le gagnant de chaque match</li><li>Il passe au tour suivant, à droite</li><li>Continue jusqu'au champion</li></ol>
+      <p class="hint">${info.total} matchs à pronostiquer. À la fin du tournoi, chaque vainqueur trouvé compte : ${Math.round(info.total * 2 / 3)} sur ${info.total} = ${treePtsOf(Math.round(info.total * 2 / 3), info.total)} pts, tout juste = ${TREE_PTS} pts. Modifiable jusqu'au premier match, ${esc(fmtClose(info.closesAt))}.</p>`
+    : info.done ? `<p><b>${official ? official.pct : Math.round(100 * sc.ok / info.total)} %</b> de vainqueurs trouvés (${sc.ok} sur ${info.total}) : <b>+${official ? official.points : treePtsOf(sc.ok, info.total)} pts</b>.</p>`
+    : `<p>L'arbre est fermé depuis le premier match. Pour l'instant : <b>${sc.ok}</b> bon${sc.ok > 1 ? 's' : ''}, ${sc.ko} raté${sc.ko > 1 ? 's' : ''}, ${sc.rest} à venir.</p>`;
+  const tools = info.open ? `<div class="treetools"><button class="btn small sec" data-act="treefav" ${data}>Remplir avec les favoris</button>
+      <button class="btn small sec" data-act="treeclear" ${data}>Tout effacer</button></div>` : '';
+  const legend = !info.open ? `<p class="blegend"><span class="ok">trouvé</span><span class="ko">raté</span><span>pas encore joué</span></p>` : '';
+  const foot = info.open ? `<div class="treefoot"><span>${sc.n} sur ${info.total} choisis${dirty ? ', pas encore enregistré' : saved ? ', enregistré' : ''}</span>
+      <button class="btn" data-act="treesave" ${data}${sc.n ? '' : ' disabled'}>Enregistrer mon arbre</button></div>` : '';
+  return `<div class="modalbackdrop" data-act="closetree"><div class="modal treex wide" role="dialog" aria-modal="true" aria-label="Arbre du ${esc(o.draw.toLowerCase())}" data-act="stop" style="${themeVarsCss(themeKeyFor(info.first[0]))}">
+    <button class="modalclose" data-act="closetree" aria-label="Fermer">${ico('x')}</button>
+    <div class="modalhead"><div class="modalsub">${esc(o.comp)}</div><div class="modalname">Arbre du ${esc(o.draw.toLowerCase())}</div></div>
+    <div class="modalbody"><div class="explain treeexplain">${how}</div>${tools}${legend}
+      <div class="bracket" data-key="${esc(info.key)}" tabindex="0" aria-label="Le tableau, du premier tour au champion">${cols}${champCol}</div>
+      <p class="hint bswipe">Fais glisser le tableau vers la gauche pour voir les tours suivants.</p></div>${foot}
+  </div></div>`;
+}
+// Le tableau garde sa position quand on choisit ; un tour fini montre le suivant.
+let _brX = {};
+function bracketAfter() {
+  const b = document.querySelector('.treex .bracket');
+  if (!b) return;
+  const k = b.dataset.key;
+  if (_brX[k] != null) b.scrollLeft = _brX[k];
+  b.addEventListener('scroll', () => { _brX[k] = b.scrollLeft; }, { passive: true });
+}
+function bracketShow(i) {
+  const b = document.querySelector('.treex .bracket'), col = b && b.querySelector(`.bcol[data-col="${i}"]`);
+  if (!col) return;
+  const x = col.offsetLeft - 12;
+  if (x + col.offsetWidth > b.scrollLeft + b.clientWidth || x < b.scrollLeft) b.scrollTo({ left: Math.max(0, x - (b.clientWidth - col.offsetWidth) / 2), behavior: reducedMotion() ? 'auto' : 'smooth' });
+}
+
+// --- Moi > Badges : tes arbres ---------------------------------------------------------
+function treeHistoryPanel() {
+  if (!S.trees || !S.trees.size) return '';
+  const rows = [...S.trees.values()].map(r => {
+    const info = treeInfo(r.competition, r.draw), off = (S.treePts || []).find(p => p.competition === r.competition && p.draw === r.draw);
+    let res;
+    if (off) res = `<span class="cmres ${off.points > 0 ? 'win' : 'loss'}">+${off.points} pts</span>`;
+    else if (info && info.open) res = '<span class="cmres">ouvert</span>';
+    else res = '<span class="cmres">en cours</span>';
+    return { t: r.updated_at || '', html: `<li class="cmrow"><div class="cmopp">${esc(r.competition)}</div><div class="cmmeta"><span class="cmdate">Arbre du ${esc(String(r.draw).toLowerCase())}${off ? ` · ${off.pct} % de bons` : ''}</span>${res}</div></li>` };
+  }).sort((a, b) => String(b.t).localeCompare(String(a.t)));
+  return `<section class="panel"><h3>Tes arbres</h3><p class="hint" style="margin-top:2px">Tes tableaux du WTT, de 0 à ${TREE_PTS} pts chacun.</p><ul class="cmlist" style="margin-top:8px">${rows.map(r => r.html).join('')}</ul></section>`;
+}
+
+// --- Halloween : le dessin de la rubrique aussi sur la carte de Moi -------------------------
+function motifAfter() {
+  const p = document.querySelector('.tab-account .profilex');
+  if (!p || p.querySelector(':scope > .sh-motif')) return;
+  const m = secMotif('account');
+  if (m) p.insertAdjacentHTML('afterbegin', m);
+}
+
+async function onAct33(act, el) {
+  if (act === 'treepick') {
+    const info = treeInfo(el.dataset.comp, el.dataset.draw), i = Number(el.dataset.i);
+    if (!info || !info.open) return false;
+    treeSet(info, i, Number(el.dataset.j), el.dataset.name); playSound('tick'); keepRender();
+    const picks = treePicks(info);
+    if (picks[i].every(Boolean) && i + 1 <= info.rounds.length) requestAnimationFrame(() => bracketShow(i + 1));
+    return true;
+  }
+  if (act === 'treefav') return false;
   return false;
 }
 
@@ -10759,8 +10951,9 @@ const TUTO_STEPS = [
   { id: 'serie', pose: 'feu', title: 'Enchaîne les bons pronos',
     text: 'Dès 3 pronos gagnants d’affilée, le suivant rapporte plus.',
     sch: () => schSerie() + '<p class="tuto-note">Et en WTT, si l’outsider gagne et que tu l’avais dit : jusqu’à +5 pts.</p>' },
-  { id: 'winner', target: 'wpick', pose: 'trophee', need: () => S.winnerPicks !== null, title: 'Le vainqueur du tournoi',
-    text: 'En WTT, choisis qui va gagner le tableau, avant son premier match.', sch: schWin },
+  { id: 'winner', target: 'wpick', pose: 'trophee', need: () => !!S.trees && !!document.querySelector('.treebtn'), title: 'L’arbre du tournoi',
+    text: 'En WTT, avant le premier match, pronostique tout le tableau : qui passe chaque tour, jusqu’au champion. Jusqu’à 30 pts.',
+    sch: () => schFlow(['Touche le gagnant de chaque match', 'Il passe au tour suivant', 'Jusqu’au champion']) },
   { id: 'duel', target: 'duel', art: 'duel', need: () => S.duels !== null, title: 'Défie un ami',
     text: 'Sur un match, vous comparez vos points.', sch: () => DUEL_FLOW() + '<p class="tuto-note">Pour l’honneur : ça ne compte pas au classement.</p>' },
   { id: 'emotes', art: 'emotes', need: () => S.duels !== null && S.emotes !== null, title: 'Encourage ou chambre',
@@ -11630,6 +11823,7 @@ function esc0(s) { return String(s ?? ''); }
 $app.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (await onAct33(act, el)) return;
   if (await onAct32(act, el)) return;
   if (await onAct31(act, el)) return;
   if (await onAct30(act, el)) return;
