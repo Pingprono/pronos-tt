@@ -2185,6 +2185,73 @@ html.halloween .rd-pt.p3{color:var(--on-red)}
 .fcnav .btn{flex:1;margin:0}
 @media (max-width:360px){ .fc-me{grid-template-columns:minmax(0,1fr) auto} .fc-guy{display:none} }
 .resx .modalclose{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
+/* --- Une couleur par rubrique, et les codes d'une appli (feat32) --- */
+/* L'onglet actif prend la couleur de sa rubrique. */
+.navitem[aria-current="page"]{background:var(--sec);color:#fff}
+@media (max-width:859px){
+  .navitem[data-tab="admin"]{display:none}
+  .navitem{margin:0 2px}
+}
+/* L'en-tête d'une rubrique : la couleur, le titre, les réglages de la page. */
+.sechead{position:relative;margin:4px 0 18px;padding:18px 16px 16px;border-radius:18px;background:var(--sec);color:#fff;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 8px 18px -12px rgba(18,26,38,.5)}
+.sechead h1{margin:0;font:700 32px/1 var(--f-head);letter-spacing:-.01em;color:#fff}
+.sechead .sh-top{padding:0 2px}
+.sechead .sh-top p{margin:6px 0 0;font:500 14.5px/1.35 var(--f-text);color:rgba(255,255,255,.84)}
+.sechead .sh-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px}
+.sechead .sh-tools .pillrow{margin:0}
+.sechead .pillrow,.sechead .journeerow{background:rgba(0,0,0,.24);box-shadow:inset 0 1px 2px rgba(0,0,0,.28)}
+.sechead .pillbtn,.sechead .jchip{color:rgba(255,255,255,.88)}
+.sechead .pillbtn[aria-pressed="true"],.sechead .jchip[aria-pressed="true"]{color:var(--ink)}
+.sechead .jchip.addleague{color:#fff}
+.sechead .leaguerow{margin:14px 0 0}
+.sechead .leagueinfo{margin:12px 2px 0;color:rgba(255,255,255,.86)}
+.sechead .leagueinfo b{color:#fff}
+.sechead .leagueinvite{margin-top:12px;color:var(--ink)}
+/* La bande de jours, sur la couleur du calendrier. */
+.sechead .calstrip{margin:12px 0 0}
+.sechead .calday small{color:rgba(255,255,255,.76)}
+.sechead .calday b,.sechead .calday.past b{color:#fff}
+.sechead .calday.past{opacity:.82}
+.sechead .calday.today small:first-child{color:#fff}
+.sechead .calday[aria-pressed="true"]{opacity:1}
+.sechead .calday[aria-pressed="true"] small{color:var(--ink-2)}
+.sechead .calday[aria-pressed="true"] b,.sechead .calday[aria-pressed="true"].today small:first-child{color:var(--ink)}
+.sechead .cdm.todo{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.85)}
+.sechead .calday[aria-pressed="true"] .cdm.todo{box-shadow:inset 0 0 0 1.5px var(--ink-2)}
+.sechead .cdm.live{box-shadow:0 0 0 2px #fff}
+.tab-calendar .calnav{margin-top:4px}
+/* Moi : la carte du profil prend la couleur de la rubrique. */
+.tab-account .profilex{background:var(--sec);color:#fff}
+.tab-account .profilex .prof-name h1{color:#fff}
+.tab-account .profilex .prof-name .linkbtn{color:#fff;text-decoration-color:rgba(255,255,255,.6)}
+.tab-account .profilex .prof-phototxt{color:rgba(255,255,255,.84)}
+.tab-account .profilex .skintoggle{color:#fff;border-top-color:rgba(255,255,255,.24)}
+.tab-account .profilex .skintoggle small{color:rgba(255,255,255,.8)}
+.tab-account .profilex .skintoggle i{border-color:rgba(255,255,255,.85)}
+.tab-account .profilex .prof-skin{margin-top:14px;padding:14px;border-radius:14px;background:var(--surface);color:var(--ink)}
+.tab-account .profilex .lgform label,.tab-account .profilex .ferr{color:#fff}
+/* Des boutons pour les actions, plus des liens soulignés. */
+.predresult .rlinks{gap:8px;margin-top:8px}
+.friendstoggle{display:inline-flex;align-items:center;gap:6px;padding:9px 12px;border-radius:9px;background:var(--surface-2);color:var(--ink);
+  font:600 13.5px/1 var(--f-text);text-decoration:none;box-shadow:inset 0 0 0 1px var(--line-2)}
+.friendstoggle .ico{font-size:16px}
+.friendstoggle[aria-expanded="true"]{background:var(--ink);color:var(--surface);box-shadow:none}
+html.dark .friendstoggle,html.halloween .friendstoggle{color:var(--ink);text-decoration:none}
+html.dark .friendstoggle[aria-expanded="true"],html.halloween .friendstoggle[aria-expanded="true"]{color:var(--surface)}
+.linkbtn.recapbtn{display:inline-flex;align-items:center;margin-top:8px;padding:9px 12px;border-radius:9px;background:var(--surface-2);color:var(--ink);
+  font:600 13.5px/1 var(--f-text);text-decoration:none;box-shadow:inset 0 0 0 1px var(--line-2)}
+/* Une fenêtre qu'on fait glisser suit le doigt. */
+.modal{touch-action:pan-y}
+/* L'en-tête : une action à droite du titre (partager). */
+.sechead .sh-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:10px}
+.sechead .sh-top p{grid-column:1 / -1}
+.sechead .shbtn{width:42px;height:42px;padding:0;font-size:21px;border-radius:12px;background:rgba(255,255,255,.16);color:#fff}
+.sechead .leagueinfo{flex-wrap:nowrap}
+.sechead .leagueinfo > span{flex:1;min-width:0}
+.sechead .leagueinfo .btn{padding:8px 11px;font-size:14px}
+.leagueinfo .btn.iconly{width:40px;height:38px;padding:0;justify-content:center}
+.leagueinfo .btn.iconly .ico{margin:0;width:19px;height:19px}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -3458,7 +3525,7 @@ function render() {
     <div class="shell">
       <nav class="nav" aria-label="Navigation principale">
         <div class="navbrand">${MARK(30)}</div>${cobwebHtml()}${spiderHtml('rail')}
-        ${tabs.map(([k, label]) => `<button class="navitem" data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${navIcon(k)}<span>${label}</span>${k === 'matches' && todo ? `<span class="navdot" title="Pronos à faire">${todo}</span>` : ''}</button>`).join('')}
+        ${tabs.map(([k, label]) => `<button class="navitem" data-act="tab" data-tab="${k}" style="${secVars(k)}" ${S.tab === k ? 'aria-current="page"' : ''}>${navIcon(k)}<span>${label}</span>${k === 'matches' && todo ? `<span class="navdot" title="Pronos à faire">${todo}</span>` : ''}</button>`).join('')}
         <span class="navball" aria-hidden="true"></span>
         <div class="navfoot">${bellBtn()}${gearBtn()}<span class="avatar" title="${esc(S.pseudo)}">${esc(initial)}${avatarImg(S.session.user.id)}</span></div>
       </nav>
@@ -3470,7 +3537,7 @@ function render() {
           </header>
           ${liveTicker()}
         </div>
-        <main class="tab-${S.tab}${Date.now() - (S._tabAt || 0) < 1500 ? ' fresh' : ''}">${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
+        <main class="tab-${S.tab}${Date.now() - (S._tabAt || 0) < 1500 ? ' fresh' : ''}" style="${secVars(S.tab)}">${S.bootError ? `<p class="ferr" role="alert">Impossible de charger les données : ${esc(S.bootError)}</p>` : ''}${tabView()}</main>
         <aside class="side" aria-label="En un coup d'œil">${sideView()}</aside>
       </div>
     </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}${S.openWin ? winnerModal(S.openWin) : ''}${S.openDuelNew ? duelNewModal(S.openDuelNew) : ''}${S.openDuel ? duelModal(S.openDuel) : ''}${S.openCeleb ? celebModal(S.openCeleb) : ''}${modals23()}${S.openSettings && S.session ? settingsModal() : ''}`;
@@ -3512,6 +3579,8 @@ function afterRender() {
   try { ctxMount(); } catch (e) { /* pas de barre « où suis-je » */ }
   try { calAfter(); } catch (e) { /* la bande de jours reste où elle est */ }
   try { resAfter(); } catch (e) { /* les cartes restent à plat */ }
+  try { histSync(); } catch (e) { /* le retour garde son comportement d'avant */ }
+  try { scrollRestore(); } catch (e) { /* on reste en haut */ }
   try { mountMedal(); } catch (e) { /* la médaille reste à plat */ }
   try { mountScenes3D(); } catch (e) { /* l'affichage d'avant reste en place */ }
 }
@@ -4070,8 +4139,8 @@ function matchRow(m, fresh, i, streakInfo) {
       foot = `<span>${mine ? `Ton prono <b>${mine.pred_a}–${mine.pred_b}</b>` : `Tu n'as pas fait de prono.`}</span>
         ${ptsSumHtml(det)}
         <span class="rlinks">
-          <button class="friendstoggle" data-act="friends" data-id="${m.id}">${S.openFriends[m.id] ? 'Masquer' : 'Voir'} les pronos des amis</button>
-          ${mine ? `<button class="friendstoggle" data-act="exportmatch" data-id="${m.id}">Partager en image</button>` : ''}
+          <button class="friendstoggle" data-act="friends" data-id="${m.id}" aria-expanded="${!!S.openFriends[m.id]}">${ico('users-three')}${S.openFriends[m.id] ? 'Masquer' : 'Voir'} les pronos des amis</button>
+          ${mine ? `<button class="friendstoggle" data-act="exportmatch" data-id="${m.id}">${ico('share-network')}Partager</button>` : ''}
         </span>`;
     }
     let friends = '';
@@ -4165,7 +4234,7 @@ async function setBalles(id, newVal) {
 }
 
 /* --- Classement des amis : vraie table de standings, podium en évidence. --- */
-function boardViewInner() {
+function boardViewInnerOld() {
   const seg = segRow([['ALL', 'Général'], ['MONTH', 'Ce mois'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.boardScope, 'boardscope');
   const exportBtn = `<button class="btn small sec" data-act="exportboard">${ico('share-network')}Partager en image</button>`;
   if (S.board === null) return seg + '<div class="loading">Chargement…</div>';
@@ -4198,7 +4267,7 @@ const rules = () => baremeFold();
 /* --- Classements WTT (mondial, messieurs/dames séparés) et Pro A
    (championnat) : à distinguer du classement des amis (points de
    pronostics) affiché dans l'onglet "Amis". --- */
-function rankingsViewOld() {
+function rankingsBody() {
   const scope = S.rankView;
   const seg = segRow([['WTT', 'WTT'], ['PRO_A', 'Pro A']], scope, 'rankview');
 
@@ -8094,15 +8163,15 @@ function leagueBar() {
   const row = `<div class="journeerow leaguerow" role="group" aria-label="Ligue">${chips.map(([k, n]) => `<button class="jchip" data-act="league" data-v="${k}" aria-pressed="${S.league === k}">${esc(n)}</button>`).join('')}<button class="jchip addleague" data-act="leaguenew">+ Ligue</button></div>`;
   if (cur) {
     const n = (S.leagueMembers.get(cur.id) || []).length;
-    return row + `<div class="leagueinfo"><span>${n} joueur${n > 1 ? 's' : ''}, code <b>${esc(cur.code)}</b></span>
+    return row + `<div class="leagueinfo"><span>${n} joueur${n > 1 ? 's' : ''} · code <b>${esc(cur.code)}</b></span>
       <button class="btn small sec" data-act="leagueshare" data-id="${cur.id}">${ico('share-network')}Inviter</button>
-      <button class="linkbtn" data-act="leagueopen" data-id="${cur.id}">Gérer</button></div>`;
+      <button class="btn small sec iconly" data-act="leagueopen" data-id="${cur.id}" aria-label="Gérer la ligue" title="Gérer la ligue">${ico('gear-six')}</button></div>`;
   }
   if (!S.leagues.length) return row + `<div class="leagueinvite explain">${guy('pouce')}<div><p><b>Joue entre amis.</b> Crée ta ligue, ou rejoins celle de tes amis avec leur code.</p>
     <button class="btn small" data-act="leaguenew">Créer ou rejoindre une ligue</button></div></div>`;
   return row;
 }
-function boardView() { return leagueBar() + boardViewInner(); }
+function boardViewOld() { return leagueBar() + boardViewInnerOld(); }
 
 // La fenêtre des ligues : créer / rejoindre, ou gérer la sienne.
 function leagueModalOld(which) {
@@ -8389,6 +8458,8 @@ function settingsModal() {
       <li><span class="k">Sons<small>Un petit bruit quand tu poses un prono ou débloques un badge.</small></span>
         <button class="toggle" role="switch" aria-checked="${S.soundOn}" aria-label="Sons" data-act="soundtoggle"></button></li>
       ${pushRow()}
+      ${S.isAdmin ? `<li><span class="k">Administration<small>Matchs, joueurs, signalements.</small></span>
+        <button class="btn small sec" data-act="tab" data-tab="admin">Ouvrir</button></li>` : ''}
       <li><span class="k">Tuto<small>La visite guidée, en 1 minute.</small></span>
         <button class="btn small sec" data-act="tuto">Revoir</button></li>
       <li><span class="k">Barème<small>Comment on marque des points.</small></span>
@@ -9898,7 +9969,7 @@ function baremeFold() {
 }
 
 // --- Pros : le classement officiel, dit en haut ---------------------------------
-function rankingsView() { return `<h2 class="stathead pagehead">Classement officiel des pros</h2>${rankingsViewOld()}`; }
+function rankingsView30() { return `<h2 class="stathead pagehead">Classement officiel des pros</h2>${rankingsBody()}`; }
 
 // --- Moi : trois sous-onglets sous ton profil ------------------------------------
 const ME_TABS = [['stats', 'Stats'], ['badges', 'Badges'], ['histo', 'Historique']];
@@ -10024,8 +10095,9 @@ function calendarView() {
   const fresh = S._freshMatches; S._freshMatches = false;
   const list = S.matches.filter(inCircuit);
   const days = calDays(list);
-  const head = `<h2 class="stathead pagehead">Calendrier</h2><div class="filters">${circuitSeg()}</div>`;
-  if (!days.length) return head + emptyBox('dodo', 'Aucun match pour l’instant.');
+  const todoN = list.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
+  const head = strip => secHead('Calendrier', todoN ? `${todoN} prono${todoN > 1 ? 's' : ''} à faire` : 'Les matchs joués et à venir, jour par jour.', `<div class="sh-tools">${circuitSeg()}</div>${strip || ''}`);
+  if (!days.length) return head() + emptyBox('dodo', 'Aucun match pour l’instant.');
   if (!S.calDay || !days.includes(S.calDay)) S.calDay = calDefault(days);
   const today = parisYMD(Date.now());
   const chip = d => {
@@ -10044,7 +10116,7 @@ function calendarView() {
     <h3>${esc(fmtDay(ymdDate(S.calDay)))}${S.calDay === today ? ' <small>aujourd’hui</small>' : ''}</h3>
     <button class="iconbtn" data-act="calday" data-v="${next || ''}" aria-label="Jour de match suivant" ${next ? '' : 'disabled'}>${ico('caret-right')}</button>
   </div>`;
-  return CTX + head + `<div class="journeerow calstrip" role="group" aria-label="Jours de match">${days.map(chip).join('')}</div>` + nav + matchGroupsHtml(shown, fresh, { days: false });
+  return CTX + head(`<div class="journeerow calstrip" role="group" aria-label="Jours de match">${days.map(chip).join('')}</div>`) + nav + matchGroupsHtml(shown, fresh, { days: false });
 }
 // La bande de jours garde le jour choisi en vue.
 function calAfter() {
@@ -10188,6 +10260,129 @@ addEventListener('keydown', e => {
   if (e.key === 'Escape') { e.stopImmediatePropagation(); closeResults(); keepRender(); }
   else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); resGoTo(S.openResults.i + (e.key === 'ArrowRight' ? 1 : -1)); }
 }, true);
+
+/* =============================================================================
+   Les codes d'une appli mobile, et une couleur par rubrique.
+   - Le « retour » du téléphone ferme la fenêtre ouverte, puis ramène à
+     l'accueil, avant de quitter l'appli.
+   - Les fenêtres du bas se ferment en les faisant glisser vers le bas.
+   - Chaque onglet garde sa place ; retoucher l'onglet actif remonte en haut.
+   - Accueil bleu, Calendrier orange, Ligue vert, Pros ocre, Moi prune :
+     l'onglet actif et l'en-tête de la page prennent la couleur de la rubrique.
+   ========================================================================== */
+const SEC = { matches: '#1D4F8C', calendar: '#B4531A', board: '#1D6B4A', rankings: '#7A5A12', account: '#6E2C5E', admin: '#3E4652' };
+const secColor = k => SEC[k] || SEC.matches;
+const secVars = k => `--sec:${secColor(k)}`;
+
+// --- L'en-tête d'une rubrique : titre, une ligne de contexte, les réglages de la page.
+function secHead(title, sub, inner, right) {
+  return `<section class="sechead" style="${secVars(S.tab)}">
+    <div class="sh-top"><h1>${title}</h1>${right ? `<span class="sh-act">${right}</span>` : ''}${sub ? `<p>${sub}</p>` : ''}</div>${inner || ''}
+  </section>`;
+}
+
+// --- Ligue : l'en-tête porte la ligue, l'invitation et le choix du classement.
+function boardView() {
+  const seg = segRow([['ALL', 'Général'], ['MONTH', 'Ce mois'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.boardScope, 'boardscope');
+  const share = S.board && S.board.length ? `<button class="iconbtn shbtn" data-act="exportboard" aria-label="Partager le classement en image" title="Partager en image">${ico('share-network')}</button>` : '';
+  const lg = curLeague();
+  const sub = lg ? '' : S.leagues ? 'Tout le monde, toutes ligues confondues.' : 'Le classement entre amis.';
+  return secHead('Ligue', sub, `${leagueBar()}<div class="sh-tools">${seg}</div>`, share) + boardViewInner();
+}
+function boardViewInner() {
+  if (S.board === null) return '<div class="loading">Chargement…</div>';
+  if (S.boardScope === 'MONTH') return monthView() + duelsSection() + rules();
+  if (!S.board.length) return emptyBox('loupe', 'Pas encore de points : le classement démarre au premier match terminé.') + duelsSection() + rules();
+  return `${boardPodium(S.board)}${standingsTable(S.board)}` + duelsSection() + rules();
+}
+
+// --- Pros : les deux interrupteurs (circuit, messieurs / dames) passent dans l'en-tête.
+function rankingsView() {
+  const html = rankingsBody();
+  const m = /^\s*((?:<div class="pillrow seg"[\s\S]*?<\/div>\s*)+)/.exec(html);
+  const segs = m ? m[1] : '', body = m ? html.slice(m[0].length) : html;
+  return secHead('Pros', S.rankView === 'PRO_A' ? 'Le classement de la Pro A, mis à jour tout seul.' : 'Le classement mondial officiel, mis à jour tout seul.', `<div class="sh-tools">${segs}</div>`) + body;
+}
+
+// --- Le « retour » du téléphone ----------------------------------------------------
+const SHEET_KEYS = ['openCompetitor', 'openPlayer', 'openRecap', 'openBadge', 'openWin', 'openDuelNew', 'openDuel', 'openCeleb', 'openSettings',
+  'openLeague', 'openReport', 'openBell', 'openGd', 'openTree', 'openFete', 'openResults', 'openDelete', 'openPrivacy'];
+const sheetsOpen = () => SHEET_KEYS.filter(k => S[k]).length;
+// Une seule entrée d'historique « de garde » tant qu'il y a quelque chose à fermer
+// (une fenêtre) ou un onglet autre que l'accueil : le retour la consomme.
+const HG = { on: false, ignore: 0 };
+// C'est l'appli qui gère la place de chaque onglet (sinon le navigateur la remet à sa façon au retour).
+try { history.scrollRestoration = 'manual'; } catch (e) { /* vieux navigateur */ }
+const needGuard = () => !!S.session && !TUTO && (sheetsOpen() > 0 || S.tab !== 'matches');
+function histSync() {
+  const need = needGuard();
+  try {
+    if (need && !HG.on) { history.pushState({ spin: 1 }, ''); HG.on = true; }
+    else if (!need && HG.on) { HG.on = false; HG.ignore++; history.back(); }
+  } catch (e) { /* historique indisponible : rien ne change */ }
+}
+const pressEscape = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+addEventListener('popstate', () => {
+  if (HG.ignore > 0) { HG.ignore--; return; }
+  if (!HG.on) return;
+  HG.on = false;
+  if (sheetsOpen() > 0) pressEscape();
+  else if (S.tab !== 'matches') runAct('tab', { tab: 'matches' });
+  setTimeout(histSync, 0); // encore une fenêtre ouverte : une nouvelle garde
+});
+
+// --- Glisser une fenêtre du bas vers le bas pour la fermer ---------------------------
+let SD = null;
+const sheetMode = () => !matchMedia('(min-width:640px)').matches;
+document.addEventListener('touchstart', e => {
+  const m = e.target.closest && e.target.closest('.modal');
+  if (!m || !sheetMode() || e.touches.length !== 1 || m.scrollTop > 0) return;
+  if (e.target.closest('.fctrack, .calstrip, .journeerow, .pillrow, input, textarea, select, .wheel, canvas, .scene3d, .tslot')) return;
+  SD = { m, y: e.touches[0].clientY, x: e.touches[0].clientX, dy: 0, on: false };
+}, { passive: true });
+document.addEventListener('touchmove', e => {
+  if (!SD) return;
+  const t = e.touches[0], dy = t.clientY - SD.y, dx = t.clientX - SD.x;
+  if (!SD.on) {
+    if (dy > 10 && dy > Math.abs(dx) * 1.4 && SD.m.scrollTop <= 0) SD.on = true;
+    else if (Math.abs(dx) > 12 || dy < -6) { SD = null; return; } else return;
+  }
+  e.preventDefault();
+  SD.dy = Math.max(0, dy);
+  SD.m.style.transition = 'none'; SD.m.style.transform = `translateY(${SD.dy}px)`;
+}, { passive: false });
+function sheetDragEnd() {
+  if (!SD) return;
+  const s = SD; SD = null;
+  if (!s.on) return;
+  const far = s.dy > Math.min(130, s.m.offsetHeight * .25);
+  s.m.style.transition = `transform ${far ? '.18s' : '.28s'} var(--ease-out)`;
+  s.m.style.transform = far ? `translateY(${s.m.offsetHeight}px)` : '';
+  if (far) setTimeout(pressEscape, 160);
+}
+document.addEventListener('touchend', sheetDragEnd);
+document.addEventListener('touchcancel', sheetDragEnd);
+
+// --- Chaque onglet garde sa place ----------------------------------------------------
+S._scroll = {};
+function scrollRestore() {
+  if (S._restoreY == null || S._restoreTab !== S.tab || document.querySelector('main .loading')) return;
+  const y = S._restoreY; S._restoreY = null;
+  // Après le rendu en cours (un keepRender remettrait sinon l'ancienne position).
+  requestAnimationFrame(() => window.scrollTo(0, Math.min(y, document.documentElement.scrollHeight - innerHeight)));
+}
+
+async function onAct32(act, el) {
+  if (act === 'tab') {
+    const to = el.dataset.tab;
+    if (S.openSettings) S.openSettings = false; // « Administration » depuis les réglages
+    if (to === S.tab) { window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' }); return true; }
+    S._scroll[S.tab] = window.scrollY;
+    S._restoreTab = to; S._restoreY = S._scroll[to] || null;
+    return false;
+  }
+  return false;
+}
 
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
@@ -11435,6 +11630,7 @@ function esc0(s) { return String(s ?? ''); }
 $app.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (await onAct32(act, el)) return;
   if (await onAct31(act, el)) return;
   if (await onAct30(act, el)) return;
   if (await onAct29(act, el)) return;
@@ -11486,7 +11682,7 @@ $app.addEventListener('click', async e => {
     if (S.tab === 'matches') { S._freshMatches = true; loadDuels().then(keepRender); }
     if (S.tab === 'board') { S.board = null; navigate(render); await Promise.all([loadLeagues().then(loadBoard), loadWinners(), loadDuels(), loadTrees().catch(() => {})]); }
     if (S.tab === 'account') { S.myHistory = null; navigate(render); await Promise.all([loadAccount(), loadWinners(), loadDuels(), loadTrees().catch(() => {})]); }
-    navigate(render); window.scrollTo(0, 0);
+    navigate(render); if (S._restoreY == null) window.scrollTo(0, 0);
   }
   else if (act === 'view') { S.view = v; S._freshMatches = true; S.proJournee = null; navigate(render); }
   else if (act === 'circuit') { S.circuit = v; S._freshMatches = true; S.proJournee = null; navigate(render); }
