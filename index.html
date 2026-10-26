@@ -2329,6 +2329,38 @@ html.halloween .spider.top{left:clamp(118px,calc(50% - 64px),140px)}
 /* Halloween : pas de toile là où il y a des boutons ou une liste en bas de carte. */
 html.halloween .mrow:nth-of-type(3n+1) .predpanel:is(:not(.locked),:has(.friends),:has(.duelrow)){
   background:radial-gradient(ellipse 85% 75% at 50% 32%,rgba(255,206,140,.08),rgba(255,206,140,0) 70%),var(--surface)}
+/* --- Ce qui se perdait (feat35) --- */
+/* L'arbre du tournoi : une carte à part, à la couleur du tournoi. */
+.wpicks.treepicks{gap:10px;margin:10px 0 8px}
+.tcard{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px;row-gap:12px;align-items:start;padding:15px 16px 16px;border-radius:14px}
+.tcard .tc-art{width:50px;height:40px;margin-top:3px;color:var(--table)}
+.tcard .wpick-t b{font-size:19px}
+.tcard .tc-cta{grid-column:2;justify-self:start;width:auto;margin:0;pointer-events:none}
+.tc-bar{display:block;height:6px;margin-top:8px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.tc-bar i{display:block;height:100%;border-radius:3px;background:var(--table)}
+.tcard.todo{background:var(--table);color:var(--on-table);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),var(--lift)}
+.tcard.todo:hover{background:color-mix(in srgb,var(--table) 90%,white)}
+.tcard.todo .tc-art{color:var(--on-table)}
+.tcard.todo .wpick-t small{color:var(--on-table-2);font-weight:600}
+.tcard.todo .wpick-t b{color:var(--on-table)}
+.tcard.todo .wpick-t span{color:var(--on-table-2)}
+.tcard.todo .tc-bar{background:rgba(255,255,255,.22)}
+.tcard.todo .tc-bar i{background:var(--on-table)}
+.tcard.won .tc-art{color:var(--gold)}
+/* Le rappel en haut de l'accueil : le même dessin. */
+.treenotice .rn-ico .tc-art{width:30px;height:24px;margin:0;color:#fff}
+/* Calendrier : le nombre de pronos à faire, sur chaque jour. */
+.sechead .calstrip{padding-top:10px;padding-right:10px}
+.cdm.n{top:-7px;right:-6px;width:auto;height:auto;min-width:19px;padding:3px 5px;border-radius:10px;font:700 11.5px/1 var(--f-text);font-style:normal;text-align:center;
+  background:#fff;color:var(--sec,var(--ink));box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.sechead .cdm.todo.n{box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.sechead .calday[aria-pressed="true"] .cdm.todo.n{background:var(--sec);color:#fff;box-shadow:0 0 0 2px #fff}
+/* Ligue : « + Ligue » reste visible au bout de la rangée. */
+.sechead .leaguerow .addleague{position:sticky;right:-4px;margin-right:-4px;z-index:1;flex:none;font-weight:700;
+  background:color-mix(in srgb,var(--sec) 76%,black);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55),-14px 0 10px -4px color-mix(in srgb,var(--sec) 76%,black)}
+/* Balles misées : des balles orange, qu'on voit d'un coup d'œil. */
+.ballesdots i.on,.sidebudget em.on{background:radial-gradient(circle at 34% 30%,#FFE1C2 0 13%,#F7A04A 40%,#E2771C 72%,#B65A12 100%);box-shadow:0 1px 2px rgba(120,58,8,.4)}
+.ballesdots i{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink-3) 70%,transparent)}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -3994,7 +4026,7 @@ function matchesViewOld() {
     }).join('');
   }
   const cnt = n => `<span class="cnt">${n}</span>`;
-  return `<div class="ctxwrap" aria-hidden="true"><div class="ctxbar" hidden></div></div>` + heroCard(up) + suspendNotice() + forYou([halloweenNotice(), recapNotice(), duelNotice()]) + `<div class="filters">`
+  return `<div class="ctxwrap" aria-hidden="true"><div class="ctxbar" hidden></div></div>` + heroCard(up) + suspendNotice() + forYou([halloweenNotice(), treeNotice(), recapNotice(), duelNotice()]) + `<div class="filters">`
     + segRow([['upcoming', `À venir ${cnt(up.length)}`], ['done', `Terminés ${cnt(doneAll.length)}`]], S.view, 'view')
     + segRow([['ALL', 'Tous'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.circuit, 'circuit')
     + `</div>` + journeeRow + body;
@@ -10058,7 +10090,7 @@ function meTabsHtml() {
   return `<div class="metabs">${segRow(ME_TABS, S.meTab, 'metab')}</div>`;
 }
 const meSkinLink = () => (S.outfitOk ? '<p class="mehint"><button class="linkbtn" data-act="skinopen">Habille ton perso avec tes accessoires</button></p>' : '');
-const meBadges = () => `${meSkinLink()}<div class="acc-cols">${badgesPanel()}${treeHistoryPanel()}</div>`;
+const meBadges = () => `${meSkinLink()}<div class="acc-cols">${badgesPanel()}</div>`;
 // Pas encore de prono jugé : les sous-onglets sont là quand même (les badges à gagner se voient déjà).
 function meNewbie() {
   const t = S.meTab;
@@ -10158,7 +10190,7 @@ function matchesView() {
   }
   const body = shown.length ? matchGroupsHtml(shown, fresh)
     : emptyBox('dodo', S.isAdmin ? `Aucun match à venir. Ajoute le premier ${adminWhere()}.` : S.circuit === 'PRO_A' ? 'Aucun match de Pro A à venir pour l’instant.' : 'Pas de match à venir pour l’instant. Les résultats sont dans le calendrier.');
-  return CTX + resultsBtn() + heroCard(up) + suspendNotice() + forYou([halloweenNotice(), recapNotice(), duelNotice()])
+  return CTX + resultsBtn() + heroCard(up) + suspendNotice() + forYou([halloweenNotice(), treeNotice(), recapNotice(), duelNotice()])
     + `<div class="filters">${circuitSeg()}<button class="linkbtn calink" data-act="tab" data-tab="calendar">${ico('calendar-blank')}Calendrier</button></div>` + journeeRow + body;
 }
 
@@ -10185,8 +10217,9 @@ function calendarView() {
     const live = ms.some(m => m.status === 'live' && !isAwaitingResult(m));
     const todo = ms.some(m => !isLocked(m) && !S.myPreds[m.id]);
     const past = d < today;
-    const mark = live ? '<i class="cdm live" title="En direct"></i>' : todo ? '<i class="cdm todo" title="Pronos à faire"></i>' : '';
-    return `<button class="jchip calday${past ? ' past' : ''}${d === today ? ' today' : ''}" data-act="calday" data-v="${d}" aria-pressed="${S.calDay === d}" aria-label="${esc(fmtDay(dt))}, ${ms.length} match${ms.length > 1 ? 's' : ''}">
+    const nTodo = ms.filter(m => !isLocked(m) && !S.myPreds[m.id]).length;
+    const mark = live ? '<i class="cdm live" title="En direct"></i>' : todo ? `<i class="cdm todo n" title="${nTodo} prono${nTodo > 1 ? 's' : ''} à faire">${nTodo}</i>` : '';
+    return `<button class="jchip calday${past ? ' past' : ''}${d === today ? ' today' : ''}" data-act="calday" data-v="${d}" aria-pressed="${S.calDay === d}" aria-label="${esc(fmtDay(dt))}, ${ms.length} match${ms.length > 1 ? 's' : ''}${todo && !live ? `, ${nTodo} à pronostiquer` : ''}">
       <small>${d === today ? 'auj.' : JOURS_C[dt.getDay()]}</small><b>${dt.getDate()}</b><small>${MOIS_C[dt.getMonth()]}</small>${mark}</button>`;
   };
   const shown = list.filter(m => parisYMD(m.starts_at) === S.calDay).sort(byStart);
@@ -10485,7 +10518,7 @@ async function onAct32(act, el) {
    ========================================================================== */
 
 // --- Sous l'en-tête d'un tournoi WTT : un bouton clair -----------------------------------
-function treeStrip(comp) {
+function treeStripV33(comp) {
   if (!S.trees || !S.session) return '';
   const items = WIN_DRAWS.map(d => treeInfo(comp, d)).filter(Boolean).map(info => {
     const saved = S.trees.get(info.key), picks = treePicks(info), sc = treeScore(info, picks), official = (S.treePts || []).find(r => r.competition === comp && r.draw === info.draw);
@@ -10617,6 +10650,79 @@ function friendsEmptyText() {
   if (S.leagues && !S.leagues.length) return 'Rejoins une ligue pour voir les pronos de tes amis.';
   if (S.leagues) return 'Personne dans tes ligues n’a fait de prono sur ce match.';
   return "Personne n'a fait de prono sur ce match.";
+}
+
+/* =============================================================================
+   Ce qui se perdait dans la page.
+   - L'arbre du tournoi : une carte à la couleur du tournoi, un dessin de
+     tableau et un vrai bouton, plus un rappel en haut de l'accueil tant qu'il
+     reste un tableau à remplir.
+   - « Tes arbres » passe dans Moi > Historique (avec les autres résultats).
+   ========================================================================== */
+// Le dessin d'un tableau : quatre joueurs, deux demies, le champion.
+const bracketArt = () => `<svg class="tc-art" viewBox="0 0 60 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 6h11v12H3M14 12h10M3 30h11v12H3M14 36h10M24 12h9v24h-9M33 24h12"/></g><circle cx="51" cy="24" r="5" fill="currentColor"/></svg>`;
+
+// --- Sous l'en-tête d'un tournoi WTT : la carte de l'arbre ---------------------------
+function treeStrip(comp) {
+  if (!S.trees || !S.session) return '';
+  const items = WIN_DRAWS.map(d => treeInfo(comp, d)).filter(Boolean).map(info => {
+    const saved = S.trees.get(info.key), picks = treePicks(info), sc = treeScore(info, picks), official = (S.treePts || []).find(r => r.competition === comp && r.draw === info.draw);
+    let name, sub, cls, cta, bar = '';
+    if (info.open) {
+      if (!saved) { cls = 'todo'; name = 'Pronostique tout le tableau'; sub = `Du 1er tour jusqu'au champion, jusqu'à ${TREE_PTS} pts. Ferme ${fmtClose(info.closesAt)}.`; cta = 'Remplir mon arbre'; }
+      else if (sc.n < info.total) {
+        cls = 'todo'; name = `Ton tableau : ${sc.n} sur ${info.total}`; sub = `Il manque ${info.total - sc.n} choix. Ferme ${fmtClose(info.closesAt)}.`; cta = 'Finir mon arbre';
+        bar = `<i class="tc-bar" aria-hidden="true"><i style="width:${Math.round(100 * sc.n / info.total)}%"></i></i>`;
+      } else { cls = 'ready'; name = 'Ton tableau est complet'; sub = `Modifiable jusqu'à ${fmtClose(info.closesAt)}.`; cta = 'Voir mon arbre'; }
+    } else if (!saved) return '';
+    else if (info.done) { const pct = official ? official.pct : Math.round(100 * sc.ok / info.total); cls = 'won'; name = `Ton tableau : ${pct} % de bons`; sub = `+${official ? official.points : treePtsOf(sc.ok, info.total)} pts au classement`; cta = 'Voir mon arbre'; }
+    else { cls = 'run'; name = `Ton tableau : ${sc.ok} bon${sc.ok > 1 ? 's' : ''}`; sub = `${sc.ko} raté${sc.ko > 1 ? 's' : ''}, ${sc.rest} à venir`; cta = 'Voir mon arbre'; }
+    return `<button class="wpick treebtn tcard ${cls}" data-act="tree" data-comp="${esc(comp)}" data-draw="${esc(info.draw)}">
+      ${bracketArt()}<span class="wpick-t"><small>Arbre du ${esc(info.draw.toLowerCase())}</small><b>${esc(name)}</b><span>${esc(sub)}</span>${bar}</span>
+      <span class="btn small ${cls === 'todo' ? 'light' : 'sec'} tc-cta">${cta}</span></button>`;
+  }).filter(Boolean);
+  return items.length ? `<div class="wpicks treepicks">${items.join('')}</div>` : '';
+}
+
+// --- En haut de l'accueil : il reste un tableau à remplir -----------------------------
+const TREE_HIDE = 'spin_arbres_masques';
+function treeHidden() { try { return new Set(JSON.parse(localStorage.getItem(TREE_HIDE) || '[]')); } catch (e) { return new Set(); } }
+function treeTodo() {
+  if (!S.trees || !S.session) return [];
+  const hidden = treeHidden(), out = [];
+  for (const c of new Set((S.matches || []).filter(m => m.circuit === 'WTT').map(m => m.competition))) {
+    for (const d of WIN_DRAWS) {
+      const info = treeInfo(c, d);
+      if (!info || !info.open || hidden.has(info.key)) continue;
+      const saved = S.trees.get(info.key), n = saved ? treeScore(info, treePicks(info)).n : 0;
+      if (saved && n >= info.total) continue;
+      out.push({ info, saved, n });
+    }
+  }
+  return out.sort((a, b) => a.info.closesAt - b.info.closesAt);
+}
+function treeNotice() {
+  if (S.circuit === 'PRO_A') return '';
+  const list = treeTodo();
+  if (!list.length) return '';
+  const { info: i, saved, n } = list[0], more = list.length - 1;
+  return `<section class="recapnotice treenotice" style="${themeVarsCss(themeKeyFor(i.first[0]))}" aria-label="Arbre du tournoi à remplir">
+    <button class="recapnotice-close" data-act="treehide" data-key="${esc(i.key)}" aria-label="Masquer ce rappel">${ico('x')}</button>
+    <span class="rn-ico" aria-hidden="true">${bracketArt()}</span>
+    <h2 class="recapnotice-title">${saved ? `Ton arbre : ${n} sur ${i.total}` : `Arbre du ${esc(i.draw.toLowerCase())}`}</h2>
+    <p class="recapnotice-sub">${esc(i.comp)} : ${saved ? 'termine' : 'pronostique'} tout le tableau avant ${esc(fmtClose(i.closesAt))}. Jusqu'à ${TREE_PTS} pts.${more ? ` Et ${more} autre${more > 1 ? 's' : ''} tableau${more > 1 ? 'x' : ''} à remplir.` : ''}</p>
+    <button class="btn small" data-act="tree" data-comp="${esc(i.comp)}" data-draw="${esc(i.draw)}">${saved ? 'Finir mon arbre' : 'Remplir mon arbre'}</button>
+  </section>`;
+}
+
+async function onAct35(act, el) {
+  if (act === 'treehide') {
+    const s = treeHidden(); s.add(el.dataset.key);
+    try { localStorage.setItem(TREE_HIDE, JSON.stringify([...s])); } catch (e) { /* masqué pour cette visite */ }
+    keepRender(); return true;
+  }
+  return false;
 }
 
 function breakdownRow(label, s, col, circuit) {
@@ -10843,7 +10949,7 @@ function accountView() {
   if (S.meTab === 'badges') {
     body = meBadges();
   } else if (S.meTab === 'histo') {
-    body = `<div class="acc-cols">${seasonPanel}${bestPanel}${formePanel}${playerPanel}</div>`;
+    body = `<div class="acc-cols">${seasonPanel}${treeHistoryPanel()}${bestPanel}${formePanel}${playerPanel}</div>`;
   } else {
     body = `
   <section class="acchero" style="${themeVarsCss('ALL')}">
@@ -11866,6 +11972,7 @@ function esc0(s) { return String(s ?? ''); }
 $app.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const act = el.dataset.act, id = el.dataset.id ? Number(el.dataset.id) : null, v = el.dataset.v;
+  if (await onAct35(act, el)) return;
   if (await onAct33(act, el)) return;
   if (await onAct32(act, el)) return;
   if (await onAct31(act, el)) return;
