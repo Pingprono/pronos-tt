@@ -582,6 +582,63 @@ jobs:
             }
           }
 
+          // --- Photos des joueurs ---------------------------------------------------------
+          // Les photos viennent de Wikimedia Commons (photos libres, avec leur auteur et leur
+          // licence, affichés dans la fiche du joueur). On cherche le joueur sur Wikidata
+          // (fiche décrite comme « table tennis player »), puis l'image de sa fiche.
+          // Quelques joueurs par passage, et pas plus d'une recherche par mois et par joueur.
+          // Une photo mise ou retirée à la main dans l'Admin n'est jamais remplacée.
+          const WIKI_UA = 'SPIN-pronos/1.0 (robot de synchronisation, appli privee entre amis)';
+          const PHOTO_BATCH = 20, PHOTO_RETRY_DAYS = 30;
+          async function wikiJson(url) {
+            const res = await fetch(url, { headers: { 'User-Agent': WIKI_UA, Accept: 'application/json' } });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+          }
+          const stripHtml = s => String(s || '').replace(/<[^>]*>/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'")
+            .replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+          async function findPhoto(name) {
+            const s = await wikiJson(`https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&uselang=en&type=item&limit=7&search=${encodeURIComponent(name)}`);
+            const cand = (s.search || []).filter(x => /table tennis/i.test(x.description || ''));
+            if (!cand.length) return null;
+            const e = await wikiJson(`https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=claims&ids=${cand.map(x => x.id).join('|')}`);
+            for (const c of cand) {
+              const ent = e.entities && e.entities[c.id];
+              const p18 = ent && ent.claims && ent.claims.P18;
+              const file = p18 && p18[0] && p18[0].mainsnak && p18[0].mainsnak.datavalue && p18[0].mainsnak.datavalue.value;
+              if (!file) continue;
+              const q = await wikiJson(`https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=320&titles=${encodeURIComponent('File:' + file)}`);
+              const page = Object.values((q.query && q.query.pages) || {})[0];
+              const info = page && page.imageinfo && page.imageinfo[0];
+              const url = info && (info.thumburl || info.url);
+              if (!url || !/^https:\/\//.test(url)) continue;
+              const md = info.extmetadata || {};
+              const artist = stripHtml(md.Artist && md.Artist.value) || 'auteur inconnu';
+              const lic = stripHtml(md.LicenseShortName && md.LicenseShortName.value) || 'licence libre';
+              return { url, credit: `${artist.slice(0, 80)}, ${lic}, Wikimedia Commons` };
+            }
+            return null;
+          }
+          async function syncPhotos() {
+            let list;
+            try { list = await dbAll('competitors?circuit=eq.WTT&photo_url=is.null&select=id,name,photo_source,photo_checked_at&order=id'); }
+            catch (e) { console.log('Photos des joueurs : pas encore activées (lance ajout-photos-joueurs.sql dans Supabase pour les avoir).'); return; }
+            const tooOld = Date.now() - PHOTO_RETRY_DAYS * 864e5;
+            const todo = list.filter(c => c.photo_source !== 'manual' && (!c.photo_checked_at || new Date(c.photo_checked_at).getTime() < tooOld)).slice(0, PHOTO_BATCH);
+            let found = 0;
+            for (const c of todo) {
+              let p;
+              try { p = await findPhoto(String(c.name).replace(/\s*\(.*\)\s*$/, '')); }
+              catch (e) { console.warn(`Photo de ${c.name} : recherche impossible (${e.message})`); continue; }
+              const row = { photo_checked_at: new Date().toISOString() };
+              if (p) { Object.assign(row, { photo_url: p.url, photo_credit: p.credit, photo_source: 'wikimedia' }); found++; }
+              await db('PATCH', `competitors?id=eq.${c.id}`, row, 'return=minimal');
+              await sleep(400);
+            }
+            if (todo.length) console.log(`Photos des joueurs : ${found} trouvée(s) sur ${todo.length} joueur(s) cherché(s) sur Wikimedia Commons.`);
+          }
+          // --- fin des photos ----------------------------------------------------------------
+
           async function syncWTT() {
             const events = await wttEvents();
             if (!events.length) { console.log('WTT : aucun tournoi à suivre en ce moment.'); return; }
@@ -597,6 +654,8 @@ jobs:
             }
             try { await syncWorldRankings(); }
             catch (e) { erreurs.push(`Classement mondial : ${e.message}`); }
+            try { await syncPhotos(); }
+            catch (e) { console.warn(`Photos des joueurs : ${e.message}`); }
             if (erreurs.length) throw new Error(erreurs.join(' ; '));
           }
 
