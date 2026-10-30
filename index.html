@@ -5772,6 +5772,14 @@ function buildPodium(data) {
 
   /* --- Les joueurs --- */
   const std = o => withGlow(new THREE.MeshStandardMaterial(o));
+  let SHIRT_K = .4;
+  // Les couleurs neutres (noir, gris, blanc) restent telles quelles ; la lueur est forte
+  // pour un maillot sombre, légère pour un maillot déjà clair (pas d'effet pastel).
+  const shirtCol = (m, hex) => { const c = new THREE.Color(hex), hsl = {}; c.getHSL(hsl);
+    const vu = {}; c.getHSL(vu, THREE.SRGBColorSpace || 'srgb'); // la saturation telle qu'on la voit
+    if (vu.s >= .18) c.setHSL(hsl.h, Math.min(1, hsl.s * 1.3 + .08), hsl.l < .62 ? Math.min(.62, hsl.l + .06) : hsl.l);
+    const Y = .2126 * c.r + .7152 * c.g + .0722 * c.b;
+    m.color.copy(c); m.emissive.copy(c); m.userData.glow = Math.max(.12, 1 - Y * 1.25); m.emissiveIntensity = SHIRT_K * m.userData.glow; };
   const plastic = std({ color: 0xf4f3ee, roughness: .4 });
   const pantsMat = std({ color: 0x252b36, roughness: .85 }), shoeMat = std({ color: 0x15171b, roughness: .55 });
   const collarMat = std({ color: 0xf2f2ee, roughness: .7 });
@@ -5948,7 +5956,7 @@ function buildPodium(data) {
       add(hip, legGeo, pantsMat, 0, -.065, 0);
       const shoe = add(hip, shoeGeo, shoeMat, s * .005, -.165, .03); shoe.scale.set(1, .62, 1.45); ch.shoes.push(shoe);
     }
-    ch.shirtMat = std({ color: p.shirt || theme.chip, roughness: .75 });
+    ch.shirtMat = std({ color: p.shirt || theme.chip, roughness: .75 }); shirtCol(ch.shirtMat, p.shirt || theme.chip);
     add(body, torsoGeo, ch.shirtMat, 0, 0, 0);
     add(body, collarGeo, collarMat, 0, .638, 0).rotation.x = Math.PI / 2;
     ch.arms = [-1, 1].map(s => {
@@ -6117,10 +6125,10 @@ function buildPodium(data) {
   return {
     pick, update, place, tap, chars,
     replay: (delay = 0) => { reset(); chars.forEach(ch => { ch.t = -delay; }); },
-    setNight: n => { UP.night.value = n ? 1 : 0; stepMats.forEach(m => { m.emissiveIntensity = n ? .16 : .03; }); haloMats.forEach(m => { m.emissiveIntensity = n ? .75 : .25; }); haloGlowMats.forEach(m => { m.opacity = n ? .4 : .12; }); },
+    setNight: n => { UP.night.value = n ? 1 : 0; SHIRT_K = n ? .2 : .4; chars.forEach(ch => { ch.shirtMat.emissiveIntensity = SHIRT_K * (ch.shirtMat.userData.glow || 1); }); stepMats.forEach(m => { m.emissiveIntensity = n ? .16 : .03; }); haloMats.forEach(m => { m.emissiveIntensity = n ? .75 : .25; }); haloGlowMats.forEach(m => { m.opacity = n ? .4 : .12; }); },
     skip: () => chars.forEach(ch => { if (ch.st === 'wait' || ch.st === 'air') { ch.root.visible = true; ch.y = 0; ch.vy = -1; land(ch); ch.sq = 0; } }),
-    setTheme: th => { theme = th; faces.forEach(paint); soloMat.color.set(th.table); chars.forEach(ch => { if (!ch.p.shirt) ch.shirtMat.color.set(th.chip); }); },
-    setShirt: (i, hex) => { const ch = chars[i]; if (!ch) return; ch.p.shirt = hex || null; ch.shirtMat.color.set(hex || theme.chip); },
+    setTheme: th => { theme = th; faces.forEach(paint); soloMat.color.set(th.table); chars.forEach(ch => { if (!ch.p.shirt) shirtCol(ch.shirtMat, th.chip); }); },
+    setShirt: (i, hex) => { const ch = chars[i]; if (!ch) return; ch.p.shirt = hex || null; shirtCol(ch.shirtMat, hex || theme.chip); },
     // Un seul joueur, au centre, sur son socle (sa fiche) ; sinon le podium à trois marches.
     // false : le podium à trois marches ; true : un joueur seul sur son socle ; 'duel' : deux joueurs à la table.
     setLayout: v => {
@@ -6137,7 +6145,7 @@ function buildPodium(data) {
     // Une emote : le personnage fait le geste (pas s'il est assis, perdant du défi).
     doAct: (i, a) => { const ch = chars[i]; if (!ch || !ch.landed || ch.st !== 'idle' || loserOf(ch)) return; ch.act = a; ch.actT = 0; ch.next = 0; if (a === 'spin') jump(ch, 3.3); },
     setPhoto: (i, img) => { const ch = chars[i]; if (!ch) return; ch.p.img = img; drawDecal(ch); },
-    setPlayers: ps => chars.forEach((ch, i) => { ch.p = Object.assign({}, ps[i] || EMPTY); drawDecal(ch); setLabel(ch); setHalo(ch); wear(ch); ch.shirtMat.color.set(ch.p.shirt || theme.chip); ch.label.classList.toggle('me', !!ch.p.me); loadPhoto(ch); }),
+    setPlayers: ps => chars.forEach((ch, i) => { ch.p = Object.assign({}, ps[i] || EMPTY); drawDecal(ch); setLabel(ch); setHalo(ch); wear(ch); shirtCol(ch.shirtMat, ch.p.shirt || theme.chip); ch.label.classList.toggle('me', !!ch.p.me); loadPhoto(ch); }),
   };
 }
 
