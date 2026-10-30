@@ -2574,6 +2574,206 @@ html.halloween .authstage{background:var(--grain),linear-gradient(180deg,#1B2340
   .medalslot.wait:not(.ready):not(.flat):not(.slow)::before{animation:none;transform:translateY(28px)}
   .medalslot.wait:not(.ready):not(.flat):not(.slow)::after{animation:none}
 }
+/* --- Le récap : une affiche plein écran, tout sur un écran (voir feat43.recap.js) --- */
+.recapx.rc,html.dark .recapx.rc,html.halloween .recapx.rc{overflow:hidden;display:flex;justify-content:center;color:#fff;
+  background-color:var(--table);background-image:var(--grain),radial-gradient(120% 70% at 50% 0%,rgba(255,255,255,.10),transparent 60%);background-size:160px,auto}
+.rc-body{position:relative;z-index:1;box-sizing:border-box;width:100%;max-width:520px;height:100%;display:grid;
+  grid-template-rows:auto minmax(130px,1fr);grid-auto-rows:auto;gap:12px;
+  padding:calc(16px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom))}
+.rc-head{padding-right:58px;min-width:0}
+.rc-title{margin:0;font:700 clamp(30px,9.4vw,44px)/.95 var(--f-head);letter-spacing:-.01em;color:#fff;overflow-wrap:anywhere;
+  text-shadow:0 2px 0 color-mix(in srgb,var(--table) 60%,#000)}
+.rc-head p{margin:6px 0 0;font:500 14px/1.3 var(--f-text);color:var(--on-table-2)}
+html .recapx.rc:not(.zz) .rx-close{background:var(--surface);color:var(--ink);border:3px solid var(--sticker);box-shadow:var(--lift)}
+.recapx.rc .rx-skip{z-index:8;bottom:calc(18px + env(safe-area-inset-bottom));background:rgba(20,26,36,.5);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.3)}
+/* La scène du podium : un grand sticker ; la 3D le remplit, sinon les dessins. */
+.rc-stage{position:relative;min-height:0;border-radius:22px;border:5px solid var(--sticker);box-shadow:var(--lift);overflow:hidden;container-type:size;
+  background:color-mix(in srgb,var(--table) 62%,#0B1220);background-image:var(--grain),linear-gradient(180deg,rgba(255,255,255,.08),transparent 55%);background-size:160px,auto}
+.recapx.rc .rc-stage .pod3d{position:absolute;inset:0;height:auto;margin:0;border-radius:0;background:none}
+.recapx.rc .rc-stage .scene3d-hint{top:10px;bottom:auto}
+.rc-stage:has(.scene3d:is([data-ready],[data-wait])) .rx-podium{display:none}
+.recapx.rc .rx-podium{position:absolute;inset:0;margin:0;padding:8px 10px 28px;border:0;box-shadow:none;border-radius:0;
+  background:radial-gradient(55% 42% at 50% 62%,rgba(255,255,255,.14),transparent 72%);
+  display:grid;grid-template-columns:1fr 1.12fr 1fr;align-items:end;gap:6px}
+.rx-podium .podcol{justify-content:flex-end;height:100%;gap:4px}
+/* Deux projecteurs (dessins seulement) qui éclairent la première marche. */
+.rc-spot{position:absolute;top:0;bottom:0;width:62%;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.03) 85%,transparent)}
+.rc-spot.l{left:-6%;clip-path:polygon(0 0,13% 0,78% 100%,50% 100%)}
+.rc-spot.r{right:-6%;clip-path:polygon(87% 0,100% 0,50% 100%,22% 100%)}
+.rx-podium .rc-guy{width:min(31cqw,34cqh);height:min(31cqw,34cqh);flex:none;overflow:visible}
+.rx-podium .p1 .rc-guy{width:min(36cqw,40cqh);height:min(36cqw,40cqh)}
+.rc-chip{display:flex;flex-direction:column;align-items:center;gap:1px;max-width:100%;padding:3px 9px 4px;border-radius:12px;background:var(--surface);color:var(--ink);
+  border:3px solid var(--sticker);box-shadow:var(--cut)}
+.rc-chip .who{font:700 13.5px/1.1 var(--f-head);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.rc-chip .pts{font:700 italic 14px/1 var(--f-head);color:var(--ink)}
+.rc-chip .pts small{font:500 10.5px/1 var(--f-text);margin-left:2px;color:var(--ink-2)}
+.rx-podium .podcol.me .who::after{content:" (toi)";font-weight:500;color:var(--ink-2)}
+.rx-podium .podstep{width:100%;display:grid;place-items:start center;padding-top:4px;border-radius:10px 10px 0 0;transform-origin:bottom;
+  background:var(--surface);border:4px solid var(--sticker);border-bottom:0;box-shadow:var(--cut);font:700 italic clamp(18px,9cqh,30px)/1 var(--f-head);color:var(--ink)}
+.rx-podium .p1 .podstep{height:min(28cqh,30cqw);background:color-mix(in srgb,var(--gold) 55%,var(--surface))}
+.rx-podium .p2 .podstep{height:min(19cqh,21cqw);background:color-mix(in srgb,var(--silver) 50%,var(--surface))}
+.rx-podium .p3 .podstep{height:min(13cqh,15cqw);background:color-mix(in srgb,var(--bronze) 45%,var(--surface))}
+/* Ta place : un sticker penché qui chevauche le bas de la scène. */
+.rc-place{position:relative;z-index:2;margin:-38px 10px 0;rotate:-1.6deg;display:grid;grid-template-columns:auto auto 1fr;align-items:center;column-gap:12px;
+  padding:9px 16px 9px 10px;border-radius:20px;background:var(--surface);color:var(--ink);border:4px solid var(--sticker);box-shadow:var(--lift)}
+.rc-place .medalball{width:58px;height:58px;font-size:27px;flex:none}
+.rc-place > b{font:700 italic 46px/.9 var(--f-head);letter-spacing:-.02em;color:var(--ink)}
+.rc-place > b sup{font-size:.48em;vertical-align:.9em;margin-left:1px}
+.rc-of{font:500 13.5px/1.25 var(--f-text);color:var(--ink-2);min-width:0}
+.rc-of em{display:block;font-style:normal;font-weight:700;color:var(--red)}
+/* Les chiffres : trois stickers côte à côte. */
+.rc-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rc-stat{min-width:0;padding:10px 10px 9px;border-radius:16px;background:var(--surface);color:var(--ink);border:4px solid var(--sticker);box-shadow:var(--lift)}
+.rc-stat:nth-child(1){rotate:.8deg}.rc-stat:nth-child(2){rotate:-.6deg}.rc-stat:nth-child(3){rotate:.5deg}
+.rc-stat b{display:block;font:700 italic clamp(28px,8.6vw,38px)/.9 var(--f-head);letter-spacing:-.02em;color:var(--ink)}
+.rc-streak b{color:var(--red)}
+.rc-stat > span{display:block;margin-top:4px;font:500 12px/1.15 var(--f-text);color:var(--ink-2)}
+.rc-stat > .rc-balls{display:flex;flex-wrap:wrap;align-items:center;gap:3px;margin-top:6px}
+.rc-balls i{width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 1.5px var(--sticker),0 0 0 2.5px rgba(34,37,42,.3)}
+.rc-balls small{font:700 11px/1 var(--f-text);color:var(--red);margin-left:1px}
+/* Les badges du tournoi : une bande. */
+.rc-badges{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;border-radius:16px;background:rgba(10,16,26,.24);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.18);min-width:0}
+.rc-bicons{display:flex;flex:none}
+.rc-badge{width:40px;height:40px;display:block;margin-right:-6px}
+.rc-badge img,.rc-badge svg{width:100%;height:100%;display:block;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
+.rc-badges p{margin:0 0 0 8px;font:500 13px/1.25 var(--f-text);color:var(--on-table-2);min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rc-badges p b{color:#fff;font-weight:700}
+/* Les boutons. */
+.rc-actions{display:grid;grid-template-columns:1fr auto;gap:8px}
+.rc-actions .btn{margin:0;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px;width:auto}
+.rc-actions .btn .ico{font-size:19px;width:1em;height:1em}
+/* La balle, les « paf » et les confettis passent au-dessus de tout. */
+.rc-fx{position:absolute;inset:0;z-index:5;pointer-events:none}
+.recapx.intro .rc-fx[data-act]{pointer-events:auto;cursor:pointer}
+.rc-ball{position:absolute;left:0;top:0;width:34px;height:34px;box-sizing:border-box;border-radius:50%;opacity:1;border:3px solid var(--sticker,#fff);
+  background:#F7A04A;box-shadow:inset -5px -6px 0 #DD8233,0 0 0 1.5px #2A2420;will-change:transform}
+.rc-ball::before{content:"";position:absolute;left:6px;top:5px;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.85)}
+.recapx.done .rc-ball{display:none}
+.rc-impact{position:absolute;width:60px;height:60px;pointer-events:none}
+.rc-impact svg{width:100%;height:100%;display:block}
+.burst{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:6}
+body > .burst{position:fixed;z-index:200}
+.burst > span{position:absolute;display:block}
+.burst svg{width:100%;height:100%;display:block;overflow:visible}
+
+/* Écrans courts : on resserre. */
+@media (max-height:720px){
+  .rc-body{gap:9px;padding-top:calc(12px + env(safe-area-inset-top))}
+  .rc-title{font-size:clamp(26px,8vw,34px)}
+  .rc-head p{margin-top:4px;font-size:13px}
+  .rc-place{margin-top:-32px;padding:7px 14px 7px 8px}
+  .rc-place .medalball{width:48px;height:48px;font-size:22px}
+  .rc-place > b{font-size:38px}
+  .rc-stat{padding:8px 9px 7px}
+  .rc-stat b{font-size:clamp(24px,7.4vw,32px)}
+  .rc-badge{width:34px;height:34px}
+  .rc-actions .btn{padding:11px 14px}
+}
+@media (max-height:600px){
+  .rc-head p{display:none}
+  .rc-stat > span{font-size:11px}
+  .rc-stat > .rc-balls{display:none}
+}
+/* Grand écran couché : la scène à gauche, le reste à droite. */
+@media (min-width:860px) and (min-aspect-ratio:5/4){
+  .rc-body{max-width:1120px;grid-template-columns:minmax(0,1.3fr) minmax(320px,1fr);column-gap:32px;row-gap:14px;
+    grid-template-rows:auto 1fr auto auto auto auto 1fr;
+    grid-template-areas:"head head" "stage ." "stage place" "stage stats" "stage badges" "stage actions" "stage .";
+    padding:calc(28px + env(safe-area-inset-top)) 40px 32px}
+  .rc-head{grid-area:head}.rc-stage{grid-area:stage}.rc-place{grid-area:place;margin:0}.rc-stats{grid-area:stats}.rc-badges{grid-area:badges}.rc-actions{grid-area:actions}
+  .rc-title{font-size:52px}
+  .recapx.rc .rx-podium{padding-bottom:0}
+  .rc-place .medalball{width:74px;height:74px;font-size:34px}
+  .rc-place > b{font-size:60px}
+  .rc-of{font-size:15px}
+  .rc-stat{padding:14px 14px 12px}
+  .rc-stat b{font-size:46px}
+  .rc-stat > span{font-size:13.5px}
+}
+/* =============================================================================
+   Le mouvement au style des stickers.
+   · Coller : le sticker arrive un peu soulevé et penché, se plaque (léger
+     écrasement), puis se pose à plat. Pour les cartes, les fiches, le tuto.
+   · Tamponner : arrive gros et penché, s'écrase, se pose. Pour les points.
+   · Décoller : part en se soulevant par un coin. Pour les bulles d'info.
+   Tout reste en transform/opacity (fluide sur téléphone), rien en mouvement
+   réduit (les règles d'origine sont déjà sous prefers-reduced-motion).
+   ========================================================================== */
+@keyframes slapIn{
+  0%{opacity:0;transform:translateY(-14px) scale(1.05) rotate(var(--tilt,-1.5deg))}
+  24%{opacity:1}
+  52%{opacity:1;transform:translateY(2px) scale(.99) rotate(calc(var(--tilt,-1.5deg) * -.3))}
+  76%{transform:translateY(-1px) scale(1.004) rotate(calc(var(--tilt,-1.5deg) * .08))}
+  100%{opacity:1;transform:none}}
+@keyframes stampIn{
+  0%{opacity:0;transform:scale(1.85) rotate(-9deg)}
+  42%{opacity:1;transform:scale(.9) rotate(1.5deg)}
+  68%{transform:scale(1.05) rotate(-.6deg)}
+  100%{opacity:1;transform:none}}
+@keyframes toastSlap{
+  0%{opacity:0;transform:translate(-50%,-34px) scale(1.08) rotate(-4deg)}
+  55%{opacity:1;transform:translate(-50%,3px) scale(.98) rotate(1deg)}
+  80%{transform:translate(-50%,-1px) scale(1.005) rotate(-.2deg)}
+  100%{opacity:1;transform:translate(-50%,0)}}
+@keyframes peelOff{
+  0%{opacity:1;transform:translate(-50%,0)}
+  100%{opacity:0;transform:translate(-50%,-22px) rotate(7deg) scale(.95)}}
+@keyframes sheetSlap{
+  0%{transform:translateY(100%)}
+  70%{transform:translateY(-9px)}
+  86%{transform:translateY(2px)}
+  100%{transform:none}}
+@keyframes cardSlap{
+  0%{opacity:0;transform:translateY(-10px) scale(1.06) rotate(-2deg)}
+  55%{opacity:1;transform:translateY(1px) scale(.985) rotate(.5deg)}
+  100%{opacity:1;transform:none}}
+
+@media (prefers-reduced-motion:no-preference){
+  /* Les écrans : chaque bloc est collé à son tour, penché d'un côté puis de l'autre. */
+  .fresh > .sechead,.fresh > .panel,.fresh > .pagehead,.fresh > .acchero,.fresh > .boardpod,.fresh > .boardtools,.fresh > .standings{animation:slapIn .52s cubic-bezier(.25,.8,.35,1) both}
+  /* L'en-tête de la rubrique se colle, puis son dessin est tamponné dessus. */
+  .fresh > .sechead .sh-guy{animation:stampIn .5s cubic-bezier(.3,0,.4,1) .2s both}
+  .fresh > :nth-child(odd){--tilt:-1.4deg}.fresh > :nth-child(even){--tilt:1.3deg}
+  .mrow.enter{animation:slapIn .46s cubic-bezier(.25,.8,.35,1) both;--tilt:-.7deg}
+  /* Les points : tamponnés. */
+  .mrow.enter .ptsblock{animation:stampIn .5s cubic-bezier(.3,0,.4,1) .16s both}
+  .fcard.on .ptsblock{animation:stampIn .5s cubic-bezier(.3,0,.4,1) .1s both}
+  .fresh .streaktile{animation:stampIn .45s cubic-bezier(.3,0,.4,1) both}
+  .fresh .badgecell{animation:slapIn .45s cubic-bezier(.25,.8,.35,1) both;--tilt:-3deg}
+  .fresh .badgecell:nth-child(even){--tilt:3deg}
+  /* Les bulles d'info : collées, puis décollées par un coin. */
+  .toast{animation:toastSlap .5s cubic-bezier(.25,.8,.35,1);transform-origin:100% 0}
+  .toast.leaving{animation:peelOff .26s cubic-bezier(.5,0,.75,0) forwards}
+  /* Les fiches : la feuille monte et rebondit, son en-tête se colle dessus. */
+  .modal{animation:sheetSlap .52s cubic-bezier(.25,.75,.3,1)}
+  .modal > .modalhead{animation:cardSlap .5s cubic-bezier(.25,.8,.35,1) .12s both}
+  .modal.still > .modalhead{animation:none}
+  /* Le score exact : le +N est tamponné. */
+  .celebx .celebflat b{animation:stampIn .55s cubic-bezier(.3,0,.4,1) .3s both}
+  .modal.still .celebflat b{animation:none}
+  .tuto-card.enter{animation:slapIn .46s cubic-bezier(.25,.8,.35,1) both;--tilt:-2deg}
+}
+@media (prefers-reduced-motion:no-preference) and (min-width:860px){
+  .modal{animation:cardSlap .38s cubic-bezier(.25,.8,.35,1)}
+}
+/* L'attente et les écrans vides : la balle orange des stickers. */
+.loading::before,.empty::before{background:#F7A04A;border:3px solid var(--sticker);box-sizing:border-box;
+  box-shadow:inset -4px -5px 0 #DD8233,0 0 0 1.5px #2A2420,0 9px 8px -6px rgba(18,26,38,.35)}
+.loading::before{width:28px;height:28px}
+html.halloween .loading::before,html.halloween .empty::before{background:#F7A04A;box-shadow:inset -4px -5px 0 #DD8233,0 0 0 1.5px #000,0 0 14px rgba(255,170,60,.28)}
+
+/* L'ouverture (splash) au style des badges : la table bleue en aplat avec son
+   grain, la ligne blanche bien nette, la balle orange en sticker, SPIN dans la
+   police de l'appli. */
+#splash .sp-half{background-color:#2E4470;background-image:var(--grain),linear-gradient(180deg,rgba(255,255,255,.07),transparent 40%);
+  background-size:160px,100% 100%;background-repeat:repeat,no-repeat}
+#splash .sp-edge path{stroke:#fff;stroke-width:4}
+#splash .sp-mark{filter:drop-shadow(0 calc(var(--S) * .02) 0 rgba(8,14,28,.38))}
+#splash .sp-dot{fill:#F7A04A}
+#splash .sp-ball{background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.9) 0 12%,transparent 13%),radial-gradient(circle at 40% 36%,#F7A04A 0 60%,#DD8233 61%);
+  box-shadow:0 0 0 calc(var(--S) * .012) #fff,0 0 0 calc(var(--S) * .018) #2A2420}
+#splash .sp-word{font:700 calc(var(--S) * .42)/.92 'Spin Marqueur','Barlow Semi Condensed','Barlow',ui-sans-serif,system-ui,sans-serif;text-shadow:0 calc(var(--S) * .02) 0 rgba(8,14,28,.38)}
+html.halloween #splash .sp-half{background-color:#14243C;background-image:var(--grain),radial-gradient(70% 45% at 50% 40%,rgba(242,131,43,.14),transparent 70%);background-size:160px,100% 100%}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -3864,11 +4064,16 @@ function render() {
       </div>
     </div>${S.openCompetitor ? competitorModal(S.openCompetitor) : ''}${S.openPlayer ? playerModal(S.openPlayer) : ''}${S.openRecap ? recapModal(S.openRecap.key, S.openRecap.circuit) : ''}${S.openBadge ? badgeModal(S.openBadge) : ''}${S.openWin ? winnerModal(S.openWin) : ''}${S.openDuelNew ? duelNewModal(S.openDuelNew) : ''}${S.openDuel ? duelModal(S.openDuel) : ''}${S.openCeleb ? celebModal(S.openCeleb) : ''}${modals23()}${S.openSettings && S.session ? settingsModal() : ''}`;
   document.documentElement.classList.toggle('noscroll', !!S.openRecap);
-  if (sheets.length) document.querySelectorAll('.modal, .recapx').forEach(m => {
-    const old = sheets.find(s => s[0] === sheetKey(m));
-    if (!old) return;
-    m.classList.add('still');
-    if (m.parentElement && m.parentElement.classList.contains('modalbackdrop')) m.parentElement.classList.add('still');
+  try { recapKeep(); } catch (e) { /* l'affiche est redessinée */ }
+  document.querySelectorAll('.modal, .recapx').forEach(m => {
+    const k = sheetKey(m), old = sheets.find(s => s[0] === k);
+    if (!old) { SHEET_T0[k] = performance.now(); return; }
+    const back = m.parentElement && m.parentElement.classList.contains('modalbackdrop') ? m.parentElement : null;
+    const el = Math.round(performance.now() - (SHEET_T0[k] || -1e9));
+    if (el < 700 && !reducedMotion()) {
+      m.style.animationDelay = -el + 'ms'; if (back) back.style.animationDelay = -el + 'ms';
+      SHEET_INNER.forEach(([sel, d]) => m.querySelectorAll(sel).forEach(x => { x.style.animationDelay = (d - el) + 'ms'; }));
+    } else { m.classList.add('still'); if (back) back.classList.add('still'); }
     m.scrollTop = old[1];
   });
   if (S.openRecap && !S.recapAnimPlayed) { S.recapAnimPlayed = true; S._podRun = (S._podRun || 0) + 1; mountRecapAnimation(); }
@@ -3906,6 +4111,7 @@ function afterRender() {
   try { bracketAfter(); } catch (e) { /* le tableau repart du début */ }
   try { motifAfter(); } catch (e) { /* pas de dessin */ }
   try { scrollRestore(); } catch (e) { /* on reste en haut */ }
+  try { burstAfter(); } catch (e) { /* pas de confettis */ }
   try { mountMedal(); } catch (e) { /* la médaille reste à plat */ }
   try { mountScenes3D(); } catch (e) { /* l'affichage d'avant reste en place */ }
 }
@@ -6880,7 +7086,7 @@ function podiumSlotState(slot) {
     const r = S.openRecap && computeRecapData(S.openRecap.key, S.openRecap.circuit);
     if (!r) return null;
     return { key: 'recap:' + S._podRun, theme: r.theme, players: r.podium.map(p => scenePlayer(p.userId, p.pseudo, p.pts)),
-      delay: document.querySelector('.recapx.intro') ? 2.9 : .3 };
+      delay: document.querySelector('.recapx.intro') ? 1.35 : .3 };
   }
   if (kind === 'board') {
     const b = (boardRows() || []).slice(0, 3);
@@ -11264,6 +11470,313 @@ function medalWait(slot) {
   later('wait', W3D_SHOW); later('slow', W3D_SLOW);
 }
 
+/* =============================================================================
+   Le récap d'un tournoi : une affiche plein écran aux couleurs du tournoi,
+   tout sur un seul écran (pas de défilement). Les stickers s'y collent au
+   rythme d'une balle de ping-pong : chaque rebond pose un élément (le titre
+   est tamponné, la scène du podium se colle, la balle devient ta médaille),
+   puis les chiffres, la série, les badges. Tout est joué au script (Web
+   Animations) : un nouveau rendu de l'appli pendant la séquence ne la casse
+   plus (on garde l'affiche en cours, voir recapKeep).
+   ========================================================================== */
+PH['arrow-counter-clockwise'] = '<path d="M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z"/>';
+let RECAP_FROM = null; // là où on a touché « Voir le récap » : l'affiche s'ouvre de là
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest && e.target.closest('[data-act="recap"]');
+  if (b) RECAP_FROM = { x: e.clientX, y: e.clientY, t: Date.now() };
+}, true);
+
+const RC_POSE = { 1: 'trophee', 2: 'bravo', 3: 'pouce' };
+function recapModal(key, circuit) {
+  const data = computeRecapData(key, circuit);
+  if (!data || !data.me) return '';
+  const { me, rows, podium, theme } = data;
+  const themeKey = Object.keys(THEME).find(k => THEME[k] === theme) || 'ALL';
+  const newBadges = recapNewBadges(key, circuit);
+  const circuitLabel = circuit === 'WTT' ? 'Circuit WTT' : 'Pro A';
+  const anim = !S.recapAnimPlayed && !reducedMotion();
+  const medal = r => r === 1 ? 'var(--gold)' : r === 2 ? 'var(--silver)' : r === 3 ? 'var(--bronze)' : '#F3F4F1';
+  const uid = S.session && S.session.user.id;
+  const streakN = Math.min(me.bestStreak, 8);
+  const nbr = rows.length;
+  const sup = me.rank === 1 ? 'er' : 'e';
+  const accent = me.rank === 1 ? 'Tu gagnes le tournoi' : me.rank <= 3 ? 'Sur le podium' : '';
+  // Le podium en dessins (sans 3D) : les trois bonshommes sur leurs marches.
+  const col = (r, place) => r ? `<div class="podcol p${place}${r.userId === uid ? ' me' : ''}">
+      ${guy(RC_POSE[place] || 'pouce', { uid: r.userId, cls: 'rc-guy' })}
+      <span class="rc-chip"><span class="who">${esc(r.pseudo)}</span><span class="pts">${r.pts}<small>pts</small></span></span>
+      <div class="podstep"><span>${r.rank}</span></div></div>` : '<div class="podcol"></div>';
+  const bshow = newBadges.slice(0, 4);
+  return `
+  <div class="recapx rc ${anim ? 'intro' : 'done'}" data-k="${esc(circuit + '|' + key)}" role="dialog" aria-modal="true" aria-label="Récap — ${esc(key)}" style="${themeVarsCss(themeKey)}">
+    <div class="rc-fx" aria-hidden="true"${anim ? ' data-act="skiprecap"' : ''}></div>
+    ${anim ? '<button class="rx-skip" data-act="skiprecap">Passer</button>' : ''}
+    <button class="rx-close" data-act="closerecap" aria-label="Fermer">${ico('x')}</button>
+    <div class="rc-body">
+      <header class="rc-head">
+        <h2 class="rc-title">${esc(key)}</h2>
+        <p>Récap · ${circuitLabel} · ${me.n} prono${me.n > 1 ? 's' : ''} jugé${me.n > 1 ? 's' : ''}</p>
+      </header>
+      <div class="rc-stage">
+        <div class="pod3d" data-kind="recap"></div>
+        <div class="podium rx-podium"><i class="rc-spot l" aria-hidden="true"></i><i class="rc-spot r" aria-hidden="true"></i>${col(podium[1], 2)}${col(podium[0], 1)}${col(podium[2], 3)}</div>
+      </div>
+      <section class="rc-place" style="--medal:${medal(me.rank)}">
+        <span class="medalball rc-medal">${me.rank}</span>
+        <b>${me.rank}<sup>${sup}</sup></b>
+        <span class="rc-of">sur ${nbr} joueur${nbr > 1 ? 's' : ''}${accent ? `<em>${accent}</em>` : ''}</span>
+      </section>
+      <div class="rc-stats">
+        <div class="rc-stat"><b data-to="${me.pts}">${me.pts}</b><span>${me.pts === 1 ? 'point' : 'points'}</span></div>
+        <div class="rc-stat"><b data-to="${me.exact}">${me.exact}</b><span>score${me.exact > 1 ? 's' : ''} exact${me.exact > 1 ? 's' : ''}</span></div>
+        <div class="rc-stat rc-streak"><b data-to="${me.bestStreak}">${me.bestStreak}</b><span>meilleure série</span>
+          ${streakN ? `<span class="rc-balls" aria-hidden="true">${'<i></i>'.repeat(streakN)}${me.bestStreak > streakN ? '<small>+</small>' : ''}</span>` : ''}</div>
+      </div>
+      ${bshow.length ? `<section class="rc-badges">
+        <div class="rc-bicons">${bshow.map(b => `<span class="rc-badge">${badgeIcon(b.id, b.name)}</span>`).join('')}</div>
+        <p><b>${newBadges.length > 1 ? newBadges.length + ' badges débloqués' : 'Badge débloqué'}</b> ${esc(newBadges.map(b => b.name).join(', '))}</p>
+      </section>` : ''}
+      <div class="rc-actions">
+        <button class="btn" data-act="exportrecap" data-key="${esc(key)}" data-circuit="${esc(circuit)}">${ico('share-network')}Partager en image</button>
+        <button class="btn sec" data-act="replayrecap" aria-label="Revoir l'animation">${ico('arrow-counter-clockwise')}Revoir</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Un nouveau rendu pendant la séquence : on remet l'affiche en cours à la place
+// de la nouvelle (les animations au script continuent là où elles en étaient).
+function recapKeep() {
+  const run = RECAP_RUN;
+  if (!run || !run.root || run.root.isConnected) return;
+  const nx = document.querySelector('.recapx');
+  if (nx && nx.dataset.k === run.root.dataset.k) nx.replaceWith(run.root);
+  else stopRecapRun();
+}
+
+function stopRecapRun() {
+  if (!RECAP_RUN) return;
+  RECAP_RUN.timers.forEach(clearTimeout);
+  RECAP_RUN.anims.forEach(a => { try { a.cancel(); } catch (e) { /* déjà fini */ } });
+  if (RECAP_RUN.root) RECAP_RUN.root.querySelectorAll('.rc-fx > *').forEach(n => n.remove());
+  RECAP_RUN = null;
+}
+// Va directement à la fin (bouton « Passer », toucher l'affiche, ou échec).
+function finishRecap() {
+  stopRecapRun();
+  const root = document.querySelector('.recapx');
+  if (!root) return;
+  root.classList.remove('intro', 'play');
+  root.classList.add('done');
+  root.querySelector('.rc-fx') && root.querySelector('.rc-fx').removeAttribute('data-act');
+  root.querySelectorAll('[data-to]').forEach(el => { el.textContent = el.dataset.to; });
+}
+
+// Une trajectoire de balle (image par image) : une chute puis des rebonds en
+// paraboles, écrasée au contact. pts = [{x,y,t}] (t en ms), le premier point
+// est le départ (hors écran), les suivants sont des contacts.
+function ballPath(pts, size) {
+  const T = pts[pts.length - 1].t, frames = [];
+  const contacts = pts.slice(1).map(p => p.t);
+  for (let t = 0; t <= T + 1; t += 16) {
+    const tt = Math.min(t, T);
+    let i = 0; while (i < pts.length - 2 && tt > pts[i + 1].t) i++;
+    const A = pts[i], B = pts[i + 1], s = (tt - A.t) / (B.t - A.t || 1);
+    let x = A.x + (B.x - A.x) * s, y;
+    if (i === 0) y = A.y + (B.y - A.y) * s * s; // la chute : de plus en plus vite
+    else { const h = B.h || 90; y = A.y + (B.y - A.y) * s - 4 * h * s * (1 - s); }
+    const near = Math.min(...contacts.map(c => Math.abs(tt - c)));
+    let sx = 1, sy = 1;
+    if (near < 50) { const k = 1 - near / 50; sx = 1 + .28 * k; sy = 1 - .28 * k; }
+    frames.push({ transform: `translate(${(x - size / 2).toFixed(1)}px,${(y - size / 2).toFixed(1)}px) scale(${sx.toFixed(3)},${sy.toFixed(3)})`, offset: Math.min(1, t / T) });
+  }
+  frames[frames.length - 1].offset = 1;
+  return { frames, T };
+}
+// Le « paf » d'un contact : des petits traits blancs qui partent en étoile.
+function impactSvg() {
+  const lines = Array.from({ length: 8 }, (_, i) => { const a = i / 8 * Math.PI * 2 + .2, r1 = 15, r2 = 25;
+    return `<path d="M${(30 + r1 * Math.cos(a)).toFixed(1)} ${(30 + r1 * Math.sin(a)).toFixed(1)}L${(30 + r2 * Math.cos(a)).toFixed(1)} ${(30 + r2 * Math.sin(a)).toFixed(1)}"/>`; }).join('');
+  return `<svg viewBox="0 0 60 60" fill="none" stroke="var(--sticker,#fff)" stroke-width="3.4" stroke-linecap="round">${lines}</svg>`;
+}
+
+function mountRecapAnimation() {
+  const root = document.querySelector('.recapx.rc');
+  if (!root || !root.classList.contains('intro')) return;
+  try {
+    stopRecapRun();
+    if (!root.animate) { finishRecap(); return; }
+    const run = RECAP_RUN = { timers: [], anims: [], root };
+    const at = (ms, fn) => run.timers.push(setTimeout(fn, ms));
+    const A = (el, kf, o) => { if (!el) return null; const a = el.animate(kf, Object.assign({ fill: 'both' }, o)); run.anims.push(a); return a; };
+    const q = s => root.querySelector(s), qa = s => [...root.querySelectorAll(s)];
+    const fx = q('.rc-fx'), W = root.clientWidth, H = root.clientHeight;
+    const box = el => el.getBoundingClientRect();
+    const title = q('.rc-title'), stage = q('.rc-stage'), place = q('.rc-place'), medal = q('.rc-medal');
+    const tb = box(title), sb = box(stage), mb = box(medal);
+    // Le texte du titre lui-même (le bloc prend toute la largeur) : la balle tombe dessus.
+    const rg = document.createRange(); rg.selectNodeContents(title); const tr = rg.getBoundingClientRect();
+    const BALL = 34;
+    // Les instants : l'affiche s'ouvre, puis trois rebonds.
+    const T0 = 200, T1 = 540, T2 = 930, T3 = 1320;
+
+    // 0. L'affiche s'ouvre en disque depuis le bouton touché (ou le centre).
+    const o = RECAP_FROM && Date.now() - RECAP_FROM.t < 4000 ? RECAP_FROM : { x: W / 2, y: H * .55 };
+    RECAP_FROM = null;
+    const R = Math.hypot(Math.max(o.x, W - o.x), Math.max(o.y, H - o.y)) + 4;
+    A(root, [{ clipPath: `circle(0px at ${o.x}px ${o.y}px)` }, { clipPath: `circle(${R}px at ${o.x}px ${o.y}px)` }], { duration: 560, easing: 'cubic-bezier(.6,0,.25,1)', fill: 'none' });
+
+    // Tout part caché (fill « both » tient la première image pendant l'attente).
+    const slap = (el, at, o2 = {}) => A(el, [
+      { opacity: 0, transform: `translateY(${o2.dy || -16}px) scale(${o2.s || 1.06}) rotate(${o2.r || 2.5}deg)` },
+      { opacity: 1, transform: `translateY(2px) scale(.985) rotate(${-(o2.r || 2.5) * .25}deg)`, offset: .55 },
+      { opacity: 1, transform: 'none' }], { duration: o2.d || 520, delay: at, easing: 'cubic-bezier(.2,.8,.3,1)' });
+
+    // 1. La balle tombe sur le titre, rebondit sur la scène, finit en médaille.
+    const ball = document.createElement('i'); ball.className = 'rc-ball'; fx.appendChild(ball);
+    const P = [
+      { x: tr.left - 30, y: -60, t: 0 },
+      { x: Math.min(tr.right - 16, W - 80), y: tr.top + tr.height * .42, t: T1 - T0 },
+      { x: sb.left + sb.width * .66, y: sb.top - BALL / 2 + 4, t: T2 - T0, h: 70 },
+      { x: mb.left + mb.width / 2, y: mb.top + mb.height / 2, t: T3 - T0, h: 110 },
+    ];
+    const path = ballPath(P, BALL);
+    A(ball, path.frames, { duration: path.T, delay: T0, easing: 'linear' });
+    A(ball, [{ opacity: 1 }, { opacity: 0 }], { duration: 140, delay: T3, fill: 'forwards' });
+    [T1, T2].forEach((t, k) => {
+      const p = P[k + 1], im = document.createElement('span'); im.className = 'rc-impact'; im.innerHTML = impactSvg();
+      im.style.left = p.x + 'px'; im.style.top = (p.y + BALL / 2) + 'px'; fx.appendChild(im);
+      A(im, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.4)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(.8)', offset: .25 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.25)' }],
+        { duration: 340, delay: t - 20, easing: 'ease-out' });
+      at(t, () => playSound('bounce'));
+    });
+
+    // 2. Le titre est tamponné par la balle, le sous-titre suit.
+    A(title, [
+      { opacity: 0, transform: 'scale(1.9) rotate(-7deg)' },
+      { opacity: 1, transform: 'scale(.93) rotate(1deg)', offset: .42 },
+      { opacity: 1, transform: 'scale(1.03) rotate(-.4deg)', offset: .7 },
+      { opacity: 1, transform: 'none' }], { duration: 440, delay: T1 - 185, easing: 'cubic-bezier(.3,0,.4,1)' });
+    A(q('.rc-head p'), [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 360, delay: T1 + 120, easing: 'ease-out' });
+
+    // 3. La scène se colle ; le podium à plat se monte (marches, bonshommes).
+    slap(stage, T2 - 230, { r: 2, d: 560 });
+    const cols = qa('.rx-podium .podcol.p3, .rx-podium .podcol.p2, .rx-podium .podcol.p1');
+    cols.forEach((c, k) => {
+      const d = T2 + 120 + k * 170;
+      A(c.querySelector('.podstep'), [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1.08)', offset: .6 }, { transform: 'none' }], { duration: 460, delay: d, easing: 'cubic-bezier(.3,.7,.4,1)' });
+      A(c.querySelector('.rc-guy'), [{ opacity: 0, transform: 'translateY(-60px)' }, { opacity: 1, transform: 'translateY(0) scale(1.08,.9)', offset: .5 }, { transform: 'translateY(-8px)', offset: .72 }, { opacity: 1, transform: 'none' }],
+        { duration: 560, delay: d + 260, easing: 'cubic-bezier(.4,0,.6,1)' });
+      A(c.querySelector('.rc-chip'), [{ opacity: 0, transform: 'scale(.6) rotate(-6deg)' }, { opacity: 1, transform: 'scale(1.06) rotate(2deg)', offset: .6 }, { opacity: 1, transform: 'none' }], { duration: 380, delay: d + 520, easing: 'ease-out' });
+    });
+
+    // Les projecteurs du podium s'allument (petit grésillement).
+    qa('.rc-spot').forEach((sp, k) => A(sp, [{ opacity: 0 }, { opacity: 1, offset: .18 }, { opacity: .25, offset: .32 }, { opacity: 1, offset: .5 }, { opacity: .6, offset: .6 }, { opacity: 1 }],
+      { duration: 520, delay: T2 + 180 + k * 140, easing: 'linear' }));
+
+    // 4. Ta place : le sticker se colle, la balle devient ta médaille.
+    slap(place, T3 - 230, { r: -3, d: 540 });
+    A(medal, [{ opacity: 0, transform: `scale(${(BALL / mb.width).toFixed(2)}) rotate(-40deg)` }, { opacity: 1, transform: 'scale(1.18) rotate(10deg)', offset: .4 }, { transform: 'scale(.95) rotate(-4deg)', offset: .7 }, { opacity: 1, transform: 'none' }],
+      { duration: 620, delay: T3 - 20, easing: 'ease-out' });
+    at(T3, () => playSound('clink'));
+    const rank = Number(medal.textContent) || 99;
+    if (rank <= 3) at(T3 + 80, () => { if (root.isConnected && RECAP_RUN === run) stickerBurst(mb.left + mb.width / 2, mb.top + mb.height / 2, { n: rank === 1 ? 28 : 16, into: fx, run }); });
+
+    // 5. Les chiffres : trois stickers, les nombres montent ; la série en balles.
+    qa('.rc-stat').forEach((s, k) => {
+      const d = T3 + 200 + k * 140;
+      slap(s, d, { r: k % 2 ? -2.5 : 2.5, d: 480 });
+      const b = s.querySelector('[data-to]');
+      b.textContent = '0';
+      at(d + 120, () => { countTo(b, 700); playSound('tick'); });
+    });
+    qa('.rc-balls i').forEach((b, k) => A(b, [{ transform: 'scale(0)' }, { transform: 'scale(1.45)', offset: .6 }, { transform: 'none' }], { duration: 300, delay: T3 + 760 + k * 60, easing: 'ease-out' }));
+
+    // 6. Les badges du tournoi se décollent… dans l'autre sens (posés depuis la gauche).
+    const bad = q('.rc-badges');
+    if (bad) {
+      A(bad, [{ opacity: 0, transform: 'perspective(700px) rotateY(-70deg) rotate(-5deg)' }, { opacity: 1, transform: 'perspective(700px) rotateY(8deg) rotate(1deg)', offset: .65 }, { opacity: 1, transform: 'none' }],
+        { duration: 600, delay: T3 + 900, easing: 'ease-out' });
+      qa('.rc-badge').forEach((b, k) => A(b, [{ transform: 'scale(.3) rotate(-25deg)' }, { transform: 'scale(1.15) rotate(6deg)', offset: .6 }, { transform: 'none' }], { duration: 420, delay: T3 + 1050 + k * 110, easing: 'ease-out' }));
+    }
+
+    // 7. Les boutons arrivent ; « Passer » s'efface.
+    const actAt = T3 + (bad ? 1150 : 900);
+    A(q('.rc-actions'), [{ opacity: 0, transform: 'translateY(18px)' }, { opacity: 1, transform: 'none' }], { duration: 380, delay: actAt, easing: 'cubic-bezier(.2,.8,.3,1)' });
+    A(q('.rx-skip'), [{ opacity: 1 }, { opacity: 0 }], { duration: 180, delay: actAt - 150, fill: 'forwards' });
+    const END = T3 + (bad ? 1550 : 1300);
+    at(END, () => {
+      root.classList.remove('intro'); root.classList.add('done');
+      if (fx) fx.removeAttribute('data-act');
+      if (RECAP_RUN === run) RECAP_RUN = null;
+    });
+  } catch (e) { finishRecap(); /* une animation ratée ne doit jamais empêcher d'ouvrir le récap */ }
+}
+
+/* Une volée de mini-stickers (balles, étoiles, raquettes, plus) qui jaillit d'un
+   point puis retombe : les grands moments (podium du récap, score exact, badge).
+   Rien en mouvement réduit. o = { n, into (conteneur), run (séquence à suivre) } */
+const BURST_SHAPES = [
+  c => `<circle cx="12" cy="12" r="7.5" fill="${c}"/>`,
+  c => `<path d="M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.7L12 16.4 6.9 19.2 8 13.5 3.7 9.5l5.8-.7z" fill="${c}"/>`,
+  c => `<path d="M10.4 4.5h3.2v5.9h5.9v3.2h-5.9v5.9h-3.2v-5.9H4.5v-3.2h5.9z" fill="${c}"/>`,
+  c => `<g fill="${c}"><circle cx="10.5" cy="10.5" r="6.5"/><rect x="13.2" y="14.6" width="3.6" height="7" rx="1.8" transform="rotate(-45 15 18)"/></g>`,
+  c => `<rect x="5" y="8" width="14" height="8" rx="4" fill="${c}"/>`,
+];
+function stickerBurst(x, y, o = {}) {
+  if (reducedMotion() || !document.body.animate) return;
+  const cs = getComputedStyle(document.documentElement);
+  const pal = ['#F7A04A', cs.getPropertyValue('--red').trim() || '#C23B2E', cs.getPropertyValue('--gold').trim() || '#C9973A', '#4A6496', '#2D5A45', '#FFFFFF'];
+  const host = o.into || document.body, n = o.n || 18;
+  const layer = document.createElement('div'); layer.className = 'burst'; layer.setAttribute('aria-hidden', 'true');
+  host.appendChild(layer);
+  let longest = 0;
+  for (let i = 0; i < n; i++) {
+    const shape = BURST_SHAPES[i % BURST_SHAPES.length], col = pal[(i * 7 + (i >> 2)) % pal.length];
+    const inner = shape(col);
+    const el = document.createElement('span');
+    el.innerHTML = `<svg viewBox="0 0 24 24"><g stroke="#2A2420" stroke-width="5.6" stroke-linejoin="round">${inner}</g><g stroke="var(--sticker,#fff)" stroke-width="3.6" stroke-linejoin="round">${inner}</g>${inner}</svg>`;
+    const size = 16 + Math.random() * 14; el.style.width = el.style.height = size + 'px';
+    el.style.left = (x - size / 2) + 'px'; el.style.top = (y - size / 2) + 'px';
+    layer.appendChild(el);
+    const ang = (-90 + (Math.random() * 2 - 1) * 75) * Math.PI / 180, sp = 330 + Math.random() * 300, g = 1100;
+    const vx = Math.cos(ang) * sp, vy = Math.sin(ang) * sp, spin = (Math.random() * 2 - 1) * 620, dur = 1100 + Math.random() * 600;
+    const kf = [];
+    for (let k = 0; k <= 14; k++) {
+      const t = k / 14 * dur / 1000;
+      kf.push({ transform: `translate(${(vx * t).toFixed(1)}px,${(vy * t + g * t * t / 2).toFixed(1)}px) rotate(${(spin * t).toFixed(0)}deg) scale(${k === 0 ? .2 : 1})`,
+        opacity: k / 14 > .75 ? (1 - (k / 14 - .75) / .25).toFixed(2) : 1 });
+    }
+    const a = el.animate(kf, { duration: dur, delay: Math.random() * 90, easing: 'linear', fill: 'both' });
+    if (o.run) o.run.anims.push(a);
+    longest = Math.max(longest, dur + 120);
+  }
+  setTimeout(() => layer.remove(), longest + 100);
+}
+/* Les grands moments (score exact, fête du mois ou du tournoi, badge qui tombe) :
+   une volée de mini-stickers jaillit de la scène. Une fois par ouverture. */
+let BURST_LAST = null;
+function burstAfter() {
+  let key = null;
+  if (S.openCeleb && document.querySelector('.celebx:not(.fetex) .celebstage')) key = 'celeb:' + S.openCeleb;
+  else if (S.openFete && document.querySelector('.fetex .celebstage')) key = 'fete:' + (S.openFete.id || '');
+  else if (S.openBadge && S._medalDrop === S.openBadge) key = 'badge:' + S.openBadge;
+  if (!key) { if (!S.openCeleb && !S.openFete && !S.openBadge) BURST_LAST = null; return; }
+  if (key === BURST_LAST) return;
+  BURST_LAST = key;
+  const badge = key.startsWith('badge');
+  setTimeout(() => {
+    const el = document.querySelector(badge ? '.medalslot, .badgezoom' : '.celebstage');
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    stickerBurst(r.left + r.width / 2, r.top + r.height * (badge ? .5 : .55), { n: badge ? 18 : 26 });
+  }, badge ? 700 : 380);
+}
+// Les entrées des fiches (voir render) : l'heure d'ouverture de chaque fiche, et les
+// éléments intérieurs qui ont leur propre entrée (avec leur retard en ms).
+const SHEET_T0 = {};
+const SHEET_INNER = [[':scope > .modalhead', 120], ['.celebflat b', 300]];
+
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
   // entièrement terminé (voir isTournamentFinished) : pas de bilan sur
@@ -11826,7 +12339,7 @@ document.addEventListener('keydown', e => {
    d'animations (le bilan s'affiche directement, complet). */
 let RECAP_RUN = null; // { timers, anims } de la séquence en cours
 
-function recapModal(key, circuit) {
+function recapModalOld(key, circuit) {
   const data = computeRecapData(key, circuit);
   if (!data || !data.me) return '';
   const { me, rows, podium, theme } = data;
@@ -11886,14 +12399,14 @@ function recapModal(key, circuit) {
   </div>`;
 }
 
-function stopRecapRun() {
+function stopRecapRunOld() {
   if (!RECAP_RUN) return;
   RECAP_RUN.timers.forEach(clearTimeout);
   RECAP_RUN.anims.forEach(a => { try { a.cancel(); } catch (e) { /* déjà fini */ } });
   RECAP_RUN = null;
 }
 // Va directement à la fin (bouton "Passer", tap sur la scène, ou échec).
-function finishRecap() {
+function finishRecapOld() {
   stopRecapRun();
   const root = document.querySelector('.recapx');
   if (!root) return;
@@ -11917,7 +12430,7 @@ function countTo(el, dur) {
 // seule animation (Web Animations API), image par image : chaque rebond est
 // une vraie parabole, la balle grossit en approchant, s'écrase un peu à
 // chaque contact, et son ombre glisse sur la table.
-function mountRecapAnimation() {
+function mountRecapAnimationOld() {
   const root = document.querySelector('.recapx');
   if (!root || !root.classList.contains('intro')) return;
   try {
