@@ -2701,7 +2701,7 @@ body > .burst{position:fixed;z-index:200}
    ========================================================================== */
 @keyframes slapIn{
   0%{opacity:0;transform:translateY(-14px) scale(1.05) rotate(var(--tilt,-1.5deg))}
-  24%{opacity:1}
+  12%{opacity:1}
   52%{opacity:1;transform:translateY(2px) scale(.99) rotate(calc(var(--tilt,-1.5deg) * -.3))}
   76%{transform:translateY(-1px) scale(1.004) rotate(calc(var(--tilt,-1.5deg) * .08))}
   100%{opacity:1;transform:none}}
@@ -2774,6 +2774,30 @@ html.halloween .loading::before,html.halloween .empty::before{background:#F7A04A
   box-shadow:0 0 0 calc(var(--S) * .012) #fff,0 0 0 calc(var(--S) * .018) #2A2420}
 #splash .sp-word{font:700 calc(var(--S) * .42)/.92 'Spin Marqueur','Barlow Semi Condensed','Barlow',ui-sans-serif,system-ui,sans-serif;text-shadow:0 calc(var(--S) * .02) 0 rgba(8,14,28,.38)}
 html.halloween #splash .sp-half{background-color:#14243C;background-image:var(--grain),radial-gradient(70% 45% at 50% 40%,rgba(242,131,43,.14),transparent 70%);background-size:160px,100% 100%}
+/* --- Cibles tactiles : les noms de joueurs et du classement ont une zone d'au moins
+   32 px (les deux noms d'un match un peu plus espacés pour ne pas se chevaucher). --- */
+.msides{gap:13px}
+.namebtn{padding:6px 0;margin:-6px 0}
+.lbbtn{padding:5px 0;margin:-5px 0}
+/* Le nom de la compétition sur la carte du match en direct : en entier, sur plusieurs lignes si besoin. */
+.hero-top{align-items:flex-start}
+.hero-top .hero-comp{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25}
+/* Entre deux écrans : l'ancien s'efface vite, le nouveau est là tout de suite (ses
+   stickers se collent) ; plus de blanc entre les deux. */
+@media (prefers-reduced-motion:no-preference){
+  ::view-transition-old(root){animation:.12s ease-out both vtOut}
+  ::view-transition-new(root){animation:none}
+  /* Les blocs du nouvel écran se collent sans passer par un instant invisible. */
+  .fresh > .sechead,.fresh > .panel,.fresh > .pagehead,.fresh > .acchero,.fresh > .boardpod,.fresh > .boardtools,.fresh > .standings{animation-name:slapInVis}
+}
+@keyframes slapInVis{
+  0%{opacity:.35;transform:translateY(-12px) scale(1.04) rotate(var(--tilt,-1.5deg))}
+  14%{opacity:1}
+  52%{opacity:1;transform:translateY(2px) scale(.99) rotate(calc(var(--tilt,-1.5deg) * -.3))}
+  76%{transform:translateY(-1px) scale(1.004) rotate(calc(var(--tilt,-1.5deg) * .08))}
+  100%{opacity:1;transform:none}}
+/* Les liens-boutons (« Voir le calendrier »…) : au moins 32 px de haut, sans bouger la mise en page. */
+.linkbtn{padding-top:6px;padding-bottom:6px;margin-top:-2px;margin-bottom:-2px}
 </style>
 <script>
 /* Halloween : du 15 octobre au 1er novembre inclus, chaque année, tout seul
@@ -4672,7 +4696,6 @@ function matchRow(m, fresh, i, streakInfo) {
         ${ptsSumHtml(det)}
         <span class="rlinks">
           <button class="friendstoggle" data-act="friends" data-id="${m.id}" aria-expanded="${!!S.openFriends[m.id]}">${ico('users-three')}${S.openFriends[m.id] ? 'Masquer les pronos' : 'Voir les pronos des amis'}</button>
-          ${mine ? `<button class="friendstoggle" data-act="exportmatch" data-id="${m.id}">${ico('share-network')}Partager</button>` : ''}
         </span>`;
     }
     let friends = '';
@@ -6924,7 +6947,8 @@ document.getElementById('amb-halloween')?.addEventListener('click', () => setAmb
 /* ---------- Boucle ---------- */
 let last = performance.now(), acc = 0, visible = true, running = false;
 const STEP = 1 / 120, up = new THREE.Vector3(0, 1, 0), axis = new THREE.Vector3(), tmp = new THREE.Vector3(), _gv = new THREE.Vector3();
-function start() { if (running) return; running = true; last = performance.now(); requestAnimationFrame(frame); }
+let DEAD = false;
+function start() { if (running || DEAD) return; running = true; last = performance.now(); requestAnimationFrame(frame); }
 // On ne dessine que si la toile est à l'écran. L'observateur le dit presque
 // toujours ; s'il la croit cachée alors qu'elle est encore dans la page (une
 // fiche qui arrive en glissant, par exemple), on revérifie de temps en temps.
@@ -6932,8 +6956,26 @@ let recheckT = 0;
 const onScreen = () => { const r = stage.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
 const recheck = () => { clearTimeout(recheckT); recheckT = setTimeout(() => { if (!stage.isConnected) return; if (onScreen()) { visible = true; start(); } else recheck(); }, 700); };
 const io = new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible) start(); else recheck(); }); io.observe(stage);
+// La fluidité (téléphones lents) : on compte les images par tranches de 2,5 s, après
+// 2 s de mise en route. Trop lent : on baisse la définition (deux fois), puis on
+// prévient l'appli (opts.onSlow), qui passe les personnages en 2D.
+const PERF = { from: performance.now() + 2000, n: 0, step: 0, told: false };
+function perfTick(now, raw) {
+  if (document.hidden) { PERF.from = now + 500; PERF.n = 0; return; } // appli en arrière-plan : on ne compte pas
+  if (now < PERF.from) return;
+  PERF.n++;
+  const span = now - PERF.from;
+  if (span < 2500) return;
+  const fps = PERF.n * 1000 / span; PERF.from = now; PERF.n = 0;
+  if (fps >= 22 || PERF.told) return;
+  PERF.step++;
+  if (PERF.step <= 2) { renderer.setPixelRatio(renderer.getPixelRatio() > 1 ? 1 : Math.max(.7, renderer.getPixelRatio() * .82)); resize(); return; }
+  PERF.told = true; if (opts.onSlow) setTimeout(() => opts.onSlow(fps), 0); // après l'image en cours
+}
 function frame(now) {
   if (!visible) { running = false; return; }
+  perfTick(now, now - last);
+  if (DEAD) { running = false; return; }
   const dt = Math.min(.1, (now - last) / 1000); last = now;
   const t = now / 1000, still = reduce();
   if (!still) U.time.value = t;
@@ -7018,7 +7060,7 @@ function frame(now) {
 }
 if (reduce()) { pos.set(.18, TOP + R, .55); vel.set(0, 0, 0); }
 setAmb(opts.amb || 'salle');
-if (/[?&]debug\b/.test(location.search)) window.__dbg = { hw: () => hw, camera, THREE, walker, renderer, GLOW, scene, podium, st: () => ({ visible, running }) };
+if (/[?&]debug\b/.test(location.search)) window.__dbg = { perf: PERF, hw: () => hw, camera, THREE, walker, renderer, GLOW, scene, podium, st: () => ({ visible, running }) };
 resize();
 stage.dataset.ready = '3d';
 start();
@@ -7040,9 +7082,9 @@ return {
   },
   // Relance l'image quand la toile vient d'être posée ailleurs (l'observateur
   // de visibilité ne le signale pas toujours) — seulement si elle est à l'écran.
-  wake() { visible = onScreen(); if (visible) start(); else recheck(); },
+  wake() { if (DEAD) return; visible = onScreen(); if (visible) start(); else recheck(); },
   // Libère la carte graphique (on n'en a plus besoin : connecté, par exemple).
-  dispose() { visible = false; clearTimeout(recheckT); io.disconnect(); ro.disconnect(); renderer.dispose(); renderer.forceContextLoss(); stage.remove(); },
+  dispose() { DEAD = true; visible = false; clearTimeout(recheckT); io.disconnect(); ro.disconnect(); renderer.dispose(); renderer.forceContextLoss(); stage.remove(); },
 };
 }
 
@@ -7063,7 +7105,7 @@ function scene3dSlot(key, slot, o) {
     SCENE3D.lib = SCENE3D.lib || Promise.all([import('three'), import('three/addons/objects/Sky.js'), import('three/addons/utils/BufferGeometryUtils.js')]);
     SCENE3D.lib.then(([T, SK, BU]) => {
       if (SCENE3D[key] !== s) return; // l'écran a changé entre-temps
-      s.api = createSpinScene(T, SK.Sky, BU.mergeGeometries, { stage: layer, canvas, hint, mode: o.mode, amb: HALLOWEEN ? 'halloween' : 'salle',
+      s.api = createSpinScene(T, SK.Sky, BU.mergeGeometries, { stage: layer, canvas, hint, mode: o.mode, amb: HALLOWEEN ? 'halloween' : 'salle', onSlow: () => scene3dSlow(),
         podium: { players: [] }, text: () => layer.parentElement && layer.parentElement.querySelector('.authstage-in') });
       if (!s.api) throw new Error('WebGL indisponible');
       if (o.ready) o.ready(s);
@@ -8371,8 +8413,7 @@ function celebModal(mid) {
         <p class="celebtext">Tu avais annoncé ${h.pred_a}–${h.pred_b}, et c'est le score final.</p>
         <ul class="celebpts">${lines.map(([k, v]) => `<li><span>${esc(k)}</span><b>+${v}</b></li>`).join('')}<li class="tot"><span>Total</span><b>+${pt.total} pts</b></li></ul>
         <div class="celebbtns">
-          <button class="btn small" data-act="exportmatch" data-id="${mid}">${ico('share-network')}Partager en image</button>
-          <button class="btn small sec" data-act="closeceleb">${more ? `Score exact suivant (${more})` : 'Continuer'}</button>
+          <button class="btn small" data-act="closeceleb">${more ? `Score exact suivant (${more})` : 'Continuer'}</button>
         </div>
       </div>
     </div>
@@ -10847,7 +10888,7 @@ function secHead(title, sub, inner, right) {
 // --- Ligue : l'en-tête porte la ligue, l'invitation et le choix du classement.
 function boardView() {
   const seg = segRow([['ALL', 'Général'], ['MONTH', 'Ce mois'], ['WTT', 'WTT'], ['PRO_A', 'Pro A']], S.boardScope, 'boardscope');
-  const share = S.board && S.board.length ? `<button class="iconbtn shbtn" data-act="exportboard" aria-label="Partager le classement en image" title="Partager en image">${ico('share-network')}</button>` : '';
+  const share = '';
   const lg = curLeague();
   const sub = lg ? '' : S.leagues ? 'Tout le monde, toutes ligues confondues.' : 'Le classement entre amis.';
   return secHead('Ligue', sub, `${leagueBar()}<div class="sh-tools">${seg}</div>`, share) + boardViewInner();
@@ -11418,7 +11459,7 @@ function scenes3DOff() {
   for (const k of ['login', 'podium']) {
     const s = SCENE3D[k];
     if (!s) continue;
-    try { if (s.api) s.api.dispose(); else s.layer.remove(); } catch (e) { /* déjà parti */ }
+    try { if (s.api) { s.api.dispose(); s.api = null; } else s.layer.remove(); } catch (e) { /* déjà parti */ }
     SCENE3D[k] = null;
   }
   try { if (MEDAL.engine && MEDAL.engine.sleep) MEDAL.engine.sleep(); } catch (e) { /* rien */ }
@@ -11446,7 +11487,7 @@ function preview2DShirt(hex) {
 async function onAct41(act, el) {
   if (act === 'vue') {
     const v = el.dataset.v === '2d' ? '2d' : '3d';
-    try { localStorage.setItem(VUE_KEY, v); } catch (e) { /* ce choix ne sera pas gardé */ }
+    try { localStorage.setItem(VUE_KEY, v); if (v === '3d' && localStorage.getItem('spin_vue_auto') === '1') { localStorage.setItem('spin_vue_force', '1'); localStorage.removeItem('spin_vue_auto'); } } catch (e) { /* ce choix ne sera pas gardé */ }
     if (v === '2d') scenes3DOff();
     playSound('tick'); keepRender();
     toast(v === '2d' ? 'Personnages en 2D' : 'Personnages en 3D');
@@ -11545,7 +11586,7 @@ function recapModal(key, circuit) {
         <p><b>${newBadges.length > 1 ? newBadges.length + ' badges débloqués' : 'Badge débloqué'}</b> ${esc(newBadges.map(b => b.name).join(', '))}</p>
       </section>` : ''}
       <div class="rc-actions">
-        <button class="btn" data-act="exportrecap" data-key="${esc(key)}" data-circuit="${esc(circuit)}">${ico('share-network')}Partager en image</button>
+        <button class="btn" data-act="closerecap">Continuer</button>
         <button class="btn sec" data-act="replayrecap" aria-label="Revoir l'animation">${ico('arrow-counter-clockwise')}Revoir</button>
       </div>
     </div>
@@ -11784,6 +11825,18 @@ function burstAfter() {
 // éléments intérieurs qui ont leur propre entrée (avec leur retard en ms).
 const SHEET_T0 = {};
 const SHEET_INNER = [[':scope > .modalhead', 120], ['.celebflat b', 300]];
+
+/* La 3D trop lente sur ce téléphone (voir la mesure dans createSpinScene) : on passe
+   les personnages en 2D, on le dit, et c'est réversible dans les Réglages. Si on a
+   remis la 3D soi-même après ce passage automatique, on ne la retire plus. */
+function scene3dSlow() {
+  try {
+    if (localStorage.getItem('spin_3d_auto') === 'off' || localStorage.getItem('spin_vue_force') === '1') return;
+    localStorage.setItem(VUE_KEY, '2d'); localStorage.setItem('spin_vue_auto', '1');
+  } catch (e) { return; }
+  scenes3DOff(); keepRender();
+  toast('La 3D saccadait sur ce téléphone : les personnages passent en 2D. Tu peux la remettre dans les Réglages.');
+}
 
 function breakdownRow(label, s, col, circuit) {
   // Le bouton "Voir le récap" n'apparaît que si CE tournoi/journée est
